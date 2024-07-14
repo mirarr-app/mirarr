@@ -15,6 +15,12 @@ This is a movie app that aims to simplify the process of watching movies and tv 
 - Feed of released movies and TV shows.
 - External links to movies and tv shows to watch.
 
+### Download
+Head over to the [releases](https://github.com/mirarr-app/mirarr/releases) page.
+Download Apk for android.
+Download mirarr-windows.zip for Windows.
+Download mirrar.zip for Linux.
+
 #### Do I need to login?
 No you don't have to. But the login process enables extra features like watchlist, favorties and rating which are all handled with TMDB.
 
