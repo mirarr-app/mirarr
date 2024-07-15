@@ -1,4 +1,4 @@
-package com.example.Mirarr
+package com.mirarrapp.Mirarr
 
 import io.flutter.embedding.android.FlutterActivity
 
