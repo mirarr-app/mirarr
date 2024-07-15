@@ -10,25 +10,36 @@ jobs:
       TMDB_API_READ: ${{ secrets.TMDB_API_READ }}
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
       OMDB_API_KEY: ${{ secrets.OMDB_API_KEY }}
+      KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+      KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+      KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
     steps:
-    - uses: actions/checkout@v2
-    - uses: subosito/flutter-action@v2
-      with:
-        flutter-version: '3.16.9'
-    - run: flutter pub get
-    - run: |
-        echo "TMDB_API_READ=${{ secrets.TMDB_API_READ }}" > .env
-        echo "TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}" >> .env
-        echo "OMDB_API_KEY=${{ secrets.OMDB_API_KEY }}" >> .env
-    - run: mkdir -p ${{ github.workspace }}/build/app/outputs/flutter-apk
-    - run: flutter build apk
-    - name: List APK Directory
-      run: ls -alh ${{ github.workspace }}/build/app/outputs/flutter-apk
-    - name: Upload APK
-      uses: actions/upload-artifact@v2
-      with:
-        name: apk
-        path: ${{ github.workspace }}/build/app/outputs/flutter-apk/app-release.apk
+      - uses: actions/checkout@v2
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.16.9'
+      - run: flutter pub get
+      - run: |
+          echo "TMDB_API_READ=${{ secrets.TMDB_API_READ }}" > .env
+          echo "TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}" >> .env
+          echo "OMDB_API_KEY=${{ secrets.OMDB_API_KEY }}" >> .env
+      - name: Decode and save keystore
+        run: |
+          echo ${{ secrets.KEYSTORE }} | base64 --decode > android/app/mirarr-app.keystore
+      - run: mkdir -p ${{ github.workspace }}/build/app/outputs/flutter-apk
+      - name: Build APK
+        run: |
+          flutter build apk --release --no-shrink
+          cp build/app/outputs/flutter-apk/app-release-unsigned.apk app-release-unsigned.apk
+          jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore android/app/mirarr-app.keystore -storepass ${{ secrets.KEYSTORE_PASSWORD }} -keypass ${{ secrets.KEY_PASSWORD }} app-release-unsigned.apk ${{ secrets.KEY_ALIAS }}
+          ${ANDROID_HOME}/build-tools/35.0.0/zipalign -v 4 app-release-unsigned.apk app-release.apk
+      - name: List APK Directory
+        run: ls -alh ${{ github.workspace }}/build/app/outputs/flutter-apk
+      - name: Upload APK
+        uses: actions/upload-artifact@v2
+        with:
+          name: apk
+          path: app-release.apk
 
   build_windows:
     name: Build Windows
@@ -38,28 +49,28 @@ jobs:
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
       OMDB_API_KEY: ${{ secrets.OMDB_API_KEY }}
     steps:
-    - uses: actions/checkout@v2
-    - uses: subosito/flutter-action@v2
-      with:
-        flutter-version: '3.16.9'
-    - run: flutter pub get
-    - run: |
-        echo "TMDB_API_READ=${{ secrets.TMDB_API_READ }}" > .env
-        echo "TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}" >> .env
-        echo "OMDB_API_KEY=${{ secrets.OMDB_API_KEY }}" >> .env
-    - run: mkdir -p ${{ github.workspace }}/build/windows/x64/runner/Release
-    - run: flutter build windows
-    - name: List Windows Build Directory
-      run: dir ${{ github.workspace }}/build/windows/x64/runner/Release
-    - name: zip everything
-      run: |
-        cd ${{ github.workspace }}/build/windows/x64/runner/Release
-        powershell -Command "Compress-Archive -Path * -DestinationPath mirarr-windows.zip"
-    - name: Upload binary
-      uses: actions/upload-artifact@v2
-      with:
-        name: windows-zip
-        path: ${{ github.workspace }}/build/windows/x64/runner/Release/mirarr-windows.zip
+      - uses: actions/checkout@v2
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.16.9'
+      - run: flutter pub get
+      - run: |
+          echo "TMDB_API_READ=${{ secrets.TMDB_API_READ }}" > .env
+          echo "TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}" >> .env
+          echo "OMDB_API_KEY=${{ secrets.OMDB_API_KEY }}" >> .env
+      - run: mkdir -p ${{ github.workspace }}/build/windows/x64/runner/Release
+      - run: flutter build windows
+      - name: List Windows Build Directory
+        run: dir ${{ github.workspace }}/build/windows/x64/runner/Release
+      - name: zip everything
+        run: |
+          cd ${{ github.workspace }}/build/windows/x64/runner/Release
+          powershell -Command "Compress-Archive -Path * -DestinationPath mirarr-windows.zip"
+      - name: Upload binary
+        uses: actions/upload-artifact@v2
+        with:
+          name: windows-zip
+          path: ${{ github.workspace }}/build/windows/x64/runner/Release/mirarr-windows.zip
 
   build_linux:
     name: Build Linux
@@ -69,60 +80,60 @@ jobs:
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
       OMDB_API_KEY: ${{ secrets.OMDB_API_KEY }}
     steps:
-    - uses: actions/checkout@v2
-    - uses: subosito/flutter-action@v2
-      with:
-        flutter-version: '3.16.9'
-    - run: sudo apt-get update
-    - run: sudo apt-get install -y ninja-build cmake libgtk-3-dev
-    - run: flutter pub get
-    - run: |
-        echo "TMDB_API_READ=${{ secrets.TMDB_API_READ }}" > .env
-        echo "TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}" >> .env
-        echo "OMDB_API_KEY=${{ secrets.OMDB_API_KEY }}" >> .env
-    - run: mkdir -p ${{ github.workspace }}/build/linux/x64/release/bundle
-    - run: flutter build linux
-    - name: List Linux Build Directory
-      run: ls -alh ${{ github.workspace }}/build/linux/x64/release/bundle
-    - name: zip everything
-      run: |
-        cd ${{ github.workspace }}/build/linux/x64/release/bundle
-        zip -r mirarr.zip *
-    - name: Upload binary
-      uses: actions/upload-artifact@v2
-      with:
-        name: linux-zip
-        path: ${{ github.workspace }}/build/linux/x64/release/bundle/mirarr.zip
+      - uses: actions/checkout@v2
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.16.9'
+      - run: sudo apt-get update
+      - run: sudo apt-get install -y ninja-build cmake libgtk-3-dev
+      - run: flutter pub get
+      - run: |
+          echo "TMDB_API_READ=${{ secrets.TMDB_API_READ }}" > .env
+          echo "TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}" >> .env
+          echo "OMDB_API_KEY=${{ secrets.OMDB_API_KEY }}" >> .env
+      - run: mkdir -p ${{ github.workspace }}/build/linux/x64/release/bundle
+      - run: flutter build linux
+      - name: List Linux Build Directory
+        run: ls -alh ${{ github.workspace }}/build/linux/x64/release/bundle
+      - name: zip everything
+        run: |
+          cd ${{ github.workspace }}/build/linux/x64/release/bundle
+          zip -r mirarr.zip *
+      - name: Upload binary
+        uses: actions/upload-artifact@v2
+        with:
+          name: linux-zip
+          path: ${{ github.workspace }}/build/linux/x64/release/bundle/mirarr.zip
 
   upload-release:
     permissions: write-all
     needs: [build_android, build_linux, build_windows]
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
 
-    - name: Download APK
-      uses: actions/download-artifact@v3
-      with:
-        name: apk
-        path: ./out/
-    - name: Download EXE
-      uses: actions/download-artifact@v3
-      with:
-        name: windows-zip
-        path: ./out/
-    - name: Download Linux
-      uses: actions/download-artifact@v3
-      with:
-        name: linux-zip
-        path: ./out/
-    - name: Upload Release
-      uses: softprops/action-gh-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-      with:
-        files: ./out/*
-        tag_name: ${{ github.run_id }}
-        draft: false
-        prerelease: false
+      - name: Download APK
+        uses: actions/download-artifact@v3
+        with:
+          name: apk
+          path: ./out/
+      - name: Download EXE
+        uses: actions/download-artifact@v3
+        with:
+          name: windows-zip
+          path: ./out/
+      - name: Download Linux
+        uses: actions/download-artifact@v3
+        with:
+          name: linux-zip
+          path: ./out/
+      - name: Upload Release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+        with:
+          files: ./out/*
+          tag_name: ${{ github.run_id }}
+          draft: false
+          prerelease: false
