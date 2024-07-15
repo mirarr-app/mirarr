@@ -33,6 +33,15 @@ jobs:
           cp build/app/outputs/flutter-apk/app-release.apk app-release-unsigned.apk
           jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore android/app/mirarr-app.keystore -storepass "${{ secrets.KEYSTORE_PASSWORD }}" -keypass "${{ secrets.KEY_PASSWORD }}" app-release-unsigned.apk "${{ secrets.KEY_ALIAS }}"
           $ANDROID_HOME/build-tools/35.0.0/zipalign -v 4 app-release-unsigned.apk app-release.apk
+      - name: Verify keystore
+        run: |
+          keytool -list -v -keystore android/app/mirarr-app.keystore -alias ${{ secrets.KEY_ALIAS }} -storepass ${{ secrets.KEYSTORE_PASSWORD }} -keypass ${{ secrets.KEY_PASSWORD }}
+      - name: Verify APK signature
+        run: |
+          $ANDROID_HOME/build-tools/35.0.0/apksigner verify --verbose app-release.apk
+      - name: Analyze APK
+        run: |
+          $ANDROID_HOME/build-tools/35.0.0/aapt dump badging app-release.apk
       - name: List APK Directory
         run: ls -alh ${{ github.workspace }}/build/app/outputs/flutter-apk
       - name: Upload APK
