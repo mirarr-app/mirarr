@@ -32,7 +32,7 @@ jobs:
           flutter build apk --release --no-shrink
           cp build/app/outputs/flutter-apk/app-release-unsigned.apk app-release-unsigned.apk
           jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore android/app/mirarr-app.keystore -storepass ${{ secrets.KEYSTORE_PASSWORD }} -keypass ${{ secrets.KEY_PASSWORD }} app-release-unsigned.apk ${{ secrets.KEY_ALIAS }}
-          ${ANDROID_HOME}/build-tools/35.0.0/zipalign -v 4 app-release-unsigned.apk app-release.apk
+          $ANDROID_HOME/build-tools/33.0.0/zipalign -v 4 app-release-unsigned.apk app-release.apk
       - name: List APK Directory
         run: ls -alh ${{ github.workspace }}/build/app/outputs/flutter-apk
       - name: Upload APK
