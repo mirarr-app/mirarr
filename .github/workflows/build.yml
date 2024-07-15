@@ -23,23 +23,28 @@ jobs:
           echo "TMDB_API_READ=${{ secrets.TMDB_API_READ }}" > .env
           echo "TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}" >> .env
           echo "OMDB_API_KEY=${{ secrets.OMDB_API_KEY }}" >> .env
-      - name: Decode and save keystore
+      - name: Decode Keystore
         run: |
-          echo "${{ secrets.KEYSTORE }}" | base64 --decode > android/app/mirarr-app.keystore      
-      - run: mkdir -p ${{ github.workspace }}/build/app/outputs/flutter-apk
-      - name: Verify keystore
-        run: |
-          keytool -list -v -keystore android/app/mirarr-app.keystore -alias ${{ secrets.KEY_ALIAS }} -storepass ${{ secrets.KEYSTORE_PASSWORD }} -keypass ${{ secrets.KEY_PASSWORD }}
-      - name: Clean
-        run: flutter clean
-      - name: Get dependencies
-        run: flutter pub get
-      - name: Build and Sign APK
+          echo "${{ secrets.KEYSTORE }}" | base64 --decode > android/app/keystore.jks
+
+      - name: Build APK
         run: |
           flutter build apk --release
-          mv build/app/outputs/flutter-apk/app-release.apk app-release-unsigned.apk
-          $ANDROID_HOME/build-tools/33.0.0/apksigner sign --ks android/app/mirarr-app.keystore --ks-key-alias ${{ secrets.KEY_ALIAS }} --ks-pass pass:${{ secrets.KEYSTORE_PASSWORD }} --key-pass pass:${{ secrets.KEY_PASSWORD }} --out app-release-signed.apk app-release-unsigned.apk
-          $ANDROID_HOME/build-tools/33.0.0/zipalign -v 4 app-release-signed.apk app-release.apk
+        env:
+          KEYSTORE_FILE: keystore.jks
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+      - name: Verify APK signature (apksigner)
+        run: |
+          $ANDROID_HOME/build-tools/33.0.0/apksigner verify --verbose build/app/outputs/flutter-apk/app-release.apk
+      - name: Verify APK signature (jarsigner)
+        run: |
+          jarsigner -verify -verbose -certs build/app/outputs/flutter-apk/app-release.apk
+
+      - name: APK Info
+        run: |
+          $ANDROID_HOME/build-tools/33.0.0/aapt dump badging build/app/outputs/flutter-apk/app-release.apk
       - name: List APK Directory
         run: ls -alh ${{ github.workspace }}/build/app/outputs/flutter-apk
       - name: Upload APK
