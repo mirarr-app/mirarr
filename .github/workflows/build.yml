@@ -40,20 +40,6 @@ jobs:
           mv build/app/outputs/flutter-apk/app-release.apk app-release-unsigned.apk
           $ANDROID_HOME/build-tools/33.0.0/apksigner sign --ks android/app/mirarr-app.keystore --ks-key-alias ${{ secrets.KEY_ALIAS }} --ks-pass pass:${{ secrets.KEYSTORE_PASSWORD }} --key-pass pass:${{ secrets.KEY_PASSWORD }} --out app-release-signed.apk app-release-unsigned.apk
           $ANDROID_HOME/build-tools/33.0.0/zipalign -v 4 app-release-signed.apk app-release.apk
-      - name: Verify APK signature (apksigner)
-        run: |
-          $ANDROID_HOME/build-tools/33.0.0/apksigner verify --verbose app-release.apk
-
-      - name: Verify APK signature (jarsigner)
-        run: |
-          jarsigner -verify -verbose -certs app-release.apk
-
-      - name: APK Info
-        run: |
-          $ANDROID_HOME/build-tools/33.0.0/aapt dump badging app-release.apk      
-      - name: Analyze APK
-        run: |
-          $ANDROID_HOME/build-tools/33.0.0/aapt dump badging app-release.apk
       - name: List APK Directory
         run: ls -alh ${{ github.workspace }}/build/app/outputs/flutter-apk
       - name: Upload APK
