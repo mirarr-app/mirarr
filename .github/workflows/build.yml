@@ -50,7 +50,8 @@ jobs:
 
       - name: APK Info
         run: |
-          $ANDROID_HOME/build-tools/33.0.0/aapt dump badging app-release.apk      - name: Analyze APK
+          $ANDROID_HOME/build-tools/33.0.0/aapt dump badging app-release.apk      
+      - name: Analyze APK
         run: |
           $ANDROID_HOME/build-tools/35.0.0/aapt dump badging app-release.apk
       - name: List APK Directory
