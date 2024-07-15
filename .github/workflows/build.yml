@@ -53,7 +53,7 @@ jobs:
           $ANDROID_HOME/build-tools/33.0.0/aapt dump badging app-release.apk      
       - name: Analyze APK
         run: |
-          $ANDROID_HOME/build-tools/35.0.0/aapt dump badging app-release.apk
+          $ANDROID_HOME/build-tools/33.0.0/aapt dump badging app-release.apk
       - name: List APK Directory
         run: ls -alh ${{ github.workspace }}/build/app/outputs/flutter-apk
       - name: Upload APK
