@@ -25,8 +25,7 @@ jobs:
           echo "OMDB_API_KEY=${{ secrets.OMDB_API_KEY }}" >> .env
       - name: Decode and save keystore
         run: |
-          echo ${{ secrets.KEYSTORE }} | base64 --decode > android/app/mirarr-app.keystore
-      - run: mkdir -p ${{ github.workspace }}/build/app/outputs/flutter-apk
+          echo "${{ secrets.KEYSTORE }}" | base64 --decode > android/app/mirarr-app.keystore      - run: mkdir -p ${{ github.workspace }}/build/app/outputs/flutter-apk
       - name: Build APK
         run: |
           flutter build apk --release --no-shrink
