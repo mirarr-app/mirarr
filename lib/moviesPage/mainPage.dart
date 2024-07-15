@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 import 'package:Mirarr/functions/fetch_popular_movies.dart';
 import 'package:Mirarr/functions/fetch_trending_movies.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie.dart';
@@ -163,21 +164,30 @@ class _MovieSearchScreenState extends State<MovieSearchScreen> {
                       ),
                       SizedBox(
                         height: 320, // Set the height for the movie cards
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: trendingMovies.length,
-                          itemBuilder: (context, index) {
-                            final movie = trendingMovies[index];
-                            return GestureDetector(
-                              onTap: () => Platform.isAndroid || Platform.isIOS
-                                  ? onTapMovie(movie.title, movie.id, context)
-                                  : onTapMovieDesktop(
-                                      movie.title, movie.id, context),
-                              child: CustomMovieWidget(
-                                movie: movie,
-                              ),
-                            );
-                          },
+                        child: ScrollConfiguration(
+                          behavior: ScrollConfiguration.of(context).copyWith(
+                            dragDevices: {
+                              PointerDeviceKind.touch,
+                              PointerDeviceKind.mouse,
+                            },
+                          ),
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: trendingMovies.length,
+                            itemBuilder: (context, index) {
+                              final movie = trendingMovies[index];
+                              return GestureDetector(
+                                onTap: () => Platform.isAndroid ||
+                                        Platform.isIOS
+                                    ? onTapMovie(movie.title, movie.id, context)
+                                    : onTapMovieDesktop(
+                                        movie.title, movie.id, context),
+                                child: CustomMovieWidget(
+                                  movie: movie,
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       ),
                       const SizedBox(
@@ -201,21 +211,30 @@ class _MovieSearchScreenState extends State<MovieSearchScreen> {
                       const SizedBox(height: 10),
                       SizedBox(
                         height: 320, // Set the height for the movie cards
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: popularMovies.length,
-                          itemBuilder: (context, index) {
-                            final movie = popularMovies[index];
-                            return GestureDetector(
-                              onTap: () => Platform.isAndroid || Platform.isIOS
-                                  ? onTapMovie(movie.title, movie.id, context)
-                                  : onTapMovieDesktop(
-                                      movie.title, movie.id, context),
-                              child: CustomMovieWidget(
-                                movie: movie,
-                              ),
-                            );
-                          },
+                        child: ScrollConfiguration(
+                          behavior: ScrollConfiguration.of(context).copyWith(
+                            dragDevices: {
+                              PointerDeviceKind.touch,
+                              PointerDeviceKind.mouse,
+                            },
+                          ),
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: popularMovies.length,
+                            itemBuilder: (context, index) {
+                              final movie = popularMovies[index];
+                              return GestureDetector(
+                                onTap: () => Platform.isAndroid ||
+                                        Platform.isIOS
+                                    ? onTapMovie(movie.title, movie.id, context)
+                                    : onTapMovieDesktop(
+                                        movie.title, movie.id, context),
+                                child: CustomMovieWidget(
+                                  movie: movie,
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       )
                     ],
