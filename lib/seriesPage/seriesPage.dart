@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:Mirarr/seriesPage/function/on_tap_serie.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_serie_desktop.dart';
@@ -23,8 +24,7 @@ class SerieSearchScreen extends StatefulWidget {
 }
 
 class _SerieSearchScreenState extends State<SerieSearchScreen> {
-  String apiKey =
-      dotenv.env['TMDB_API_KEY'] ?? '9022dacd3279ce91c633f11c069c465f';
+  final apiKey = dotenv.env['TMDB_API_KEY'];
 
   List<Serie> trendingSeries = [];
   List<Serie> popularSeries = [];
@@ -198,21 +198,29 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
                     const SizedBox(height: 10),
                     SizedBox(
                       height: 320, // Set the height for the movie cards
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: trendingSeries.length,
-                        itemBuilder: (context, index) {
-                          final serie = trendingSeries[index];
-                          return GestureDetector(
-                            onTap: () => Platform.isAndroid || Platform.isIOS
-                                ? onTapSerie(serie.name, serie.id, context)
-                                : onTapSerieDesktop(
-                                    serie.name, serie.id, context),
-                            child: CustomSeriesWidget(
-                              serie: serie,
-                            ),
-                          );
-                        },
+                      child: ScrollConfiguration(
+                        behavior: ScrollConfiguration.of(context).copyWith(
+                          dragDevices: {
+                            PointerDeviceKind.touch,
+                            PointerDeviceKind.mouse,
+                          },
+                        ),
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: trendingSeries.length,
+                          itemBuilder: (context, index) {
+                            final serie = trendingSeries[index];
+                            return GestureDetector(
+                              onTap: () => Platform.isAndroid || Platform.isIOS
+                                  ? onTapSerie(serie.name, serie.id, context)
+                                  : onTapSerieDesktop(
+                                      serie.name, serie.id, context),
+                              child: CustomSeriesWidget(
+                                serie: serie,
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ),
                     const SizedBox(
@@ -236,21 +244,29 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
                     const SizedBox(height: 10),
                     SizedBox(
                       height: 300, // Set the height for the movie cards
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: popularSeries.length,
-                        itemBuilder: (context, index) {
-                          final serie = popularSeries[index];
-                          return GestureDetector(
-                            onTap: () => Platform.isAndroid || Platform.isIOS
-                                ? onTapSerie(serie.name, serie.id, context)
-                                : onTapSerieDesktop(
-                                    serie.name, serie.id, context),
-                            child: CustomSeriesWidget(
-                              serie: serie,
-                            ),
-                          );
-                        },
+                      child: ScrollConfiguration(
+                        behavior: ScrollConfiguration.of(context).copyWith(
+                          dragDevices: {
+                            PointerDeviceKind.touch,
+                            PointerDeviceKind.mouse,
+                          },
+                        ),
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: popularSeries.length,
+                          itemBuilder: (context, index) {
+                            final serie = popularSeries[index];
+                            return GestureDetector(
+                              onTap: () => Platform.isAndroid || Platform.isIOS
+                                  ? onTapSerie(serie.name, serie.id, context)
+                                  : onTapSerieDesktop(
+                                      serie.name, serie.id, context),
+                              child: CustomSeriesWidget(
+                                serie: serie,
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     )
                   ],
@@ -259,6 +275,6 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
             )),
           ],
         ),
-        bottomNavigationBar: BottomBar());
+        bottomNavigationBar: const BottomBar());
   }
 }
