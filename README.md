@@ -5,7 +5,7 @@
 
 ## Watch movies and Arr.
 
-### For now available on Android, Windows, Linux.
+### Available on Android, Windows, Linux and IOS.
 
 This is a movie app that aims to simplify the process of watching movies and tv shows.
 
