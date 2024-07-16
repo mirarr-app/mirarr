@@ -446,8 +446,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           itemBuilder: (context, index) {
                             final serie = tvWatchList[index];
                             return GestureDetector(
-                              onTap: () => () => Platform.isAndroid ||
-                                      Platform.isIOS
+                              onTap: () => Platform.isAndroid || Platform.isIOS
                                   ? onTapSerie(serie.name, serie.id, context)
                                   : onTapSerieDesktop(
                                       serie.name, serie.id, context),
@@ -556,8 +555,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           itemBuilder: (context, index) {
                             final serie = tvFavorites[index];
                             return GestureDetector(
-                              onTap: () => () => Platform.isAndroid ||
-                                      Platform.isIOS
+                              onTap: () => Platform.isAndroid || Platform.isIOS
                                   ? onTapSerie(serie.name, serie.id, context)
                                   : onTapSerieDesktop(
                                       serie.name, serie.id, context),
@@ -669,8 +667,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           itemBuilder: (context, index) {
                             final serie = tvRated[index];
                             return GestureDetector(
-                              onTap: () => () => Platform.isAndroid ||
-                                      Platform.isIOS
+                              onTap: () => Platform.isAndroid || Platform.isIOS
                                   ? onTapSerie(serie.name, serie.id, context)
                                   : onTapSerieDesktop(
                                       serie.name, serie.id, context),

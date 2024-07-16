@@ -18,6 +18,8 @@ void showWatchOptions(BuildContext context, int movieId) {
     'braflix': 'https://www.braflix.video/movie/$movieId',
     'streamflix': 'https://watch.streamflix.one/movie/$movieId',
     'binged': 'https://binged.live/watch/movie/$movieId',
+    'lonelil': 'https://watch.lonelil.ru/watch/movie/$movieId',
+    'rive': 'https://rivestream.live/watch?type=movie&id=$movieId'
   };
 
   List<String> options = optionUrls.keys.toList();

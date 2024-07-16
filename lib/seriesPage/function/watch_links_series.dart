@@ -17,7 +17,11 @@ void showWatchOptions(
     'braflix':
         'https://www.braflix.video/movie/$serieId/$seasonNumber/$episodeNumber?play=true',
     'binged':
-        'https://binged.live/watch/tv/$serieId?season=$seasonNumber&ep=$episodeNumber'
+        'https://binged.live/watch/tv/$serieId?season=$seasonNumber&ep=$episodeNumber',
+    'lonelil':
+        'https://watch.lonelil.ru/watch/show/$serieId.$seasonNumber.$episodeNumber',
+    'rive':
+        'https://rivestream.live/watch?type=tv&id=$serieId&season=$seasonNumber&episode=$episodeNumber'
   };
   List<String> options = optionUrls.keys.toList();
 
