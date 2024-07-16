@@ -1,0 +1,8 @@
+# Copy this file to .env and replace placeholders with your actual API keys
+
+# TMDB API keys
+TMDB_API_KEY=your_tmdb_api_key_here
+TMDB_API_READ=your_tmdb_api_read_here
+
+# OMDB API key
+OMDB_API_KEY=your_omdb_api_key_here
