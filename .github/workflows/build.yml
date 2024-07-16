@@ -116,10 +116,39 @@ jobs:
         with:
           name: linux-zip
           path: ${{ github.workspace }}/build/linux/x64/release/bundle/mirarr.zip
+  build_ios:
+        name: Build IOS
+        runs-on: macos-latest
+        env:
+          TMDB_API_READ: ${{ secrets.TMDB_API_READ }}
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          OMDB_API_KEY: ${{ secrets.OMDB_API_KEY }}
+        steps:
+          - uses: actions/checkout@v2
+          - uses: subosito/flutter-action@v2
+            with:
+              flutter-version: '3.16.9'
+          - run: flutter pub get
+          - run: |
+              echo "TMDB_API_READ=${{ secrets.TMDB_API_READ }}" > .env
+              echo "TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}" >> .env
+              echo "OMDB_API_KEY=${{ secrets.OMDB_API_KEY }}" >> .env
+          - run: flutter build ios --release --no-codesign
+          - name: Create IPA
+            run: |
+              cd build/ios/iphoneos
+              mkdir Payload
+              cp -r Runner.app Payload
+              zip -r mirarr.ipa Payload
+          - name: Upload binary
+            uses: actions/upload-artifact@v2
+            with:
+              name: ios-app
+              path: build/ios/iphoneos/mirarr.ipa
 
   upload-release:
     permissions: write-all
-    needs: [build_android, build_linux, build_windows]
+    needs: [build_android, build_linux, build_windows, build_ios]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -140,6 +169,11 @@ jobs:
         with:
           name: linux-zip
           path: ./out/
+      - name: Download IOS
+          uses: actions/download-artifact@v3
+          with:
+            name: ios-app
+            path: ./out/
       - name: Upload Release
         uses: softprops/action-gh-release@v1
         env:
