@@ -29,6 +29,18 @@ No you don't have to. But the login process enables extra features like watchlis
 - Of course the app is fully open source and always built from github actions.
 - The optional login process is handled with TMDB and no information is logged anywhere else.
 
+#### Build it yourself
+First of all have [flutter]([https://docs.flutter.dev/get-started/install) installed and configured on your machine.
+Clone this repository. Change your directory to the the cloned location.
+Get your tmdb_api_key and tmdb_api_read and omdb_api_key and place them in a .env file in root of the project.
+run
+```
+flutter pub get
+flutter build linux
+flutter build android --debug
+flutter build windows
+```
+
 
 #### Special thanks
 - TMDB for their great free, open source api.
