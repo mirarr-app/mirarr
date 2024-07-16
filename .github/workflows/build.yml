@@ -170,10 +170,10 @@ jobs:
           name: linux-zip
           path: ./out/
       - name: Download IOS
-          uses: actions/download-artifact@v3
-          with:
-            name: ios-app
-            path: ./out/
+        uses: actions/download-artifact@v3
+        with:
+          name: ios-app
+          path: ./out/
       - name: Upload Release
         uses: softprops/action-gh-release@v1
         env:
