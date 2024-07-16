@@ -40,7 +40,7 @@ dependencies:
   tmdb_api: ^2.2.0
   hive: ^2.2.3
   hive_flutter: ^1.1.0
-  webfeed_plus: ^1.0.2+1
+  webfeed_plus: ^1.0.1+1
   window_manager: ^0.3.8
   flutter_rating_bar: ^4.0.1
   # The following adds the Cupertino Icons font to your application.
