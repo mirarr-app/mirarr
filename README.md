@@ -55,8 +55,6 @@ cd mirarr
 
 Get your `tmdb_api_key`, `tmdb_api_read`, and `omdb_api_key` and place them in a `.env` file in the root of the project. The compiled app will not run if the `.env` file was empty during compile time.
 
-You can use the provided `dot_env.example` file as a template:
-
 1. Create a `.env` file.
 
 2. Open the `.env` file in a text editor and add your API keys:
