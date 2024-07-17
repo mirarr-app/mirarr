@@ -22,6 +22,7 @@ Head over to the [releases](https://github.com/mirarr-app/mirarr/releases) page.
 Download Apk for android.
 Download mirarr-windows.zip for Windows.
 Download mirrar.zip for Linux.
+Download mirrar.ipa for sideloading on IOS.
 
 #### Do I need to login?
 
@@ -56,11 +57,7 @@ Get your `tmdb_api_key`, `tmdb_api_read`, and `omdb_api_key` and place them in a
 
 You can use the provided `dot_env.example` file as a template:
 
-1. Copy the `dot_env.example` file to a new file named `.env`, for example in linux:
-
-   ```sh
-   cp dot_env.example .env
-   ```
+1. Create a `.env` file.
 
 2. Open the `.env` file in a text editor and add your API keys:
 
