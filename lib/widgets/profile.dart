@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:Mirarr/moviesPage/functions/on_tap_movie.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie_desktop.dart';
@@ -384,21 +385,30 @@ class _ProfilePageState extends State<ProfilePage> {
                       visible: moviesWatchList.isNotEmpty,
                       child: SizedBox(
                         height: 320, // Set the height for the movie cards
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: moviesWatchList.length,
-                          itemBuilder: (context, index) {
-                            final movie = moviesWatchList[index];
-                            return GestureDetector(
-                              onTap: () => Platform.isAndroid || Platform.isIOS
-                                  ? onTapMovie(movie.title, movie.id, context)
-                                  : onTapMovieDesktop(
-                                      movie.title, movie.id, context),
-                              child: CustomMovieWidget(
-                                movie: movie,
-                              ),
-                            );
-                          },
+                        child: ScrollConfiguration(
+                          behavior: ScrollConfiguration.of(context).copyWith(
+                            dragDevices: {
+                              PointerDeviceKind.touch,
+                              PointerDeviceKind.mouse,
+                            },
+                          ),
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: moviesWatchList.length,
+                            itemBuilder: (context, index) {
+                              final movie = moviesWatchList[index];
+                              return GestureDetector(
+                                onTap: () => Platform.isAndroid ||
+                                        Platform.isIOS
+                                    ? onTapMovie(movie.title, movie.id, context)
+                                    : onTapMovieDesktop(
+                                        movie.title, movie.id, context),
+                                child: CustomMovieWidget(
+                                  movie: movie,
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ),
@@ -440,21 +450,30 @@ class _ProfilePageState extends State<ProfilePage> {
                       visible: tvWatchList.isNotEmpty,
                       child: SizedBox(
                         height: 300, // Set the height for the movie cards
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: tvWatchList.length,
-                          itemBuilder: (context, index) {
-                            final serie = tvWatchList[index];
-                            return GestureDetector(
-                              onTap: () => Platform.isAndroid || Platform.isIOS
-                                  ? onTapSerie(serie.name, serie.id, context)
-                                  : onTapSerieDesktop(
-                                      serie.name, serie.id, context),
-                              child: CustomSeriesWidget(
-                                serie: serie,
-                              ),
-                            );
-                          },
+                        child: ScrollConfiguration(
+                          behavior: ScrollConfiguration.of(context).copyWith(
+                            dragDevices: {
+                              PointerDeviceKind.touch,
+                              PointerDeviceKind.mouse,
+                            },
+                          ),
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: tvWatchList.length,
+                            itemBuilder: (context, index) {
+                              final serie = tvWatchList[index];
+                              return GestureDetector(
+                                onTap: () => Platform.isAndroid ||
+                                        Platform.isIOS
+                                    ? onTapSerie(serie.name, serie.id, context)
+                                    : onTapSerieDesktop(
+                                        serie.name, serie.id, context),
+                                child: CustomSeriesWidget(
+                                  serie: serie,
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ),
@@ -493,21 +512,30 @@ class _ProfilePageState extends State<ProfilePage> {
                       visible: movieFavorites.isNotEmpty,
                       child: SizedBox(
                         height: 320,
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: movieFavorites.length,
-                          itemBuilder: (context, index) {
-                            final movie = movieFavorites[index];
-                            return GestureDetector(
-                              onTap: () => Platform.isAndroid || Platform.isIOS
-                                  ? onTapMovie(movie.title, movie.id, context)
-                                  : onTapMovieDesktop(
-                                      movie.title, movie.id, context),
-                              child: CustomMovieWidget(
-                                movie: movie,
-                              ),
-                            );
-                          },
+                        child: ScrollConfiguration(
+                          behavior: ScrollConfiguration.of(context).copyWith(
+                            dragDevices: {
+                              PointerDeviceKind.touch,
+                              PointerDeviceKind.mouse,
+                            },
+                          ),
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: movieFavorites.length,
+                            itemBuilder: (context, index) {
+                              final movie = movieFavorites[index];
+                              return GestureDetector(
+                                onTap: () => Platform.isAndroid ||
+                                        Platform.isIOS
+                                    ? onTapMovie(movie.title, movie.id, context)
+                                    : onTapMovieDesktop(
+                                        movie.title, movie.id, context),
+                                child: CustomMovieWidget(
+                                  movie: movie,
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ),
@@ -549,21 +577,30 @@ class _ProfilePageState extends State<ProfilePage> {
                       visible: tvFavorites.isNotEmpty,
                       child: SizedBox(
                         height: 300, // Set the height for the movie cards
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: tvFavorites.length,
-                          itemBuilder: (context, index) {
-                            final serie = tvFavorites[index];
-                            return GestureDetector(
-                              onTap: () => Platform.isAndroid || Platform.isIOS
-                                  ? onTapSerie(serie.name, serie.id, context)
-                                  : onTapSerieDesktop(
-                                      serie.name, serie.id, context),
-                              child: CustomSeriesWidget(
-                                serie: serie,
-                              ),
-                            );
-                          },
+                        child: ScrollConfiguration(
+                          behavior: ScrollConfiguration.of(context).copyWith(
+                            dragDevices: {
+                              PointerDeviceKind.touch,
+                              PointerDeviceKind.mouse,
+                            },
+                          ),
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: tvFavorites.length,
+                            itemBuilder: (context, index) {
+                              final serie = tvFavorites[index];
+                              return GestureDetector(
+                                onTap: () => Platform.isAndroid ||
+                                        Platform.isIOS
+                                    ? onTapSerie(serie.name, serie.id, context)
+                                    : onTapSerieDesktop(
+                                        serie.name, serie.id, context),
+                                child: CustomSeriesWidget(
+                                  serie: serie,
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ),
@@ -605,21 +642,30 @@ class _ProfilePageState extends State<ProfilePage> {
                       visible: movieRated.isNotEmpty,
                       child: SizedBox(
                         height: 320, // Set the height for the movie cards
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: movieRated.length,
-                          itemBuilder: (context, index) {
-                            final movie = movieRated[index];
-                            return GestureDetector(
-                              onTap: () => Platform.isAndroid || Platform.isIOS
-                                  ? onTapMovie(movie.title, movie.id, context)
-                                  : onTapMovieDesktop(
-                                      movie.title, movie.id, context),
-                              child: CustomMovieWidget(
-                                movie: movie,
-                              ),
-                            );
-                          },
+                        child: ScrollConfiguration(
+                          behavior: ScrollConfiguration.of(context).copyWith(
+                            dragDevices: {
+                              PointerDeviceKind.touch,
+                              PointerDeviceKind.mouse,
+                            },
+                          ),
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: movieRated.length,
+                            itemBuilder: (context, index) {
+                              final movie = movieRated[index];
+                              return GestureDetector(
+                                onTap: () => Platform.isAndroid ||
+                                        Platform.isIOS
+                                    ? onTapMovie(movie.title, movie.id, context)
+                                    : onTapMovieDesktop(
+                                        movie.title, movie.id, context),
+                                child: CustomMovieWidget(
+                                  movie: movie,
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ),
@@ -661,21 +707,30 @@ class _ProfilePageState extends State<ProfilePage> {
                       visible: tvRated.isNotEmpty,
                       child: SizedBox(
                         height: 300, // Set the height for the movie cards
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: tvRated.length,
-                          itemBuilder: (context, index) {
-                            final serie = tvRated[index];
-                            return GestureDetector(
-                              onTap: () => Platform.isAndroid || Platform.isIOS
-                                  ? onTapSerie(serie.name, serie.id, context)
-                                  : onTapSerieDesktop(
-                                      serie.name, serie.id, context),
-                              child: CustomSeriesWidget(
-                                serie: serie,
-                              ),
-                            );
-                          },
+                        child: ScrollConfiguration(
+                          behavior: ScrollConfiguration.of(context).copyWith(
+                            dragDevices: {
+                              PointerDeviceKind.touch,
+                              PointerDeviceKind.mouse,
+                            },
+                          ),
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: tvRated.length,
+                            itemBuilder: (context, index) {
+                              final serie = tvRated[index];
+                              return GestureDetector(
+                                onTap: () => Platform.isAndroid ||
+                                        Platform.isIOS
+                                    ? onTapSerie(serie.name, serie.id, context)
+                                    : onTapSerieDesktop(
+                                        serie.name, serie.id, context),
+                                child: CustomSeriesWidget(
+                                  serie: serie,
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ),

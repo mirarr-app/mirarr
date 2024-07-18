@@ -154,32 +154,42 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Read version from pubspec.yaml
+        id: version
+        run: |
+          VERSION=$(grep 'version:' pubspec.yaml | sed 's/version: //')
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
       - name: Download APK
         uses: actions/download-artifact@v3
         with:
           name: apk
           path: ./out/
+
       - name: Download EXE
         uses: actions/download-artifact@v3
         with:
           name: windows-zip
           path: ./out/
+
       - name: Download Linux
         uses: actions/download-artifact@v3
         with:
           name: linux-zip
           path: ./out/
+
       - name: Download IOS
         uses: actions/download-artifact@v3
         with:
           name: ios-app
           path: ./out/
+
       - name: Upload Release
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         with:
           files: ./out/*
-          tag_name: ${{ github.run_id }}
+          tag_name: v${{ steps.version.outputs.VERSION }}
           draft: false
           prerelease: false
