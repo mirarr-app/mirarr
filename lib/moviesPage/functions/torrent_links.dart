@@ -21,7 +21,8 @@ void showTorrentOptions(BuildContext context, int movieId, String movieTitle,
     '1337x': 'https://1337x.to/search/$movieTitle $movieYear/1/',
     'SolidTorrents': 'https://solidtorrents.to/search?q=$movieTitle $movieYear',
     'TorrentGalaxy':
-        'https://torrentgalaxy.to/torrents.php?search=$movieImdbId#results'
+        'https://torrentgalaxy.to/torrents.php?search=$movieImdbId#results',
+    'DDL from vadapav': 'https://vadapav.mov/s/$movieTitle',
   };
 
   Map<String, String> optionPrivateTorrents = {

@@ -14,12 +14,37 @@ Future<void> _launchUrl(Uri url) async {
 
 // Function to show watch options in a modal bottom sheet
 void showWatchOptions(BuildContext context, int movieId) {
-  Map<String, String> optionUrls = {
-    'braflix': 'https://www.braflix.video/movie/$movieId',
-    'streamflix': 'https://watch.streamflix.one/movie/$movieId',
-    'binged': 'https://binged.live/watch/movie/$movieId',
-    'lonelil': 'https://watch.lonelil.ru/watch/movie/$movieId',
-    'rive': 'https://rivestream.live/watch?type=movie&id=$movieId'
+  Map<String, Map<String, dynamic>> optionUrls = {
+    'braflix': {
+      'url': 'https://www.braflix.video/movie/$movieId',
+      'hasAds': true,
+      'hasSubs': true,
+    },
+    'streamflix': {
+      'url': 'https://watch.streamflix.one/movie/$movieId',
+      'hasAds': false,
+      'hasSubs': true,
+    },
+    'binged': {
+      'url': 'https://binged.live/watch/movie/$movieId',
+      'hasAds': false,
+      'hasSubs': true,
+    },
+    'lonelil': {
+      'url': 'https://watch.lonelil.ru/watch/movie/$movieId',
+      'hasAds': false,
+      'hasSubs': true,
+    },
+    'rive': {
+      'url': 'https://rivestream.live/watch?type=movie&id=$movieId',
+      'hasAds': false,
+      'hasSubs': true,
+    },
+    'vidsrc': {
+      'url': 'https://vidsrc.to/embed/movie/$movieId',
+      'hasAds': true,
+      'hasSubs': true,
+    }
   };
 
   List<String> options = optionUrls.keys.toList();
@@ -46,8 +71,7 @@ void showWatchOptions(BuildContext context, int movieId) {
                     itemCount: options.length,
                     itemBuilder: (BuildContext context, int index) {
                       String option = options[index];
-                      String? url =
-                          optionUrls[option]; // Retrieve URL for the option
+                      Map<String, dynamic>? optionData = optionUrls[option];
                       return ListTile(
                         leading: Icon(Icons.play_arrow,
                             color: Theme.of(context).primaryColor),
@@ -55,12 +79,28 @@ void showWatchOptions(BuildContext context, int movieId) {
                           option,
                           style: const TextStyle(color: Colors.white),
                         ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (optionData?['hasAds'] == true)
+                              const Text(
+                                'Ads',
+                                style: TextStyle(color: Colors.deepOrange),
+                              ),
+                            if (optionData?['hasSubs'] == true)
+                              const Padding(
+                                padding: EdgeInsets.only(left: 8.0),
+                                child: Text(
+                                  'Subs',
+                                  style: TextStyle(color: Colors.orange),
+                                ),
+                              ),
+                          ],
+                        ),
                         onTap: () {
-                          if (url != null) {
-                            // If URL is available, launch it
-                            _launchUrl(Uri.parse(url));
+                          if (optionData != null && optionData['url'] != null) {
+                            _launchUrl(Uri.parse(optionData['url']));
                           } else {
-                            // Handle case where URL is not available
                             showErrorDialog('Error',
                                 'URL not available for $option', context);
                           }
