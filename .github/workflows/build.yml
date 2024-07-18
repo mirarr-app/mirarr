@@ -64,7 +64,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.16.9'
+          flutter-version: '3.19.0'
       - run: flutter pub get
       - run: |
           echo "TMDB_API_READ=${{ secrets.TMDB_API_READ }}" > .env
@@ -95,7 +95,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.16.9'
+          flutter-version: '3.19.0'
       - run: sudo apt-get update
       - run: sudo apt-get install -y ninja-build cmake libgtk-3-dev
       - run: flutter pub get
@@ -127,7 +127,7 @@ jobs:
           - uses: actions/checkout@v2
           - uses: subosito/flutter-action@v2
             with:
-              flutter-version: '3.16.9'
+              flutter-version: '3.19.0'
           - run: flutter pub get
           - run: |
               echo "TMDB_API_READ=${{ secrets.TMDB_API_READ }}" > .env
