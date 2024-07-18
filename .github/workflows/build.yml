@@ -15,16 +15,15 @@ jobs:
       KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
     steps:
       - uses: actions/checkout@v2
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.19.0'
-      - uses: actions/checkout@v2
-      
       - name: Set up Java
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '17' 
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.0'
+      - uses: actions/checkout@v2
       - run: flutter pub get
       - run: |
           echo "TMDB_API_READ=${{ secrets.TMDB_API_READ }}" > .env
