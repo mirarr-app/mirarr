@@ -10,25 +10,23 @@ jobs:
       TMDB_API_READ: ${{ secrets.TMDB_API_READ }}
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
       OMDB_API_KEY: ${{ secrets.OMDB_API_KEY }}
+      OMDB_API_KEY_FOR_SERIES: ${{ secrets.OMDB_API_KEY_FOR_SERIES }}
+      OMDB_API_KEY_FOR_EPISODES: ${{ secrets.OMDB_API_KEY_FOR_EPISODES }}
       KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
       KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
       KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '17' 
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.19.0'
-      - uses: actions/checkout@v2
       - run: flutter pub get
       - run: |
           echo "TMDB_API_READ=${{ secrets.TMDB_API_READ }}" > .env
           echo "TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}" >> .env
           echo "OMDB_API_KEY=${{ secrets.OMDB_API_KEY }}" >> .env
+          echo "OMDB_API_KEY_FOR_SERIES=${{ secrets.OMDB_API_KEY_FOR_SERIES }}" >> .env
+          echo "OMDB_API_KEY_FOR_EPISODES=${{ secrets.OMDB_API_KEY_FOR_EPISODES }}" >> .env
       - name: Decode Keystore
         run: |
           echo "${{ secrets.KEYSTORE }}" | base64 --decode > android/app/keystore.jks
@@ -66,6 +64,8 @@ jobs:
       TMDB_API_READ: ${{ secrets.TMDB_API_READ }}
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
       OMDB_API_KEY: ${{ secrets.OMDB_API_KEY }}
+      OMDB_API_KEY_FOR_SERIES: ${{ secrets.OMDB_API_KEY_FOR_SERIES }}
+      OMDB_API_KEY_FOR_EPISODES: ${{ secrets.OMDB_API_KEY_FOR_EPISODES }}
     steps:
       - uses: actions/checkout@v2
       - uses: subosito/flutter-action@v2
@@ -76,6 +76,8 @@ jobs:
           echo "TMDB_API_READ=${{ secrets.TMDB_API_READ }}" > .env
           echo "TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}" >> .env
           echo "OMDB_API_KEY=${{ secrets.OMDB_API_KEY }}" >> .env
+          echo "OMDB_API_KEY_FOR_SERIES=${{ secrets.OMDB_API_KEY_FOR_SERIES }}" >> .env
+          echo "OMDB_API_KEY_FOR_EPISODES=${{ secrets.OMDB_API_KEY_FOR_EPISODES }}" >> .env
       - run: mkdir -p ${{ github.workspace }}/build/windows/x64/runner/Release
       - run: flutter build windows
       - name: List Windows Build Directory
@@ -97,6 +99,9 @@ jobs:
       TMDB_API_READ: ${{ secrets.TMDB_API_READ }}
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
       OMDB_API_KEY: ${{ secrets.OMDB_API_KEY }}
+      OMDB_API_KEY_FOR_SERIES: ${{ secrets.OMDB_API_KEY_FOR_SERIES }}
+      OMDB_API_KEY_FOR_EPISODES: ${{ secrets.OMDB_API_KEY_FOR_EPISODES }}
+
     steps:
       - uses: actions/checkout@v2
       - uses: subosito/flutter-action@v2
@@ -109,6 +114,9 @@ jobs:
           echo "TMDB_API_READ=${{ secrets.TMDB_API_READ }}" > .env
           echo "TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}" >> .env
           echo "OMDB_API_KEY=${{ secrets.OMDB_API_KEY }}" >> .env
+          echo "OMDB_API_KEY_FOR_SERIES=${{ secrets.OMDB_API_KEY_FOR_SERIES }}" >> .env
+          echo "OMDB_API_KEY_FOR_EPISODES=${{ secrets.OMDB_API_KEY_FOR_EPISODES }}" >> .env
+
       - run: mkdir -p ${{ github.workspace }}/build/linux/x64/release/bundle
       - run: flutter build linux
       - name: List Linux Build Directory
@@ -129,6 +137,8 @@ jobs:
           TMDB_API_READ: ${{ secrets.TMDB_API_READ }}
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
           OMDB_API_KEY: ${{ secrets.OMDB_API_KEY }}
+          OMDB_API_KEY_FOR_SERIES: ${{ secrets.OMDB_API_KEY_FOR_SERIES }}
+          OMDB_API_KEY_FOR_EPISODES: ${{ secrets.OMDB_API_KEY_FOR_EPISODES }}
         steps:
           - uses: actions/checkout@v2
           - uses: subosito/flutter-action@v2
@@ -139,6 +149,8 @@ jobs:
               echo "TMDB_API_READ=${{ secrets.TMDB_API_READ }}" > .env
               echo "TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}" >> .env
               echo "OMDB_API_KEY=${{ secrets.OMDB_API_KEY }}" >> .env
+              echo "OMDB_API_KEY_FOR_SERIES=${{ secrets.OMDB_API_KEY_FOR_SERIES }}" >> .env
+              echo "OMDB_API_KEY_FOR_EPISODES=${{ secrets.OMDB_API_KEY_FOR_EPISODES }}" >> .env
           - run: flutter build ios --release --no-codesign
           - name: Create IPA
             run: |
@@ -196,6 +208,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         with:
           files: ./out/*
-          tag_name: ${{ steps.version.outputs.VERSION }}
+          tag_name: v${{ steps.version.outputs.VERSION }}
           draft: false
           prerelease: false

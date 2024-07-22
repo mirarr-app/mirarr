@@ -3,8 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
-final apiOmdbKey = dotenv.env['OMDB_API_KEY'];
-Future<void> getMovieRatings(String? imdbId, Function(String) updateImdbRating,
+final apiOmdbKey = dotenv.env['OMDB_API_KEY_FOR_SERIES'];
+Future<void> getSerieRatings(String? imdbId, Function(String) updateImdbRating,
     Function(String) updateRottenTomatoesRating) async {
   try {
     final response = await http.get(

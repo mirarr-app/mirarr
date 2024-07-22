@@ -5,11 +5,33 @@ import 'package:Mirarr/seriesPage/function/fetch_episode_cast_crew.dart';
 import 'package:Mirarr/seriesPage/function/torrent_links_series.dart';
 import 'package:Mirarr/seriesPage/function/watch_links_series.dart';
 import 'package:Mirarr/widgets/custom_divider.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 final apiKey = dotenv.env['TMDB_API_KEY'];
+final apiOmdbKey = dotenv.env['OMDB_API_KEY_FOR_EPISODES'];
+
+Future<String?> fetchImdbRating(
+    String imdbId, int seasonNumber, int episodeNumber) async {
+  try {
+    final response = await http.get(
+      Uri.parse(
+          'http://www.omdbapi.com/?i=$imdbId&season=$seasonNumber&Episode=$episodeNumber&apikey=$apiOmdbKey'),
+    );
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final imdbRating = data['imdbRating'];
+      return imdbRating;
+    }
+  } catch (e) {
+    if (kDebugMode) {
+      print(e);
+    }
+  }
+  return null;
+}
 
 Future<List<dynamic>> fetchSeasons(int serieId) async {
   final response = await http.get(
@@ -283,7 +305,11 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
     context: context,
     builder: (BuildContext context) {
       return FutureBuilder<Map<String, dynamic>>(
-        future: fetchEpisodesDetails(seasonNumber, episodeNumber, serieId),
+        future: Future.wait([
+          fetchEpisodesDetails(seasonNumber, episodeNumber, serieId),
+          fetchImdbRating(imdbId, seasonNumber, episodeNumber)
+        ]).then((results) =>
+            {'episodeDetails': results[0], 'imdbRating': results[1]}),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -292,8 +318,11 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
           } else if (!snapshot.hasData) {
             return const Center(child: Text('No data found.'));
           } else {
-            final data = snapshot.data!;
-            final overview = data['overview'] ?? 'No overview available.';
+            final episodeDetails =
+                snapshot.data!['episodeDetails'] as Map<String, dynamic>;
+            final imdbRating = snapshot.data!['imdbRating'];
+            final overview =
+                episodeDetails['overview'] ?? 'No overview available.';
 
             return SingleChildScrollView(
               child: Container(
@@ -313,6 +342,20 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
                       ),
                     ),
                     const SizedBox(height: 10),
+                    Visibility(
+                      visible: imdbRating != null && imdbRating.isNotEmpty,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+                        child: Text(
+                          'IMDB⭐ ${imdbRating ?? 'N/A'}',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w300,
+                            fontSize: 13,
+                            color: Colors.amber,
+                          ),
+                        ),
+                      ),
+                    ),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
                       child: Text(
