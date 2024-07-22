@@ -62,6 +62,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
   String? language;
   String? imdbId;
   String? imdbRating;
+  String rottenTomatoesRating = 'N/A';
 
   @override
   void initState() {
@@ -169,6 +170,12 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
     });
   }
 
+  void updateRottenTomatoesRating(String rating) {
+    setState(() {
+      rottenTomatoesRating = rating;
+    });
+  }
+
   Future<void> fetchMovieDetails() async {
     try {
       // Make an HTTP GET request to fetch movie details from the first API
@@ -197,7 +204,8 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
           imdbId = responseData['imdb_id'];
         });
         if (imdbId != null) {
-          await getImdbRating(imdbId, updateImdbRating);
+          await getMovieRatings(
+              imdbId, updateImdbRating, updateRottenTomatoesRating);
         }
       } else {
         throw Exception('Failed to load movie details');
@@ -301,8 +309,8 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                           ),
                         ),
                         Positioned(
-                          bottom: 90,
-                          left: 100,
+                          bottom: 70,
+                          left: 10,
                           child: Container(
                             margin: const EdgeInsets.all(10),
                             padding: const EdgeInsets.all(10),
@@ -311,31 +319,57 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                 borderRadius:
                                     BorderRadius.all(Radius.circular(30))),
                             child: Text(
-                              '⭐ ${score?.toStringAsFixed(1)}',
+                              'TMDB⭐ ${score?.toStringAsFixed(1)}',
                               style: const TextStyle(
                                 fontWeight: FontWeight.w300,
-                                fontSize: 13,
+                                fontSize: 12,
                                 color: Colors.white,
                               ),
                             ),
                           ),
                         ),
-                        Positioned(
-                          bottom: 90,
-                          left: 8,
-                          child: Container(
-                            margin: const EdgeInsets.all(10),
-                            padding: const EdgeInsets.all(10),
-                            decoration: const BoxDecoration(
-                                color: Colors.black38,
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(30))),
-                            child: Text(
-                              'IMDB⭐ $imdbRating',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w300,
-                                fontSize: 13,
-                                color: Colors.white,
+                        Visibility(
+                          visible: imdbRating != null && imdbRating!.isNotEmpty,
+                          child: Positioned(
+                            bottom: 70,
+                            left: 110,
+                            child: Container(
+                              margin: const EdgeInsets.all(10),
+                              padding: const EdgeInsets.all(10),
+                              decoration: const BoxDecoration(
+                                  color: Colors.black38,
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(30))),
+                              child: Text(
+                                'IMDB⭐ $imdbRating',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w300,
+                                  fontSize: 12,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Visibility(
+                          visible: rottenTomatoesRating != 'N/A',
+                          child: Positioned(
+                            bottom: 70,
+                            left: 210,
+                            child: Container(
+                              margin: const EdgeInsets.all(10),
+                              padding: const EdgeInsets.all(10),
+                              decoration: const BoxDecoration(
+                                  color: Colors.black38,
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(30))),
+                              child: Text(
+                                'Rotten Tomatoes🍅 $rottenTomatoesRating',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w300,
+                                  fontSize: 12,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                           ),

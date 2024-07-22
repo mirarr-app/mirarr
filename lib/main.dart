@@ -1,3 +1,4 @@
+import 'package:Mirarr/widgets/check_updates.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -80,7 +81,15 @@ class ConnectivityWidget extends StatelessWidget {
             ),
           );
         }
-        return const MovieSearchScreen(); // If there is internet connection, show the MovieSearchScreen
+        return Builder(
+          builder: (BuildContext context) {
+            // Check for updates
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              UpdateChecker.checkForUpdate(context);
+            });
+            return const MovieSearchScreen();
+          },
+        );
       },
     );
   }

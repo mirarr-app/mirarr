@@ -63,6 +63,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
   String? language;
   String? posterPath;
   String? imdbRating;
+  String rottenTomatoesRating = 'N/A';
 
   @override
   void initState() {
@@ -180,6 +181,12 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
     });
   }
 
+  void updateRottenTomatoesRating(String rating) {
+    setState(() {
+      rottenTomatoesRating = rating;
+    });
+  }
+
   Future<void> fetchMovieDetails() async {
     try {
       // Make an HTTP GET request to fetch movie details from the first API
@@ -209,7 +216,8 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
           imdbId = responseData['imdb_id'];
         });
         if (imdbId != null) {
-          await getImdbRating(imdbId, updateImdbRating);
+          await getMovieRatings(
+              imdbId, updateImdbRating, updateRottenTomatoesRating);
         }
       } else {
         throw Exception('Failed to load movie details');
@@ -624,7 +632,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                           color: Colors.white,
                                         )),
                                   Container(
-                                    margin: const EdgeInsets.all(10),
+                                    margin: const EdgeInsets.all(5),
                                     padding: const EdgeInsets.all(10),
                                     decoration: const BoxDecoration(
                                         color: Colors.black38,
@@ -639,19 +647,42 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                       ),
                                     ),
                                   ),
-                                  Container(
-                                    margin: const EdgeInsets.all(10),
-                                    padding: const EdgeInsets.all(10),
-                                    decoration: const BoxDecoration(
-                                        color: Colors.black38,
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(30))),
-                                    child: Text(
-                                      'IMDB⭐ $imdbRating',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w300,
-                                        fontSize: 13,
-                                        color: Colors.white,
+                                  Visibility(
+                                    visible: imdbRating != null &&
+                                        imdbRating!.isNotEmpty,
+                                    child: Container(
+                                      margin: const EdgeInsets.all(5),
+                                      padding: const EdgeInsets.all(10),
+                                      decoration: const BoxDecoration(
+                                          color: Colors.black38,
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(30))),
+                                      child: Text(
+                                        'IMDB⭐ $imdbRating',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w300,
+                                          fontSize: 13,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Visibility(
+                                    visible: rottenTomatoesRating != 'N/A',
+                                    child: Container(
+                                      margin: const EdgeInsets.all(5),
+                                      padding: const EdgeInsets.all(10),
+                                      decoration: const BoxDecoration(
+                                          color: Colors.black38,
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(30))),
+                                      child: Text(
+                                        'Rotten Tomatoes🍅 $rottenTomatoesRating',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w300,
+                                          fontSize: 13,
+                                          color: Colors.white,
+                                        ),
                                       ),
                                     ),
                                   ),
