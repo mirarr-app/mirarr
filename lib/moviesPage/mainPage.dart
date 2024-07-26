@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'dart:ui';
+import 'package:Mirarr/functions/fetch_movies_by_genre.dart';
 import 'package:Mirarr/functions/fetch_popular_movies.dart';
 import 'package:Mirarr/functions/fetch_trending_movies.dart';
+import 'package:Mirarr/moviesPage/functions/on_tap_gridview_movie.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie_desktop.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -28,7 +30,8 @@ class _MovieSearchScreenState extends State<MovieSearchScreen> {
 
   List<Movie> trendingMovies = [];
   List<Movie> popularMovies = [];
-
+  List<Genre> genres = [];
+  Map<int, List<Movie>> moviesByGenre = {};
   Future<void> _fetchTrendingMovies() async {
     try {
       final movies = await fetchTrendingMovies();
@@ -46,6 +49,20 @@ class _MovieSearchScreenState extends State<MovieSearchScreen> {
       setState(() {
         popularMovies = movies;
       });
+    } catch (e) {
+      // Handle error
+    }
+  }
+
+  Future<void> _fetchGenresAndMovies() async {
+    try {
+      genres = await fetchGenres();
+      for (var genre in genres) {
+        final movies = await fetchMoviesByGenre(genre.id);
+        setState(() {
+          moviesByGenre[genre.id] = movies;
+        });
+      }
     } catch (e) {
       // Handle error
     }
@@ -115,6 +132,7 @@ class _MovieSearchScreenState extends State<MovieSearchScreen> {
       // Internet connection available, fetch data
       _fetchTrendingMovies();
       _fetchPopularMovies();
+      await _fetchGenresAndMovies();
     }
   }
 
@@ -133,115 +151,187 @@ class _MovieSearchScreenState extends State<MovieSearchScreen> {
         body: Column(
           children: [
             Expanded(
-                child: Card(
-              shadowColor: Colors.black,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: SingleChildScrollView(
-                child: Container(
-                  color: Colors.black,
-                  child: Column(
-                    children: <Widget>[
-                      const Row(
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.fromLTRB(15, 15, 0, 0),
-                            child: Text(
-                              textAlign: TextAlign.left,
-                              'Trending Movies',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      SizedBox(
-                        height: 320, // Set the height for the movie cards
-                        child: ScrollConfiguration(
-                          behavior: ScrollConfiguration.of(context).copyWith(
-                            dragDevices: {
-                              PointerDeviceKind.touch,
-                              PointerDeviceKind.mouse,
-                            },
-                          ),
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: trendingMovies.length,
-                            itemBuilder: (context, index) {
-                              final movie = trendingMovies[index];
-                              return GestureDetector(
-                                onTap: () => Platform.isAndroid ||
-                                        Platform.isIOS
-                                    ? onTapMovie(movie.title, movie.id, context)
-                                    : onTapMovieDesktop(
-                                        movie.title, movie.id, context),
-                                child: CustomMovieWidget(
-                                  movie: movie,
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      const Row(
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.fromLTRB(15, 15, 0, 0),
-                            child: Text(
-                              'Popular Movies',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      SizedBox(
-                        height: 320, // Set the height for the movie cards
-                        child: ScrollConfiguration(
-                          behavior: ScrollConfiguration.of(context).copyWith(
-                            dragDevices: {
-                              PointerDeviceKind.touch,
-                              PointerDeviceKind.mouse,
-                            },
-                          ),
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: popularMovies.length,
-                            itemBuilder: (context, index) {
-                              final movie = popularMovies[index];
-                              return GestureDetector(
-                                onTap: () => Platform.isAndroid ||
-                                        Platform.isIOS
-                                    ? onTapMovie(movie.title, movie.id, context)
-                                    : onTapMovieDesktop(
-                                        movie.title, movie.id, context),
-                                child: CustomMovieWidget(
-                                  movie: movie,
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      )
-                    ],
+              child: Card(
+                  shadowColor: Colors.black,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                ),
-              ),
-            )),
+                  child: SingleChildScrollView(
+                    child: Container(
+                      color: Colors.black,
+                      child: Column(
+                        children: <Widget>[
+                          const Row(
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.fromLTRB(15, 15, 0, 0),
+                                child: Text(
+                                  textAlign: TextAlign.left,
+                                  'Trending Movies',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          SizedBox(
+                            height: 320, // Set the height for the movie cards
+                            child: ScrollConfiguration(
+                              behavior:
+                                  ScrollConfiguration.of(context).copyWith(
+                                dragDevices: {
+                                  PointerDeviceKind.touch,
+                                  PointerDeviceKind.mouse,
+                                  PointerDeviceKind.trackpad,
+                                },
+                              ),
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: trendingMovies.length,
+                                itemBuilder: (context, index) {
+                                  final movie = trendingMovies[index];
+                                  return GestureDetector(
+                                    onTap: () =>
+                                        Platform.isAndroid || Platform.isIOS
+                                            ? onTapMovie(
+                                                movie.title, movie.id, context)
+                                            : onTapMovieDesktop(
+                                                movie.title, movie.id, context),
+                                    child: CustomMovieWidget(
+                                      movie: movie,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          const Row(
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.fromLTRB(15, 15, 0, 0),
+                                child: Text(
+                                  'Popular Movies',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            height: 320, // Set the height for the movie cards
+                            child: ScrollConfiguration(
+                              behavior:
+                                  ScrollConfiguration.of(context).copyWith(
+                                dragDevices: {
+                                  PointerDeviceKind.touch,
+                                  PointerDeviceKind.mouse,
+                                  PointerDeviceKind.trackpad,
+                                },
+                              ),
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: popularMovies.length,
+                                itemBuilder: (context, index) {
+                                  final movie = popularMovies[index];
+                                  return GestureDetector(
+                                    onTap: () =>
+                                        Platform.isAndroid || Platform.isIOS
+                                            ? onTapMovie(
+                                                movie.title, movie.id, context)
+                                            : onTapMovieDesktop(
+                                                movie.title, movie.id, context),
+                                    child: CustomMovieWidget(
+                                      movie: movie,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                          for (var genre in genres)
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.fromLTRB(15, 15, 0, 0),
+                                  child: GestureDetector(
+                                    onTap: () => onTapGridMovie(
+                                        moviesByGenre[genre.id]!, context),
+                                    child: Row(
+                                      children: [
+                                        Text(
+                                          genre.name,
+                                          style: const TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 5),
+                                        const Icon(
+                                          Icons.arrow_forward_ios,
+                                          color: Colors.orange,
+                                          size: 16,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                SizedBox(
+                                  height: 320,
+                                  child: ScrollConfiguration(
+                                    behavior: ScrollConfiguration.of(context)
+                                        .copyWith(
+                                      dragDevices: {
+                                        PointerDeviceKind.touch,
+                                        PointerDeviceKind.mouse,
+                                        PointerDeviceKind.trackpad,
+                                      },
+                                    ),
+                                    child: ListView.builder(
+                                      scrollDirection: Axis.horizontal,
+                                      itemCount:
+                                          moviesByGenre[genre.id]?.length ?? 0,
+                                      itemBuilder: (context, index) {
+                                        final movie =
+                                            moviesByGenre[genre.id]![index];
+                                        return GestureDetector(
+                                          onTap: () => Platform.isAndroid ||
+                                                  Platform.isIOS
+                                              ? onTapMovie(movie.title,
+                                                  movie.id, context)
+                                              : onTapMovieDesktop(movie.title,
+                                                  movie.id, context),
+                                          child: CustomMovieWidget(
+                                            movie: movie,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                        ],
+                      ),
+                    ),
+                  )),
+            )
           ],
         ),
         bottomNavigationBar: const BottomBar());

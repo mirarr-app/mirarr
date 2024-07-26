@@ -2,11 +2,14 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:Mirarr/moviesPage/functions/on_tap_gridview_movie.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie_desktop.dart';
+import 'package:Mirarr/seriesPage/function/on_tap_gridview_serie.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_serie.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_serie_desktop.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive/hive.dart';
@@ -355,405 +358,507 @@ class _ProfilePageState extends State<ProfilePage> {
             )
           ],
         ),
-        body: SingleChildScrollView(
-          child: Column(children: [
-            Card(
-              shadowColor: Colors.black,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  children: <Widget>[
-                    const Row(
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.fromLTRB(15, 15, 0, 0),
-                          child: Text(
-                            textAlign: TextAlign.left,
-                            'Movie Watch List',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Visibility(
-                      visible: moviesWatchList.isNotEmpty,
-                      child: SizedBox(
-                        height: 320, // Set the height for the movie cards
-                        child: ScrollConfiguration(
-                          behavior: ScrollConfiguration.of(context).copyWith(
-                            dragDevices: {
-                              PointerDeviceKind.touch,
-                              PointerDeviceKind.mouse,
-                            },
-                          ),
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: moviesWatchList.length,
-                            itemBuilder: (context, index) {
-                              final movie = moviesWatchList[index];
-                              return GestureDetector(
-                                onTap: () => Platform.isAndroid ||
-                                        Platform.isIOS
-                                    ? onTapMovie(movie.title, movie.id, context)
-                                    : onTapMovieDesktop(
-                                        movie.title, movie.id, context),
-                                child: CustomMovieWidget(
-                                  movie: movie,
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
-                    Visibility(
-                      visible: moviesWatchList.isEmpty,
-                      child: const Row(
+        body: ScrollConfiguration(
+          behavior: ScrollConfiguration.of(context).copyWith(
+            dragDevices: {
+              PointerDeviceKind.touch,
+              PointerDeviceKind.mouse,
+              PointerDeviceKind.trackpad,
+            },
+          ),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: Column(children: [
+              Card(
+                shadowColor: Colors.black,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: <Widget>[
+                      Row(
                         children: [
                           Padding(
-                            padding: EdgeInsets.all(18.0),
-                            child: Text(
-                              'No movies in the watchlist yet',
-                              style:
-                                  TextStyle(color: Colors.orange, fontSize: 14),
+                            padding: const EdgeInsets.fromLTRB(15, 15, 0, 5),
+                            child: GestureDetector(
+                              onTap: () =>
+                                  onTapGridMovie(moviesWatchList, context),
+                              child: const Row(
+                                children: [
+                                  Text(
+                                    textAlign: TextAlign.left,
+                                    'Movie Watch List',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  SizedBox(width: 5),
+                                  Icon(
+                                    Icons.arrow_forward_ios,
+                                    color: Colors.orange,
+                                    size: 16,
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],
                       ),
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    const Row(
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.fromLTRB(15, 15, 0, 0),
-                          child: Text(
-                            'TV Watch List',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                      Visibility(
+                        visible: moviesWatchList.isNotEmpty,
+                        child: SizedBox(
+                          height: 320, // Set the height for the movie cards
+                          child: ScrollConfiguration(
+                            behavior: ScrollConfiguration.of(context).copyWith(
+                              dragDevices: {
+                                PointerDeviceKind.touch,
+                                PointerDeviceKind.mouse,
+                                PointerDeviceKind.trackpad,
+                              },
+                            ),
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: moviesWatchList.length,
+                              itemBuilder: (context, index) {
+                                final movie = moviesWatchList[index];
+                                return GestureDetector(
+                                  onTap: () =>
+                                      Platform.isAndroid || Platform.isIOS
+                                          ? onTapMovie(
+                                              movie.title, movie.id, context)
+                                          : onTapMovieDesktop(
+                                              movie.title, movie.id, context),
+                                  child: CustomMovieWidget(
+                                    movie: movie,
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Visibility(
-                      visible: tvWatchList.isNotEmpty,
-                      child: SizedBox(
-                        height: 300, // Set the height for the movie cards
-                        child: ScrollConfiguration(
-                          behavior: ScrollConfiguration.of(context).copyWith(
-                            dragDevices: {
-                              PointerDeviceKind.touch,
-                              PointerDeviceKind.mouse,
-                            },
-                          ),
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: tvWatchList.length,
-                            itemBuilder: (context, index) {
-                              final serie = tvWatchList[index];
-                              return GestureDetector(
-                                onTap: () => Platform.isAndroid ||
-                                        Platform.isIOS
-                                    ? onTapSerie(serie.name, serie.id, context)
-                                    : onTapSerieDesktop(
-                                        serie.name, serie.id, context),
-                                child: CustomSeriesWidget(
-                                  serie: serie,
-                                ),
-                              );
-                            },
-                          ),
+                      ),
+                      Visibility(
+                        visible: moviesWatchList.isEmpty,
+                        child: const Row(
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.all(18.0),
+                              child: Text(
+                                'No movies in the watchlist yet',
+                                style: TextStyle(
+                                    color: Colors.orange, fontSize: 14),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                    Visibility(
-                      visible: tvWatchList.isEmpty,
-                      child: const Row(
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Row(
                         children: [
                           Padding(
-                            padding: EdgeInsets.all(18.0),
-                            child: Text(
-                              'No TV shows in the watchlist yet',
-                              style:
-                                  TextStyle(color: Colors.orange, fontSize: 14),
+                            padding: const EdgeInsets.fromLTRB(15, 15, 0, 5),
+                            child: GestureDetector(
+                              onTap: () => onTapGridSerie(tvWatchList, context),
+                              child: const Row(
+                                children: [
+                                  Text(
+                                    'TV Watch List',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  SizedBox(width: 5),
+                                  Icon(
+                                    Icons.arrow_forward_ios,
+                                    color: Colors.orange,
+                                    size: 16,
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],
                       ),
-                    ),
-                    const Row(
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.fromLTRB(15, 15, 0, 0),
-                          child: Text(
-                            textAlign: TextAlign.left,
-                            'Favorite Movies',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                      const SizedBox(height: 10),
+                      Visibility(
+                        visible: tvWatchList.isNotEmpty,
+                        child: SizedBox(
+                          height: 300, // Set the height for the movie cards
+                          child: ScrollConfiguration(
+                            behavior: ScrollConfiguration.of(context).copyWith(
+                              dragDevices: {
+                                PointerDeviceKind.touch,
+                                PointerDeviceKind.mouse,
+                                PointerDeviceKind.trackpad,
+                              },
+                            ),
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: tvWatchList.length,
+                              itemBuilder: (context, index) {
+                                final serie = tvWatchList[index];
+                                return GestureDetector(
+                                  onTap: () =>
+                                      Platform.isAndroid || Platform.isIOS
+                                          ? onTapSerie(
+                                              serie.name, serie.id, context)
+                                          : onTapSerieDesktop(
+                                              serie.name, serie.id, context),
+                                  child: CustomSeriesWidget(
+                                    serie: serie,
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                    Visibility(
-                      visible: movieFavorites.isNotEmpty,
-                      child: SizedBox(
-                        height: 320,
-                        child: ScrollConfiguration(
-                          behavior: ScrollConfiguration.of(context).copyWith(
-                            dragDevices: {
-                              PointerDeviceKind.touch,
-                              PointerDeviceKind.mouse,
-                            },
-                          ),
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: movieFavorites.length,
-                            itemBuilder: (context, index) {
-                              final movie = movieFavorites[index];
-                              return GestureDetector(
-                                onTap: () => Platform.isAndroid ||
-                                        Platform.isIOS
-                                    ? onTapMovie(movie.title, movie.id, context)
-                                    : onTapMovieDesktop(
-                                        movie.title, movie.id, context),
-                                child: CustomMovieWidget(
-                                  movie: movie,
-                                ),
-                              );
-                            },
-                          ),
+                      ),
+                      Visibility(
+                        visible: tvWatchList.isEmpty,
+                        child: const Row(
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.all(18.0),
+                              child: Text(
+                                'No TV shows in the watchlist yet',
+                                style: TextStyle(
+                                    color: Colors.orange, fontSize: 14),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                    Visibility(
-                      visible: movieFavorites.isEmpty,
-                      child: const Row(
+                      Row(
                         children: [
                           Padding(
-                            padding: EdgeInsets.all(18.0),
-                            child: Text(
-                              'No favorite movies yet',
-                              style:
-                                  TextStyle(color: Colors.orange, fontSize: 14),
+                            padding: const EdgeInsets.fromLTRB(15, 15, 0, 5),
+                            child: GestureDetector(
+                              onTap: () =>
+                                  onTapGridMovie(movieFavorites, context),
+                              child: const Row(
+                                children: [
+                                  Text(
+                                    textAlign: TextAlign.left,
+                                    'Favorite Movies',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  SizedBox(width: 5),
+                                  Icon(
+                                    Icons.arrow_forward_ios,
+                                    color: Colors.orange,
+                                    size: 16,
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],
                       ),
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    const Row(
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.fromLTRB(15, 15, 0, 0),
-                          child: Text(
-                            'Favorite TV Shows',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                      Visibility(
+                        visible: movieFavorites.isNotEmpty,
+                        child: SizedBox(
+                          height: 320,
+                          child: ScrollConfiguration(
+                            behavior: ScrollConfiguration.of(context).copyWith(
+                              dragDevices: {
+                                PointerDeviceKind.touch,
+                                PointerDeviceKind.mouse,
+                                PointerDeviceKind.trackpad,
+                              },
+                            ),
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: movieFavorites.length,
+                              itemBuilder: (context, index) {
+                                final movie = movieFavorites[index];
+                                return GestureDetector(
+                                  onTap: () =>
+                                      Platform.isAndroid || Platform.isIOS
+                                          ? onTapMovie(
+                                              movie.title, movie.id, context)
+                                          : onTapMovieDesktop(
+                                              movie.title, movie.id, context),
+                                  child: CustomMovieWidget(
+                                    movie: movie,
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Visibility(
-                      visible: tvFavorites.isNotEmpty,
-                      child: SizedBox(
-                        height: 300, // Set the height for the movie cards
-                        child: ScrollConfiguration(
-                          behavior: ScrollConfiguration.of(context).copyWith(
-                            dragDevices: {
-                              PointerDeviceKind.touch,
-                              PointerDeviceKind.mouse,
-                            },
-                          ),
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: tvFavorites.length,
-                            itemBuilder: (context, index) {
-                              final serie = tvFavorites[index];
-                              return GestureDetector(
-                                onTap: () => Platform.isAndroid ||
-                                        Platform.isIOS
-                                    ? onTapSerie(serie.name, serie.id, context)
-                                    : onTapSerieDesktop(
-                                        serie.name, serie.id, context),
-                                child: CustomSeriesWidget(
-                                  serie: serie,
-                                ),
-                              );
-                            },
-                          ),
+                      ),
+                      Visibility(
+                        visible: movieFavorites.isEmpty,
+                        child: const Row(
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.all(18.0),
+                              child: Text(
+                                'No favorite movies yet',
+                                style: TextStyle(
+                                    color: Colors.orange, fontSize: 14),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                    Visibility(
-                      visible: tvFavorites.isEmpty,
-                      child: const Row(
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Row(
                         children: [
                           Padding(
-                            padding: EdgeInsets.all(18.0),
-                            child: Text(
-                              'No favorite TV shows yet',
-                              style:
-                                  TextStyle(color: Colors.orange, fontSize: 14),
+                            padding: const EdgeInsets.fromLTRB(15, 15, 0, 5),
+                            child: GestureDetector(
+                              onTap: () => onTapGridSerie(tvFavorites, context),
+                              child: const Row(
+                                children: [
+                                  Text(
+                                    'Favorite TV Shows',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  SizedBox(width: 5),
+                                  Icon(
+                                    Icons.arrow_forward_ios,
+                                    color: Colors.orange,
+                                    size: 16,
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],
                       ),
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    const Row(
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.fromLTRB(15, 15, 0, 0),
-                          child: Text(
-                            textAlign: TextAlign.left,
-                            'Rated Movies',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                      const SizedBox(height: 10),
+                      Visibility(
+                        visible: tvFavorites.isNotEmpty,
+                        child: SizedBox(
+                          height: 300, // Set the height for the movie cards
+                          child: ScrollConfiguration(
+                            behavior: ScrollConfiguration.of(context).copyWith(
+                              dragDevices: {
+                                PointerDeviceKind.touch,
+                                PointerDeviceKind.mouse,
+                                PointerDeviceKind.trackpad,
+                              },
+                            ),
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: tvFavorites.length,
+                              itemBuilder: (context, index) {
+                                final serie = tvFavorites[index];
+                                return GestureDetector(
+                                  onTap: () =>
+                                      Platform.isAndroid || Platform.isIOS
+                                          ? onTapSerie(
+                                              serie.name, serie.id, context)
+                                          : onTapSerieDesktop(
+                                              serie.name, serie.id, context),
+                                  child: CustomSeriesWidget(
+                                    serie: serie,
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                    Visibility(
-                      visible: movieRated.isNotEmpty,
-                      child: SizedBox(
-                        height: 320, // Set the height for the movie cards
-                        child: ScrollConfiguration(
-                          behavior: ScrollConfiguration.of(context).copyWith(
-                            dragDevices: {
-                              PointerDeviceKind.touch,
-                              PointerDeviceKind.mouse,
-                            },
-                          ),
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: movieRated.length,
-                            itemBuilder: (context, index) {
-                              final movie = movieRated[index];
-                              return GestureDetector(
-                                onTap: () => Platform.isAndroid ||
-                                        Platform.isIOS
-                                    ? onTapMovie(movie.title, movie.id, context)
-                                    : onTapMovieDesktop(
-                                        movie.title, movie.id, context),
-                                child: CustomMovieWidget(
-                                  movie: movie,
-                                ),
-                              );
-                            },
-                          ),
+                      ),
+                      Visibility(
+                        visible: tvFavorites.isEmpty,
+                        child: const Row(
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.all(18.0),
+                              child: Text(
+                                'No favorite TV shows yet',
+                                style: TextStyle(
+                                    color: Colors.orange, fontSize: 14),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                    Visibility(
-                      visible: movieRated.isEmpty,
-                      child: const Row(
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Row(
                         children: [
                           Padding(
-                            padding: EdgeInsets.all(18.0),
-                            child: Text(
-                              'No rated movies yet',
-                              style:
-                                  TextStyle(color: Colors.orange, fontSize: 14),
+                            padding: const EdgeInsets.fromLTRB(15, 15, 0, 5),
+                            child: GestureDetector(
+                              onTap: () => onTapGridMovie(movieRated, context),
+                              child: const Row(
+                                children: [
+                                  Text(
+                                    textAlign: TextAlign.left,
+                                    'Rated Movies',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  SizedBox(width: 5),
+                                  Icon(
+                                    Icons.arrow_forward_ios,
+                                    color: Colors.orange,
+                                    size: 16,
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],
                       ),
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    const Row(
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.fromLTRB(15, 15, 0, 0),
-                          child: Text(
-                            'Rated TV Shows',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                      Visibility(
+                        visible: movieRated.isNotEmpty,
+                        child: SizedBox(
+                          height: 320, // Set the height for the movie cards
+                          child: ScrollConfiguration(
+                            behavior: ScrollConfiguration.of(context).copyWith(
+                              dragDevices: {
+                                PointerDeviceKind.touch,
+                                PointerDeviceKind.mouse,
+                                PointerDeviceKind.trackpad,
+                              },
+                            ),
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: movieRated.length,
+                              itemBuilder: (context, index) {
+                                final movie = movieRated[index];
+                                return GestureDetector(
+                                  onTap: () =>
+                                      Platform.isAndroid || Platform.isIOS
+                                          ? onTapMovie(
+                                              movie.title, movie.id, context)
+                                          : onTapMovieDesktop(
+                                              movie.title, movie.id, context),
+                                  child: CustomMovieWidget(
+                                    movie: movie,
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Visibility(
-                      visible: tvRated.isNotEmpty,
-                      child: SizedBox(
-                        height: 300, // Set the height for the movie cards
-                        child: ScrollConfiguration(
-                          behavior: ScrollConfiguration.of(context).copyWith(
-                            dragDevices: {
-                              PointerDeviceKind.touch,
-                              PointerDeviceKind.mouse,
-                            },
-                          ),
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: tvRated.length,
-                            itemBuilder: (context, index) {
-                              final serie = tvRated[index];
-                              return GestureDetector(
-                                onTap: () => Platform.isAndroid ||
-                                        Platform.isIOS
-                                    ? onTapSerie(serie.name, serie.id, context)
-                                    : onTapSerieDesktop(
-                                        serie.name, serie.id, context),
-                                child: CustomSeriesWidget(
-                                  serie: serie,
-                                ),
-                              );
-                            },
-                          ),
+                      ),
+                      Visibility(
+                        visible: movieRated.isEmpty,
+                        child: const Row(
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.all(18.0),
+                              child: Text(
+                                'No rated movies yet',
+                                style: TextStyle(
+                                    color: Colors.orange, fontSize: 14),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                    Visibility(
-                      visible: tvRated.isEmpty,
-                      child: const Row(
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Row(
                         children: [
                           Padding(
-                            padding: EdgeInsets.all(18.0),
-                            child: Text(
-                              'No rated TV shows yet',
-                              style:
-                                  TextStyle(color: Colors.orange, fontSize: 14),
+                            padding: const EdgeInsets.fromLTRB(15, 15, 0, 5),
+                            child: GestureDetector(
+                              onTap: () => onTapGridSerie(tvRated, context),
+                              child: const Row(
+                                children: [
+                                  Text(
+                                    'Rated TV Shows',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  SizedBox(width: 5),
+                                  Icon(
+                                    Icons.arrow_forward_ios,
+                                    color: Colors.orange,
+                                    size: 16,
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 10),
+                      Visibility(
+                        visible: tvRated.isNotEmpty,
+                        child: SizedBox(
+                          height: 300, // Set the height for the movie cards
+                          child: ScrollConfiguration(
+                            behavior: ScrollConfiguration.of(context).copyWith(
+                              dragDevices: {
+                                PointerDeviceKind.touch,
+                                PointerDeviceKind.mouse,
+                                PointerDeviceKind.trackpad,
+                              },
+                            ),
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: tvRated.length,
+                              itemBuilder: (context, index) {
+                                final serie = tvRated[index];
+                                return GestureDetector(
+                                  onTap: () =>
+                                      Platform.isAndroid || Platform.isIOS
+                                          ? onTapSerie(
+                                              serie.name, serie.id, context)
+                                          : onTapSerieDesktop(
+                                              serie.name, serie.id, context),
+                                  child: CustomSeriesWidget(
+                                    serie: serie,
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+                      Visibility(
+                        visible: tvRated.isEmpty,
+                        child: const Row(
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.all(18.0),
+                              child: Text(
+                                'No rated TV shows yet',
+                                style: TextStyle(
+                                    color: Colors.orange, fontSize: 14),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ]),
+            ]),
+          ),
         ),
         bottomNavigationBar: const BottomBar());
   }

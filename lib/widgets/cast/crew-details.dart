@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:async';
 import 'dart:io';
+import 'dart:ui';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie_desktop.dart';
 import 'package:flutter/material.dart';
@@ -386,47 +387,57 @@ class _CrewDetailPageState extends State<CrewDetailPage> {
                 ),
               ),
               if (castData['biography'] != '')
-                Expanded(
-                  flex: 3,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                        20, 30, 40, 80), // Adjusted padding
-                    child: SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text(
-                            'Biography',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          if (castData['birthday'] != null)
-                            Text(
-                              'Born: ${castData['birthday']}',
-                              style: const TextStyle(
-                                fontSize: 14,
+                ScrollConfiguration(
+                  behavior: const ScrollBehavior().copyWith(
+                    dragDevices: {
+                      PointerDeviceKind.touch,
+                      PointerDeviceKind.mouse,
+                      PointerDeviceKind.trackpad,
+                    },
+                  ),
+                  child: Expanded(
+                    flex: 3,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                          20, 30, 40, 80), // Adjusted padding
+                      child: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text(
+                              'Biography',
+                              style: TextStyle(
+                                fontSize: 18,
                                 color: Colors.white,
+                                fontWeight: FontWeight.w400,
                               ),
                             ),
-                          if (castData['biography'] != null)
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(0, 20, 0, 20),
-                              child: Text(
-                                castData['biography'],
+                            const SizedBox(height: 10),
+                            if (castData['birthday'] != null)
+                              Text(
+                                'Born: ${castData['birthday']}',
                                 style: const TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 14,
                                   color: Colors.white,
-                                  fontWeight: FontWeight.w300,
                                 ),
-                                textAlign: TextAlign.left,
                               ),
-                            ),
-                        ],
+                            if (castData['biography'] != null)
+                              Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(0, 20, 0, 20),
+                                child: Text(
+                                  castData['biography'],
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w300,
+                                  ),
+                                  textAlign: TextAlign.left,
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -438,8 +449,17 @@ class _CrewDetailPageState extends State<CrewDetailPage> {
                       20, 0, 40, 20), // Adjusted padding
                   child: Padding(
                     padding: const EdgeInsets.all(25.0),
-                    child:
-                        SingleChildScrollView(child: _buildOtherMoviesGrid()),
+                    child: ScrollConfiguration(
+                        behavior: const ScrollBehavior().copyWith(
+                          dragDevices: {
+                            PointerDeviceKind.touch,
+                            PointerDeviceKind.mouse,
+                            PointerDeviceKind.trackpad,
+                          },
+                        ),
+                        child: SingleChildScrollView(
+                          child: _buildOtherMoviesGrid(),
+                        )),
                   ),
                 ),
               ),
@@ -453,7 +473,7 @@ class _CrewDetailPageState extends State<CrewDetailPage> {
       physics: const NeverScrollableScrollPhysics(),
       itemCount: _otherMovies.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
+        crossAxisCount: 4,
         childAspectRatio: 0.75,
       ),
       itemBuilder: (context, index) {

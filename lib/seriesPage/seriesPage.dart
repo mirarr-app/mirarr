@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:Mirarr/seriesPage/function/fetch_series_by_genre.dart';
+import 'package:Mirarr/seriesPage/function/on_tap_gridview_serie.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_serie.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_serie_desktop.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -28,6 +30,22 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
 
   List<Serie> trendingSeries = [];
   List<Serie> popularSeries = [];
+  List<Genre> genres = [];
+  Map<int, List<Serie>> seriesByGenre = {};
+
+  Future<void> _fetchGenresAndSeries() async {
+    try {
+      genres = await fetchGenres();
+      for (var genre in genres) {
+        final series = await fetchSeriesByGenre(genre.id);
+        setState(() {
+          seriesByGenre[genre.id] = series;
+        });
+      }
+    } catch (e) {
+      // Handle error
+    }
+  }
 
   // Fetch trending Series
   Future<void> fetchTrendingSeries() async {
@@ -153,6 +171,7 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
       // Internet connection available, fetch data
       fetchTrendingSeries();
       fetchPopularSeries();
+      await _fetchGenresAndSeries();
     }
   }
 
@@ -203,6 +222,7 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
                           dragDevices: {
                             PointerDeviceKind.touch,
                             PointerDeviceKind.mouse,
+                            PointerDeviceKind.trackpad,
                           },
                         ),
                         child: ListView.builder(
@@ -249,6 +269,7 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
                           dragDevices: {
                             PointerDeviceKind.touch,
                             PointerDeviceKind.mouse,
+                            PointerDeviceKind.trackpad,
                           },
                         ),
                         child: ListView.builder(
@@ -268,7 +289,70 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
                           },
                         ),
                       ),
-                    )
+                    ),
+                    for (var genre in genres)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(15, 15, 0, 0),
+                            child: GestureDetector(
+                              onTap: () => onTapGridSerie(
+                                  seriesByGenre[genre.id]!, context),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    genre.name,
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 5),
+                                  const Icon(
+                                    Icons.arrow_forward_ios,
+                                    color: Colors.orange,
+                                    size: 16,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            height: 320,
+                            child: ScrollConfiguration(
+                              behavior:
+                                  ScrollConfiguration.of(context).copyWith(
+                                dragDevices: {
+                                  PointerDeviceKind.touch,
+                                  PointerDeviceKind.mouse,
+                                  PointerDeviceKind.trackpad,
+                                },
+                              ),
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: seriesByGenre[genre.id]?.length ?? 0,
+                                itemBuilder: (context, index) {
+                                  final serie = seriesByGenre[genre.id]![index];
+                                  return GestureDetector(
+                                    onTap: () =>
+                                        Platform.isAndroid || Platform.isIOS
+                                            ? onTapSerie(
+                                                serie.name, serie.id, context)
+                                            : onTapSerieDesktop(
+                                                serie.name, serie.id, context),
+                                    child: CustomSeriesWidget(
+                                      serie: serie,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                   ],
                 ),
               ),
