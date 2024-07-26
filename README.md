@@ -103,3 +103,9 @@ flutter build windows
 - [OMDB](http://www.omdbapi.com/) for their mostly free API.
 - [scnsrc](https://scnsrc.me/) for their great RSS feed of released movies.
 - External resources who we refer to when playing movies/tv shows.
+
+
+#### Support
+Consider starring the project.
+
+[Consider donating](https://github.com/mirarr-app/mirarr/blob/main/DONATION.md)
