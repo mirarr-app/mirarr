@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui';
 import 'package:Mirarr/moviesPage/UI/movie_result.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie_desktop.dart';
@@ -177,20 +178,31 @@ class _SearchScreenState extends State<SearchScreen>
               Expanded(
                 child: movieResults.isEmpty
                     ? Container()
-                    : ListView.builder(
-                        itemCount: movieResults.length,
-                        itemBuilder: (context, index) {
-                          final movie = movieResults[index];
-                          return GestureDetector(
-                            onTap: () => Platform.isAndroid || Platform.isIOS
-                                ? onTapMovie(movie.title, movie.id, context)
-                                : onTapMovieDesktop(
-                                    movie.title, movie.id, context),
-                            child: MovieSearchResult(
-                              movie: movie,
-                            ),
-                          );
-                        },
+                    : ScrollConfiguration(
+                        behavior: const ScrollBehavior().copyWith(
+                          physics: const BouncingScrollPhysics(),
+                          scrollbars: true,
+                          dragDevices: {
+                            PointerDeviceKind.touch,
+                            PointerDeviceKind.mouse,
+                            PointerDeviceKind.trackpad,
+                          },
+                        ),
+                        child: ListView.builder(
+                          itemCount: movieResults.length,
+                          itemBuilder: (context, index) {
+                            final movie = movieResults[index];
+                            return GestureDetector(
+                              onTap: () => Platform.isAndroid || Platform.isIOS
+                                  ? onTapMovie(movie.title, movie.id, context)
+                                  : onTapMovieDesktop(
+                                      movie.title, movie.id, context),
+                              child: MovieSearchResult(
+                                movie: movie,
+                              ),
+                            );
+                          },
+                        ),
                       ),
               ),
             ],
@@ -242,20 +254,31 @@ class _SearchScreenState extends State<SearchScreen>
               Expanded(
                 child: tvResults.isEmpty
                     ? Container()
-                    : ListView.builder(
-                        itemCount: tvResults.length,
-                        itemBuilder: (context, index) {
-                          final serie = tvResults[index];
-                          return GestureDetector(
-                            onTap: () => Platform.isAndroid || Platform.isIOS
-                                ? onTapSerie(serie.name, serie.id, context)
-                                : onTapSerieDesktop(
-                                    serie.name, serie.id, context),
-                            child: SerieSearchResult(
-                              serie: serie,
-                            ),
-                          );
-                        },
+                    : ScrollConfiguration(
+                        behavior: const ScrollBehavior().copyWith(
+                          physics: const BouncingScrollPhysics(),
+                          scrollbars: true,
+                          dragDevices: {
+                            PointerDeviceKind.touch,
+                            PointerDeviceKind.mouse,
+                            PointerDeviceKind.trackpad,
+                          },
+                        ),
+                        child: ListView.builder(
+                          itemCount: tvResults.length,
+                          itemBuilder: (context, index) {
+                            final serie = tvResults[index];
+                            return GestureDetector(
+                              onTap: () => Platform.isAndroid || Platform.isIOS
+                                  ? onTapSerie(serie.name, serie.id, context)
+                                  : onTapSerieDesktop(
+                                      serie.name, serie.id, context),
+                              child: SerieSearchResult(
+                                serie: serie,
+                              ),
+                            );
+                          },
+                        ),
                       ),
               ),
             ],

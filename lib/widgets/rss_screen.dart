@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:Mirarr/widgets/bottom_bar.dart';
@@ -115,26 +117,37 @@ class _RssScreenState extends State<RssScreen> with TickerProviderStateMixin {
           ],
         ),
       ),
-      body: FutureBuilder(
-        future: _feedFuture,
-        builder: (context, AsyncSnapshot<RssFeed> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else {
-            final feed = snapshot.requireData;
-            return Builder(
-              builder: (context) => TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildFeedList(feed, "Movies"),
-                  _buildFeedList(feed, "TV"),
-                ],
-              ),
-            );
-          }
-        },
+      body: ScrollConfiguration(
+        behavior: const ScrollBehavior().copyWith(
+          physics: const BouncingScrollPhysics(),
+          scrollbars: true,
+          dragDevices: {
+            PointerDeviceKind.touch,
+            PointerDeviceKind.mouse,
+            PointerDeviceKind.trackpad,
+          },
+        ),
+        child: FutureBuilder(
+          future: _feedFuture,
+          builder: (context, AsyncSnapshot<RssFeed> snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else {
+              final feed = snapshot.requireData;
+              return Builder(
+                builder: (context) => TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildFeedList(feed, "Movies"),
+                    _buildFeedList(feed, "TV"),
+                  ],
+                ),
+              );
+            }
+          },
+        ),
       ),
       bottomNavigationBar: BottomBar(),
     );

@@ -169,6 +169,7 @@ class _MovieSearchScreenState extends State<MovieSearchScreen> {
                             dragDevices: {
                               PointerDeviceKind.touch,
                               PointerDeviceKind.mouse,
+                              PointerDeviceKind.trackpad,
                             },
                           ),
                           child: ListView.builder(
@@ -216,6 +217,7 @@ class _MovieSearchScreenState extends State<MovieSearchScreen> {
                             dragDevices: {
                               PointerDeviceKind.touch,
                               PointerDeviceKind.mouse,
+                              PointerDeviceKind.trackpad,
                             },
                           ),
                           child: ListView.builder(

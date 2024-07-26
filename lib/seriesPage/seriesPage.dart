@@ -203,6 +203,7 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
                           dragDevices: {
                             PointerDeviceKind.touch,
                             PointerDeviceKind.mouse,
+                            PointerDeviceKind.trackpad,
                           },
                         ),
                         child: ListView.builder(
@@ -249,6 +250,7 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
                           dragDevices: {
                             PointerDeviceKind.touch,
                             PointerDeviceKind.mouse,
+                            PointerDeviceKind.trackpad,
                           },
                         ),
                         child: ListView.builder(

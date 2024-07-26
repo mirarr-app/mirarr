@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ui';
 
 import 'package:Mirarr/moviesPage/UI/cast_crew_row.dart';
 import 'package:Mirarr/seriesPage/function/fetch_episode_cast_crew.dart';
@@ -9,42 +10,84 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:cached_network_image/cached_network_image.dart';
 
 final apiKey = dotenv.env['TMDB_API_KEY'];
 final apiOmdbKey = dotenv.env['OMDB_API_KEY_FOR_EPISODES'];
 
+final _cache = <String, dynamic>{};
+
+Future<T> _cachedApiCall<T>(String url, Future<T> Function() apiCall) async {
+  if (_cache.containsKey(url)) {
+    return _cache[url] as T;
+  }
+  final result = await apiCall();
+  _cache[url] = result;
+  return result;
+}
+
 Future<String?> fetchImdbRating(
     String imdbId, int seasonNumber, int episodeNumber) async {
-  try {
-    final response = await http.get(
-      Uri.parse(
-          'http://www.omdbapi.com/?i=$imdbId&season=$seasonNumber&Episode=$episodeNumber&apikey=$apiOmdbKey'),
-    );
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      final imdbRating = data['imdbRating'];
-      return imdbRating;
+  return _cachedApiCall('imdb_rating_$imdbId$seasonNumber$episodeNumber',
+      () async {
+    try {
+      final response = await http.get(
+        Uri.parse(
+            'http://www.omdbapi.com/?i=$imdbId&season=$seasonNumber&Episode=$episodeNumber&apikey=$apiOmdbKey'),
+      );
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data['imdbRating'];
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print(e);
+      }
     }
-  } catch (e) {
-    if (kDebugMode) {
-      print(e);
+    return null;
+  });
+}
+
+Future<Map<int, String>> fetchSeasonImdbRatings(
+    String imdbId, int seasonNumber) async {
+  return _cachedApiCall('season_ratings_$imdbId$seasonNumber', () async {
+    try {
+      final response = await http.get(
+        Uri.parse(
+            'http://www.omdbapi.com/?i=$imdbId&Season=$seasonNumber&apikey=$apiOmdbKey'),
+      );
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final episodes = data['Episodes'] as List<dynamic>;
+        return {
+          for (var episode in episodes)
+            episode['Episode'] is int
+                ? episode['Episode'] as int
+                : int.parse(episode['Episode']): episode['imdbRating'] as String
+        };
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching season IMDb ratings: $e');
+      }
     }
-  }
-  return null;
+    return {};
+  });
 }
 
 Future<List<dynamic>> fetchSeasons(int serieId) async {
-  final response = await http.get(
-    Uri.parse('https://api.themoviedb.org/3/tv/$serieId?api_key=$apiKey'),
-  );
+  return _cachedApiCall('seasons_$serieId', () async {
+    final response = await http.get(
+      Uri.parse('https://api.themoviedb.org/3/tv/$serieId?api_key=$apiKey'),
+    );
 
-  if (response.statusCode == 200) {
-    final data = json.decode(response.body);
-    final seasons = data['seasons'];
-    return seasons;
-  } else {
-    throw Exception('Failed to load seasons');
-  }
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data['seasons'];
+    } else {
+      throw Exception('Failed to load seasons');
+    }
+  });
 }
 
 void seasonsAndEpisodes(
@@ -63,8 +106,6 @@ void seasonsAndEpisodes(
             return const Center(child: Text('No seasons found.'));
           } else {
             final seasons = snapshot.data!;
-
-            // Sort seasons to move "Specials" to the bottom
             seasons.sort((a, b) {
               if (a['season_number'] == 0) return 1;
               if (b['season_number'] == 0) return -1;
@@ -74,72 +115,97 @@ void seasonsAndEpisodes(
             return Container(
               padding: const EdgeInsets.all(10),
               height: MediaQuery.of(context).size.height * 0.5,
-              child: Column(
-                children: [
-                  const Text(
-                    'Seasons',
-                    style: TextStyle(
-                      fontSize: 24,
-                      color: Colors.orange,
-                      fontWeight: FontWeight.bold,
+              child: ScrollConfiguration(
+                behavior: const ScrollBehavior().copyWith(
+                  physics: const BouncingScrollPhysics(),
+                  scrollbars: true,
+                  dragDevices: {
+                    PointerDeviceKind.touch,
+                    PointerDeviceKind.mouse,
+                    PointerDeviceKind.trackpad,
+                  },
+                ),
+                child: CustomScrollView(
+                  slivers: [
+                    const SliverToBoxAdapter(
+                      child: Text(
+                        'Seasons',
+                        style: TextStyle(
+                          fontSize: 24,
+                          color: Colors.orange,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: seasons.length,
-                      itemBuilder: (context, index) {
-                        final season = seasons[index];
-                        final coverUrl = season['poster_path'] != null
-                            ? 'https://image.tmdb.org/t/p/w500${season['poster_path']}'
-                            : null;
-                        final isAirDateNull = season['air_date'] == null;
-                        final isEpisodeCountZero = season['episode_count'] == 0;
-                        return Column(
-                          children: [
-                            ListTile(
-                              leading: Container(
-                                width: 100,
-                                height: 100,
-                                color: coverUrl != null ? null : Colors.black,
-                                child: coverUrl != null
-                                    ? ClipRRect(
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
-                                        child: Image.network(
-                                          coverUrl,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      )
-                                    : null,
-                              ),
-                              title: Text(
-                                season['season_number'] == 0
-                                    ? 'Specials'
-                                    : 'Season ${season['season_number']}',
-                                style: TextStyle(
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          final season = seasons[index];
+                          final coverUrl = season['poster_path'] != null
+                              ? 'https://image.tmdb.org/t/p/w500${season['poster_path']}'
+                              : null;
+                          final isAirDateNull = season['air_date'] == null;
+                          final isEpisodeCountZero =
+                              season['episode_count'] == 0;
+                          return Column(
+                            children: [
+                              ListTile(
+                                leading: Container(
+                                  width: 100,
+                                  height: 100,
+                                  color: coverUrl != null ? null : Colors.black,
+                                  child: coverUrl != null
+                                      ? ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(8.0),
+                                          child: CachedNetworkImage(
+                                            imageUrl: coverUrl,
+                                            fit: BoxFit.cover,
+                                            placeholder: (context, url) =>
+                                                const CircularProgressIndicator(
+                                              color: Colors.black,
+                                            ),
+                                            errorWidget:
+                                                (context, url, error) =>
+                                                    const Icon(Icons.error),
+                                          ),
+                                        )
+                                      : null,
+                                ),
+                                title: Text(
+                                  season['season_number'] == 0
+                                      ? 'Specials'
+                                      : 'Season ${season['season_number']}',
+                                  style: TextStyle(
+                                    color: isAirDateNull
+                                        ? Colors.grey
+                                        : Colors.white,
+                                  ),
+                                ),
+                                trailing: Icon(
+                                  Icons.arrow_forward,
                                   color: isAirDateNull
                                       ? Colors.grey
-                                      : Colors.white,
+                                      : Colors.orange,
                                 ),
+                                onTap: isAirDateNull && isEpisodeCountZero
+                                    ? null
+                                    : () => episodesGuide(
+                                        season['season_number'],
+                                        context,
+                                        serieId,
+                                        serieName,
+                                        imdbId),
                               ),
-                              trailing: Icon(
-                                Icons.arrow_forward,
-                                color:
-                                    isAirDateNull ? Colors.grey : Colors.orange,
-                              ),
-                              onTap: isAirDateNull && isEpisodeCountZero
-                                  ? null
-                                  : () => episodesGuide(season['season_number'],
-                                      context, serieId, serieName, imdbId),
-                            ),
-                            const CustomDivider()
-                          ],
-                        );
-                      },
+                              const CustomDivider()
+                            ],
+                          );
+                        },
+                        childCount: seasons.length,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             );
           }
@@ -151,21 +217,31 @@ void seasonsAndEpisodes(
 
 Future<List<dynamic>> fetchEpisodesGuide(
     int seasonNumber, int serieId, String serieName, String imdbId) async {
-  final response = await http.get(
-    Uri.parse(
-        'https://api.themoviedb.org/3/tv/$serieId/season/$seasonNumber?api_key=$apiKey'),
-  );
+  return _cachedApiCall('episodes_guide_$serieId$seasonNumber', () async {
+    final episodesResponse = await http.get(
+      Uri.parse(
+          'https://api.themoviedb.org/3/tv/$serieId/season/$seasonNumber?api_key=$apiKey'),
+    );
 
-  if (response.statusCode == 200) {
-    final data = json.decode(response.body);
-    final episodes = data['episodes'];
-    return episodes;
-  } else {
-    throw Exception('Failed to load episodes');
-  }
+    final ratingsMap = await fetchSeasonImdbRatings(imdbId, seasonNumber);
+
+    if (episodesResponse.statusCode == 200) {
+      final data = json.decode(episodesResponse.body);
+      final episodes = data['episodes'];
+
+      for (var episode in episodes) {
+        final episodeNumber = episode['episode_number'];
+        episode['imdb_rating'] = ratingsMap[episodeNumber] ?? 'N/A';
+      }
+
+      return episodes;
+    } else {
+      throw Exception('Failed to load episodes');
+    }
+  });
 }
 
-void episodesGuide(seasonNumber, BuildContext context, int serieId,
+void episodesGuide(int seasonNumber, BuildContext context, int serieId,
     String serieName, String imdbId) {
   showModalBottomSheet(
     context: context,
@@ -195,83 +271,114 @@ void episodesGuide(seasonNumber, BuildContext context, int serieId,
                     ),
                   ),
                   const SizedBox(height: 10),
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: episodes.length,
-                      itemBuilder: (context, index) {
-                        final episode = episodes[index];
-                        final coverUrl = episode['still_path'] != null
-                            ? 'https://image.tmdb.org/t/p/w500${episode['still_path']}'
-                            : null;
-
-                        bool isReleased = true;
-                        int daysUntilRelease = 0;
-                        if (episode['air_date'] != null) {
-                          final airDate = DateTime.parse(episode['air_date']);
-                          isReleased = airDate.isBefore(DateTime.now());
-                          if (!isReleased) {
-                            daysUntilRelease =
-                                airDate.difference(DateTime.now()).inDays;
-                          }
-                        }
-                        return Column(
-                          children: [
-                            ListTile(
-                              leading: Container(
-                                width: 100,
-                                height: 100,
-                                color: coverUrl != null ? null : Colors.black,
-                                child: coverUrl != null
-                                    ? ClipRRect(
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
-                                        child: Image.network(
-                                          coverUrl,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      )
-                                    : null,
-                              ),
-                              title: Text(
-                                episode['episode_number'] == 0
-                                    ? 'Specials'
-                                    : 'Episode ${episode['episode_number']}',
-                                style: TextStyle(
-                                    color: isReleased
-                                        ? Colors.white
-                                        : Colors.grey),
-                              ),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  if (!isReleased && daysUntilRelease >= 0)
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.fromLTRB(0, 0, 8, 0),
-                                      child: Text(
-                                        '$daysUntilRelease days',
-                                        style:
-                                            const TextStyle(color: Colors.grey),
-                                      ),
-                                    ),
-                                  Icon(Icons.arrow_forward,
-                                      color: isReleased
-                                          ? Colors.orange
-                                          : Colors.grey),
-                                ],
-                              ),
-                              onTap: () => episodeDetails(
-                                  seasonNumber,
-                                  episode['episode_number'],
-                                  context,
-                                  serieId,
-                                  serieName,
-                                  imdbId),
-                            ),
-                            const CustomDivider()
-                          ],
-                        );
+                  ScrollConfiguration(
+                    behavior: const ScrollBehavior().copyWith(
+                      scrollbars: true,
+                      physics: const BouncingScrollPhysics(),
+                      dragDevices: {
+                        PointerDeviceKind.touch,
+                        PointerDeviceKind.mouse,
+                        PointerDeviceKind.trackpad,
                       },
+                    ),
+                    child: Expanded(
+                      child: ListView.builder(
+                        itemCount: episodes.length,
+                        itemBuilder: (context, index) {
+                          final episode = episodes[index];
+                          final coverUrl = episode['still_path'] != null
+                              ? 'https://image.tmdb.org/t/p/w500${episode['still_path']}'
+                              : null;
+
+                          bool isReleased = true;
+                          int daysUntilRelease = 0;
+                          if (episode['air_date'] != null) {
+                            final airDate = DateTime.parse(episode['air_date']);
+                            isReleased = airDate.isBefore(DateTime.now());
+                            if (!isReleased) {
+                              daysUntilRelease =
+                                  airDate.difference(DateTime.now()).inDays;
+                            }
+                          }
+                          return Column(
+                            children: [
+                              ListTile(
+                                leading: Container(
+                                  width: 100,
+                                  height: 100,
+                                  color: coverUrl != null ? null : Colors.black,
+                                  child: coverUrl != null
+                                      ? ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(8.0),
+                                          child: CachedNetworkImage(
+                                            imageUrl: coverUrl,
+                                            fit: BoxFit.cover,
+                                            placeholder: (context, url) =>
+                                                const CircularProgressIndicator(
+                                              color: Colors.black,
+                                            ),
+                                            errorWidget:
+                                                (context, url, error) =>
+                                                    const Icon(Icons.error),
+                                          ),
+                                        )
+                                      : null,
+                                ),
+                                title: Text(
+                                  episode['episode_number'] == 0
+                                      ? 'Specials'
+                                      : 'Episode ${episode['episode_number']}',
+                                  style: TextStyle(
+                                      color: isReleased
+                                          ? Colors.white
+                                          : Colors.grey),
+                                ),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (!isReleased && daysUntilRelease >= 0)
+                                      Padding(
+                                        padding: const EdgeInsets.fromLTRB(
+                                            0, 0, 8, 0),
+                                        child: Text(
+                                          '$daysUntilRelease days',
+                                          style: const TextStyle(
+                                              color: Colors.grey),
+                                        ),
+                                      ),
+                                    if (episode['imdb_rating'] != null &&
+                                        episode['imdb_rating'] != 'N/A')
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(right: 8),
+                                        child: Text(
+                                          '⭐ ${episode['imdb_rating']}',
+                                          style: const TextStyle(
+                                            color: Colors.amber,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
+                                    Icon(Icons.arrow_forward,
+                                        color: isReleased
+                                            ? Colors.orange
+                                            : Colors.grey),
+                                  ],
+                                ),
+                                onTap: () => episodeDetails(
+                                    seasonNumber,
+                                    episode['episode_number'],
+                                    context,
+                                    serieId,
+                                    serieName,
+                                    imdbId),
+                              ),
+                              const CustomDivider()
+                            ],
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ],
@@ -286,17 +393,19 @@ void episodesGuide(seasonNumber, BuildContext context, int serieId,
 
 Future<Map<String, dynamic>> fetchEpisodesDetails(
     int seasonNumber, int episodeNumber, int serieId) async {
-  final response = await http.get(
-    Uri.parse(
-        'https://api.themoviedb.org/3/tv/$serieId/season/$seasonNumber/episode/$episodeNumber?api_key=$apiKey'),
-  );
+  return _cachedApiCall('episode_details_$serieId$seasonNumber$episodeNumber',
+      () async {
+    final response = await http.get(
+      Uri.parse(
+          'https://api.themoviedb.org/3/tv/$serieId/season/$seasonNumber/episode/$episodeNumber?api_key=$apiKey'),
+    );
 
-  if (response.statusCode == 200) {
-    final data = json.decode(response.body);
-    return data;
-  } else {
-    throw Exception('Failed to load data');
-  }
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to load data');
+    }
+  });
 }
 
 void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
@@ -342,12 +451,11 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
                       ),
                     ),
                     const SizedBox(height: 10),
-                    Visibility(
-                      visible: imdbRating != null && imdbRating.isNotEmpty,
-                      child: Padding(
+                    if (imdbRating != null && imdbRating.isNotEmpty)
+                      Padding(
                         padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
                         child: Text(
-                          'IMDB⭐ ${imdbRating ?? 'N/A'}',
+                          'IMDB⭐ $imdbRating',
                           style: const TextStyle(
                             fontWeight: FontWeight.w300,
                             fontSize: 13,
@@ -355,7 +463,6 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
                           ),
                         ),
                       ),
-                    ),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
                       child: Text(
@@ -370,7 +477,7 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
                         children: [
                           Center(
                               child: SizedBox(
-                            width: double.maxFinite,
+                            width: double.infinity,
                             child: FloatingActionButton(
                               backgroundColor: Theme.of(context).primaryColor,
                               onPressed: () => showWatchOptions(context,
@@ -394,7 +501,7 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
                         children: [
                           Center(
                               child: SizedBox(
-                            width: double.maxFinite,
+                            width: double.infinity,
                             child: FloatingActionButton(
                               backgroundColor: Theme.of(context).primaryColor,
                               onPressed: () => showTorrentOptions(
