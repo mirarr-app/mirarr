@@ -2,11 +2,14 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:Mirarr/moviesPage/functions/on_tap_gridview_movie.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie_desktop.dart';
+import 'package:Mirarr/seriesPage/function/on_tap_gridview_serie.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_serie.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_serie_desktop.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive/hive.dart';
@@ -374,17 +377,31 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: SingleChildScrollView(
                   child: Column(
                     children: <Widget>[
-                      const Row(
+                      Row(
                         children: [
                           Padding(
-                            padding: EdgeInsets.fromLTRB(15, 15, 0, 0),
-                            child: Text(
-                              textAlign: TextAlign.left,
-                              'Movie Watch List',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                            padding: const EdgeInsets.fromLTRB(15, 15, 0, 5),
+                            child: GestureDetector(
+                              onTap: () =>
+                                  onTapGridMovie(moviesWatchList, context),
+                              child: const Row(
+                                children: [
+                                  Text(
+                                    textAlign: TextAlign.left,
+                                    'Movie Watch List',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  SizedBox(width: 5),
+                                  Icon(
+                                    Icons.arrow_forward_ios,
+                                    color: Colors.orange,
+                                    size: 16,
+                                  ),
+                                ],
                               ),
                             ),
                           ),
@@ -441,16 +458,29 @@ class _ProfilePageState extends State<ProfilePage> {
                       const SizedBox(
                         height: 10,
                       ),
-                      const Row(
+                      Row(
                         children: [
                           Padding(
-                            padding: EdgeInsets.fromLTRB(15, 15, 0, 0),
-                            child: Text(
-                              'TV Watch List',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                            padding: const EdgeInsets.fromLTRB(15, 15, 0, 5),
+                            child: GestureDetector(
+                              onTap: () => onTapGridSerie(tvWatchList, context),
+                              child: const Row(
+                                children: [
+                                  Text(
+                                    'TV Watch List',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  SizedBox(width: 5),
+                                  Icon(
+                                    Icons.arrow_forward_ios,
+                                    color: Colors.orange,
+                                    size: 16,
+                                  ),
+                                ],
                               ),
                             ),
                           ),
@@ -505,17 +535,31 @@ class _ProfilePageState extends State<ProfilePage> {
                           ],
                         ),
                       ),
-                      const Row(
+                      Row(
                         children: [
                           Padding(
-                            padding: EdgeInsets.fromLTRB(15, 15, 0, 0),
-                            child: Text(
-                              textAlign: TextAlign.left,
-                              'Favorite Movies',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                            padding: const EdgeInsets.fromLTRB(15, 15, 0, 5),
+                            child: GestureDetector(
+                              onTap: () =>
+                                  onTapGridMovie(movieFavorites, context),
+                              child: const Row(
+                                children: [
+                                  Text(
+                                    textAlign: TextAlign.left,
+                                    'Favorite Movies',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  SizedBox(width: 5),
+                                  Icon(
+                                    Icons.arrow_forward_ios,
+                                    color: Colors.orange,
+                                    size: 16,
+                                  ),
+                                ],
                               ),
                             ),
                           ),
@@ -572,16 +616,29 @@ class _ProfilePageState extends State<ProfilePage> {
                       const SizedBox(
                         height: 10,
                       ),
-                      const Row(
+                      Row(
                         children: [
                           Padding(
-                            padding: EdgeInsets.fromLTRB(15, 15, 0, 0),
-                            child: Text(
-                              'Favorite TV Shows',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                            padding: const EdgeInsets.fromLTRB(15, 15, 0, 5),
+                            child: GestureDetector(
+                              onTap: () => onTapGridSerie(tvFavorites, context),
+                              child: const Row(
+                                children: [
+                                  Text(
+                                    'Favorite TV Shows',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  SizedBox(width: 5),
+                                  Icon(
+                                    Icons.arrow_forward_ios,
+                                    color: Colors.orange,
+                                    size: 16,
+                                  ),
+                                ],
                               ),
                             ),
                           ),
@@ -639,17 +696,30 @@ class _ProfilePageState extends State<ProfilePage> {
                       const SizedBox(
                         height: 10,
                       ),
-                      const Row(
+                      Row(
                         children: [
                           Padding(
-                            padding: EdgeInsets.fromLTRB(15, 15, 0, 0),
-                            child: Text(
-                              textAlign: TextAlign.left,
-                              'Rated Movies',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                            padding: const EdgeInsets.fromLTRB(15, 15, 0, 5),
+                            child: GestureDetector(
+                              onTap: () => onTapGridMovie(movieRated, context),
+                              child: const Row(
+                                children: [
+                                  Text(
+                                    textAlign: TextAlign.left,
+                                    'Rated Movies',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  SizedBox(width: 5),
+                                  Icon(
+                                    Icons.arrow_forward_ios,
+                                    color: Colors.orange,
+                                    size: 16,
+                                  ),
+                                ],
                               ),
                             ),
                           ),
@@ -706,16 +776,29 @@ class _ProfilePageState extends State<ProfilePage> {
                       const SizedBox(
                         height: 10,
                       ),
-                      const Row(
+                      Row(
                         children: [
                           Padding(
-                            padding: EdgeInsets.fromLTRB(15, 15, 0, 0),
-                            child: Text(
-                              'Rated TV Shows',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                            padding: const EdgeInsets.fromLTRB(15, 15, 0, 5),
+                            child: GestureDetector(
+                              onTap: () => onTapGridSerie(tvRated, context),
+                              child: const Row(
+                                children: [
+                                  Text(
+                                    'Rated TV Shows',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  SizedBox(width: 5),
+                                  Icon(
+                                    Icons.arrow_forward_ios,
+                                    color: Colors.orange,
+                                    size: 16,
+                                  ),
+                                ],
                               ),
                             ),
                           ),
