@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:Mirarr/functions/show_error_dialog.dart';
+import 'package:Mirarr/widgets/changecolor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:Mirarr/widgets/bottom_bar.dart';
@@ -130,6 +131,17 @@ class _LoginPageState extends State<LoginPage> {
           'Login',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsPage()),
+              );
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -175,13 +187,15 @@ class _LoginPageState extends State<LoginPage> {
                       labelStyle: const TextStyle(
                           color: Colors.black, fontWeight: FontWeight.bold),
                       filled: true,
-                      fillColor: Colors.orangeAccent[200],
+                      fillColor: Theme.of(context).hintColor,
                       focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Colors.orange),
+                        borderSide:
+                            BorderSide(color: Theme.of(context).primaryColor),
                         borderRadius: BorderRadius.circular(10.0),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Colors.orange),
+                        borderSide:
+                            BorderSide(color: Theme.of(context).primaryColor),
                         borderRadius: BorderRadius.circular(10.0),
                       ),
                       floatingLabelBehavior: FloatingLabelBehavior.never,
@@ -202,13 +216,15 @@ class _LoginPageState extends State<LoginPage> {
                       labelStyle: const TextStyle(
                           color: Colors.black, fontWeight: FontWeight.bold),
                       filled: true,
-                      fillColor: Colors.orangeAccent[200],
+                      fillColor: Theme.of(context).hintColor,
                       focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Colors.orange),
+                        borderSide:
+                            BorderSide(color: Theme.of(context).primaryColor),
                         borderRadius: BorderRadius.circular(10.0),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Colors.orange),
+                        borderSide:
+                            BorderSide(color: Theme.of(context).primaryColor),
                         borderRadius: BorderRadius.circular(10.0),
                       ),
                       floatingLabelBehavior: FloatingLabelBehavior.never,

@@ -6,6 +6,7 @@ class Movie {
   final int id;
   final double? score;
   final String? backdropPath;
+  List<CrewMember>? crew;
 
   Movie(
       {required this.title,
@@ -14,5 +15,14 @@ class Movie {
       required this.overView,
       required this.id,
       this.backdropPath,
+      this.crew = const [],
       required this.score});
+}
+
+class CrewMember {
+  final int id;
+  final String name;
+  final String job;
+
+  CrewMember({required this.id, required this.name, required this.job});
 }

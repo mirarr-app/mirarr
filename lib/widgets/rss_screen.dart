@@ -52,14 +52,14 @@ class _RssScreenState extends State<RssScreen> with TickerProviderStateMixin {
     if (categories != null) {
       for (var category in categories) {
         if (category.value.contains("Movies")) {
-          return const Icon(
+          return Icon(
             Icons.movie,
-            color: Colors.orangeAccent,
+            color: Theme.of(context).secondaryHeaderColor,
           );
         } else if (category.value.contains("TV")) {
-          return const Icon(
+          return Icon(
             Icons.tv,
-            color: Colors.orangeAccent,
+            color: Theme.of(context).secondaryHeaderColor,
           );
         }
       }

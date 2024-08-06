@@ -134,10 +134,10 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            titleTextStyle:
-                const TextStyle(color: Colors.orangeAccent, fontSize: 20),
-            contentTextStyle:
-                const TextStyle(color: Colors.orange, fontSize: 16),
+            titleTextStyle: TextStyle(
+                color: Theme.of(context).secondaryHeaderColor, fontSize: 20),
+            contentTextStyle: TextStyle(
+                color: Theme.of(context).secondaryHeaderColor, fontSize: 16),
             title: const Text('Network Error'),
             content: const Text(
                 'An error occurred while fetching data. Please try again later.'),
@@ -310,9 +310,9 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
                                     ),
                                   ),
                                   const SizedBox(width: 5),
-                                  const Icon(
+                                  Icon(
                                     Icons.arrow_forward_ios,
-                                    color: Colors.orange,
+                                    color: Theme.of(context).primaryColor,
                                     size: 16,
                                   ),
                                 ],

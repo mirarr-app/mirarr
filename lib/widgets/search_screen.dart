@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
+import 'package:Mirarr/moviesPage/UI/cast_crew_row.dart';
 import 'package:Mirarr/moviesPage/UI/movie_result.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie_desktop.dart';
@@ -8,6 +9,9 @@ import 'package:Mirarr/seriesPage/UI/serie_result.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_serie.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_serie_desktop.dart';
 import 'package:Mirarr/widgets/bottom_bar.dart';
+import 'package:Mirarr/widgets/discover/discover_with_filters.dart';
+import 'package:Mirarr/widgets/models/person.dart';
+import 'package:Mirarr/widgets/person_result.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:Mirarr/moviesPage/models/movie.dart';
@@ -26,13 +30,15 @@ class _SearchScreenState extends State<SearchScreen>
   late TabController _tabController;
   List<Movie> movieResults = [];
   List<Serie> tvResults = [];
+  List<Person> personResults = [];
+
   final apiKey = dotenv.env['TMDB_API_KEY'];
   final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _searchController.addListener(_onSearchChanged);
   }
 
@@ -41,10 +47,12 @@ class _SearchScreenState extends State<SearchScreen>
     if (query.isNotEmpty) {
       searchMovies(query);
       searchSeries(query);
+      searchPerson(query);
     } else {
       setState(() {
         movieResults.clear();
         tvResults.clear();
+        personResults.clear();
       });
     }
   }
@@ -109,6 +117,34 @@ class _SearchScreenState extends State<SearchScreen>
     }
   }
 
+  Future<void> searchPerson(String query) async {
+    final response = await http.get(
+      Uri.parse(
+        'https://api.themoviedb.org/3/search/person?api_key=$apiKey&query=$query',
+      ),
+    );
+    if (response.statusCode == 200) {
+      final List<Person> persons = [];
+      final List<dynamic> results = json.decode(response.body)['results'];
+
+      for (var result in results) {
+        final person = Person(
+          name: result['name'],
+          profilePath: result['profile_path'] ?? '',
+          id: result['id'],
+          department: result['known_for_department'],
+        );
+        persons.add(person);
+      }
+
+      setState(() {
+        personResults = persons;
+      });
+    } else {
+      throw Exception('Failed to load people data');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -117,15 +153,23 @@ class _SearchScreenState extends State<SearchScreen>
         padding: Platform.isAndroid || Platform.isIOS
             ? const EdgeInsets.fromLTRB(0, 32, 0, 0)
             : const EdgeInsets.fromLTRB(0, 0, 0, 0),
-        indicator: const BoxDecoration(color: Colors.orange),
+        indicator: BoxDecoration(color: Theme.of(context).primaryColor),
         unselectedLabelColor: Colors.white,
         indicatorSize: TabBarIndicatorSize.tab,
         controller: _tabController,
         tabs: const [
           Tab(
-            text: 'Movies',
+            icon: Icon(Icons.movie),
           ),
-          Tab(text: 'TV'),
+          Tab(
+            icon: Icon(Icons.local_movies),
+          ),
+          Tab(
+            icon: Icon(Icons.people),
+          ),
+          Tab(
+            icon: Icon(Icons.explore),
+          )
         ],
       ),
       body: TabBarView(
@@ -148,13 +192,17 @@ class _SearchScreenState extends State<SearchScreen>
                     labelStyle: const TextStyle(
                         color: Colors.white, fontWeight: FontWeight.bold),
                     filled: false,
-                    fillColor: Colors.orangeAccent[200],
-                    focusedBorder: const OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.orange),
-                        borderRadius: BorderRadius.all(Radius.circular(20))),
-                    enabledBorder: const OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.orange),
-                        borderRadius: BorderRadius.all(Radius.circular(20))),
+                    fillColor: Theme.of(context).hintColor,
+                    focusedBorder: OutlineInputBorder(
+                        borderSide:
+                            BorderSide(color: Theme.of(context).primaryColor),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(20))),
+                    enabledBorder: OutlineInputBorder(
+                        borderSide:
+                            BorderSide(color: Theme.of(context).primaryColor),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(20))),
                     floatingLabelBehavior: FloatingLabelBehavior.never,
                     suffixIcon: IconButton(
                       icon: Visibility(
@@ -224,13 +272,17 @@ class _SearchScreenState extends State<SearchScreen>
                     labelStyle: const TextStyle(
                         color: Colors.white, fontWeight: FontWeight.bold),
                     filled: false,
-                    fillColor: Colors.orangeAccent[200],
-                    focusedBorder: const OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.orange),
-                        borderRadius: BorderRadius.all(Radius.circular(20))),
-                    enabledBorder: const OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.orange),
-                        borderRadius: BorderRadius.all(Radius.circular(20))),
+                    fillColor: Theme.of(context).hintColor,
+                    focusedBorder: OutlineInputBorder(
+                        borderSide:
+                            BorderSide(color: Theme.of(context).primaryColor),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(20))),
+                    enabledBorder: OutlineInputBorder(
+                        borderSide:
+                            BorderSide(color: Theme.of(context).primaryColor),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(20))),
                     floatingLabelBehavior: FloatingLabelBehavior.never,
                     suffixIcon: IconButton(
                       icon: Visibility(
@@ -283,6 +335,94 @@ class _SearchScreenState extends State<SearchScreen>
               ),
             ],
           ),
+          Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 10, 8, 5),
+                child: TextField(
+                  autocorrect: false,
+                  style: const TextStyle(
+                    color: Colors.white,
+                  ),
+                  cursorColor: Colors.white,
+                  controller: _searchController,
+                  keyboardType: TextInputType.text,
+                  decoration: InputDecoration(
+                    labelText: 'Search for People',
+                    labelStyle: const TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
+                    filled: false,
+                    fillColor: Theme.of(context).hintColor,
+                    focusedBorder: OutlineInputBorder(
+                        borderSide:
+                            BorderSide(color: Theme.of(context).primaryColor),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(20))),
+                    enabledBorder: OutlineInputBorder(
+                        borderSide:
+                            BorderSide(color: Theme.of(context).primaryColor),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(20))),
+                    floatingLabelBehavior: FloatingLabelBehavior.never,
+                    suffixIcon: IconButton(
+                      icon: Visibility(
+                        visible: _searchController.text.isNotEmpty,
+                        child: const Icon(
+                          Icons.clear,
+                          color: Colors.white,
+                        ),
+                      ),
+                      onPressed: () {
+                        _searchController.clear();
+                        setState(() {
+                          movieResults.clear();
+                          tvResults.clear();
+                          personResults.clear();
+                        });
+                      },
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: personResults.isEmpty
+                    ? Container()
+                    : ScrollConfiguration(
+                        behavior: const ScrollBehavior().copyWith(
+                          physics: const BouncingScrollPhysics(),
+                          scrollbars: true,
+                          dragDevices: {
+                            PointerDeviceKind.touch,
+                            PointerDeviceKind.mouse,
+                            PointerDeviceKind.trackpad,
+                          },
+                        ),
+                        child: GridView.builder(
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount:
+                                Platform.isAndroid || Platform.isIOS ? 2 : 6,
+                            crossAxisSpacing: 5,
+                            mainAxisSpacing: 5,
+                          ),
+                          itemCount: personResults.length,
+                          itemBuilder: (context, index) {
+                            final person = personResults[index];
+                            return GestureDetector(
+                              onTap: () => person.department == 'Acting'
+                                  ? onTapCast(context, person.id)
+                                  : onTapCrew(context, person.id),
+                              child: PersonSearchResult(
+                                person: person,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+              ),
+            ],
+          ),
+          DiscoverMoviesPage(),
         ],
       ),
       bottomNavigationBar: BottomBar(),

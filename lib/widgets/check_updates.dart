@@ -46,22 +46,22 @@ class UpdateChecker {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text(
+          title: Text(
             'Update Available',
-            style: TextStyle(color: Colors.orange),
+            style: TextStyle(color: Theme.of(context).primaryColor),
           ),
           content: Text(
               'A new version ($newVersion) is available. Would you like to update?',
               style: const TextStyle(color: Colors.white)),
           actions: <Widget>[
             TextButton(
-              child:
-                  const Text('Later', style: TextStyle(color: Colors.orange)),
+              child: Text('Later',
+                  style: TextStyle(color: Theme.of(context).primaryColor)),
               onPressed: () => Navigator.of(context).pop(),
             ),
             TextButton(
-              child:
-                  const Text('Update', style: TextStyle(color: Colors.orange)),
+              child: Text('Update',
+                  style: TextStyle(color: Theme.of(context).primaryColor)),
               onPressed: () {
                 _launchURL(
                     'https://github.com/mirarr-app/mirarr/releases/latest');

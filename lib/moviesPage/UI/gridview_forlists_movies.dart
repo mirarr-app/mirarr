@@ -22,7 +22,7 @@ class _ListGridViewMoviesState extends State<ListGridViewMovies> {
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 40,
-        backgroundColor: Colors.orange,
+        backgroundColor: Theme.of(context).primaryColor,
         iconTheme: const IconThemeData(color: Colors.black),
         title: const Text('Movie List'),
       ),

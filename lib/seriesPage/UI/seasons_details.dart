@@ -127,12 +127,12 @@ void seasonsAndEpisodes(
                 ),
                 child: CustomScrollView(
                   slivers: [
-                    const SliverToBoxAdapter(
+                    SliverToBoxAdapter(
                       child: Text(
                         'Seasons',
                         style: TextStyle(
                           fontSize: 24,
-                          color: Colors.orange,
+                          color: Theme.of(context).primaryColor,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -186,7 +186,7 @@ void seasonsAndEpisodes(
                                   Icons.arrow_forward,
                                   color: isAirDateNull
                                       ? Colors.grey
-                                      : Colors.orange,
+                                      : Theme.of(context).primaryColor,
                                 ),
                                 onTap: isAirDateNull && isEpisodeCountZero
                                     ? null
@@ -262,11 +262,11 @@ void episodesGuide(int seasonNumber, BuildContext context, int serieId,
               height: MediaQuery.of(context).size.height * 0.5,
               child: Column(
                 children: [
-                  const Text(
+                  Text(
                     'Episodes',
                     style: TextStyle(
                       fontSize: 24,
-                      color: Colors.orange,
+                      color: Theme.of(context).primaryColor,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -362,7 +362,7 @@ void episodesGuide(int seasonNumber, BuildContext context, int serieId,
                                       ),
                                     Icon(Icons.arrow_forward,
                                         color: isReleased
-                                            ? Colors.orange
+                                            ? Theme.of(context).primaryColor
                                             : Colors.grey),
                                   ],
                                 ),
@@ -439,12 +439,12 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Padding(
+                    Padding(
                       padding: EdgeInsets.fromLTRB(25, 10, 0, 0),
                       child: Text(
                         'Episode Overview',
                         style: TextStyle(
-                          color: Colors.orange,
+                          color: Theme.of(context).primaryColor,
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                         ),

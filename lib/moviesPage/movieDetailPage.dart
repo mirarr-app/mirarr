@@ -389,6 +389,9 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                 width: MediaQuery.of(context).size.width - 20,
                                 child: Text(
                                   widget.movieTitle,
+                                  softWrap: true,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,

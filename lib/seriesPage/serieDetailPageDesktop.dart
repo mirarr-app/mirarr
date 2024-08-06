@@ -221,7 +221,7 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
       appBar: Platform.isLinux || Platform.isWindows || Platform.isMacOS
           ? AppBar(
               toolbarHeight: 40,
-              backgroundColor: Colors.orange,
+              backgroundColor: Theme.of(context).primaryColor,
               iconTheme: const IconThemeData(color: Colors.black),
               actions: [
                 Padding(
