@@ -24,6 +24,8 @@ Download mirarr-windows.zip for Windows.
 Download mirrar.zip for Linux.
 Download mirrar.ipa for sideloading on IOS.
 
+Note: On linux you need to have `xdg-user-dirs` package installed.
+
 #### Do I need to login?
 
 No you don't have to. But the login process enables extra features like watchlist, favorties and rating which are all handled with TMDB.
