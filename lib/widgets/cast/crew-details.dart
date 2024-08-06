@@ -134,7 +134,7 @@ class _CrewDetailPageState extends State<CrewDetailPage> {
           appBar: Platform.isLinux || Platform.isWindows || Platform.isMacOS
               ? AppBar(
                   toolbarHeight: 40,
-                  backgroundColor: Colors.orange,
+                  backgroundColor: Theme.of(context).primaryColor,
                   iconTheme: const IconThemeData(color: Colors.black),
                   actions: [
                       Padding(
@@ -186,7 +186,7 @@ class _CrewDetailPageState extends State<CrewDetailPage> {
                             children: [
                               castData['profile_path'] == null
                                   ? Container(
-                                      color: Colors.orange,
+                                      color: Theme.of(context).primaryColor,
                                       width: double.infinity,
                                       height: 300,
                                       child: const SizedBox(),
@@ -346,7 +346,7 @@ class _CrewDetailPageState extends State<CrewDetailPage> {
                       children: [
                         castData['profile_path'] == null
                             ? Container(
-                                color: Colors.orange,
+                                color: Theme.of(context).primaryColor,
                                 height: 400, // Adjusted height
                                 child: const SizedBox(),
                               )

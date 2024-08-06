@@ -95,10 +95,10 @@ class _MovieSearchScreenState extends State<MovieSearchScreen> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            titleTextStyle:
-                const TextStyle(color: Colors.orangeAccent, fontSize: 20),
+            titleTextStyle: TextStyle(
+                color: Theme.of(context).secondaryHeaderColor, fontSize: 20),
             contentTextStyle:
-                const TextStyle(color: Colors.orange, fontSize: 16),
+                TextStyle(color: Theme.of(context).primaryColor, fontSize: 16),
             title: const Text('Network Error'),
             content: const Text(
                 'An error occurred while fetching data. Please try again later.'),
@@ -282,9 +282,9 @@ class _MovieSearchScreenState extends State<MovieSearchScreen> {
                                           ),
                                         ),
                                         const SizedBox(width: 5),
-                                        const Icon(
+                                        Icon(
                                           Icons.arrow_forward_ios,
-                                          color: Colors.orange,
+                                          color: Theme.of(context).primaryColor,
                                           size: 16,
                                         ),
                                       ],

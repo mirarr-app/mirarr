@@ -83,8 +83,8 @@ class _BottomBarState extends State<BottomBar> {
   @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(
-      selectedItemColor: Colors.deepOrange,
-      selectedIconTheme: const IconThemeData(color: Colors.deepOrange),
+      selectedItemColor: Theme.of(context).highlightColor,
+      selectedIconTheme: IconThemeData(color: Theme.of(context).highlightColor),
       selectedFontSize: 16,
       unselectedItemColor: Theme.of(context).primaryColor,
       currentIndex: _selectedIndex,

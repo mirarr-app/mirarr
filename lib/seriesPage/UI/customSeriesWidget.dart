@@ -71,43 +71,6 @@ class CustomSeriesWidget extends StatelessWidget {
                 ),
               ),
             ),
-            // Positioned(
-            //   right: 10,
-            //   child: Container(
-            //     margin: const EdgeInsets.only(top: 8),
-            //     padding: const EdgeInsets.all(10),
-            //     decoration: BoxDecoration(),
-            //     child: FutureBuilder(
-            //       future: checkAvailability(serie.id),
-            //       builder: (context, snapshot) {
-            //         if (snapshot.connectionState == ConnectionState.waiting) {
-            //           // Display loading indicator while fetching data
-            //           return const Padding(
-            //             padding: EdgeInsets.all(5.0),
-            //             child: SizedBox(
-            //                 height: 10,
-            //                 width: 10,
-            //                 child: CircularProgressIndicator()),
-            //           );
-            //         } else if (snapshot.hasError) {
-            //           // Display error message if fetching data fails
-            //           return const Text('Error loading data');
-            //         } else {
-            //           // Display check mark if results are not empty
-            //           return snapshot.data == true
-            //               ? const Icon(
-            //                   Icons.download_rounded,
-            //                   color: Colors.yellow,
-            //                 )
-            //               : const Icon(
-            //                   Icons.file_download_off_sharp,
-            //                   color: Colors.yellow,
-            //                 ); // Empty SizedBox if results are empty
-            //         }
-            //       },
-            //     ),
-            //   ),
-            // ),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(

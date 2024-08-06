@@ -83,16 +83,18 @@ void showWatchOptions(BuildContext context, int movieId) {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             if (optionData?['hasAds'] == true)
-                              const Text(
+                              Text(
                                 'Ads',
-                                style: TextStyle(color: Colors.deepOrange),
+                                style: TextStyle(
+                                    color: Theme.of(context).highlightColor),
                               ),
                             if (optionData?['hasSubs'] == true)
-                              const Padding(
-                                padding: EdgeInsets.only(left: 8.0),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 8.0),
                                 child: Text(
                                   'Subs',
-                                  style: TextStyle(color: Colors.orange),
+                                  style: TextStyle(
+                                      color: Theme.of(context).primaryColor),
                                 ),
                               ),
                           ],

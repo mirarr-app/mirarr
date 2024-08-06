@@ -7,7 +7,7 @@ void showErrorDialog(String title, String content, BuildContext context) {
       return AlertDialog(
         title: Text(
           title,
-          style: const TextStyle(color: Colors.orangeAccent),
+          style: TextStyle(color: Theme.of(context).secondaryHeaderColor),
         ),
         content: Text(
           content,

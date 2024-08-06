@@ -1,28 +1,35 @@
+import 'package:Mirarr/functions/themeprovider_class.dart';
 import 'package:Mirarr/widgets/check_updates.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:Mirarr/moviesPage/mainPage.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:provider/provider.dart';
 import 'dart:io';
-
 import 'package:window_manager/window_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
-
   await Hive.initFlutter();
-
   await Hive.openBox('sessionBox');
-
   await Hive.box('sessionBox').close();
   await Hive.close();
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     await windowManager.ensureInitialized();
     WindowManager.instance.setMinimumSize(const Size(1500, 900));
   }
-  runApp(const MyApp());
+
+  final themeProvider = ThemeProvider(AppThemes.orangeTheme);
+  await themeProvider.loadTheme();
+
+  runApp(
+    ChangeNotifierProvider.value(
+      value: themeProvider,
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -30,31 +37,17 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Movie Search App',
-      theme: ThemeData(
-        fontFamily: 'Poppins',
-        colorScheme: const ColorScheme(
-          brightness: Brightness.light,
-          primary: Colors.orange,
-          onPrimary: Colors.blue,
-          secondary: Colors.purple,
-          onSecondary: Colors.deepPurple,
-          error: Colors.red,
-          onError: Colors.orange,
-          background: Colors.black,
-          onBackground: Colors.black,
-          surface: Colors.black,
-          onSurface: Colors.black,
+    return Consumer<ThemeProvider>(builder: (context, themeProvider, child) {
+      return MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Mirarr',
+        theme: themeProvider.currentTheme,
+        home: const Scaffold(
+          body:
+              ConnectivityWidget(), // Use ConnectivityWidget as the home screen
         ),
-        cardColor: Theme.of(context).primaryColor,
-        scaffoldBackgroundColor: Colors.black,
-      ),
-      home: const Scaffold(
-        body: ConnectivityWidget(), // Use ConnectivityWidget as the home screen
-      ),
-    );
+      );
+    });
   }
 }
 
