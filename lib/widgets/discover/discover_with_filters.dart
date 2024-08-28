@@ -266,35 +266,6 @@ class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.only(left: 20),
-                      child: Text(
-                        'Year Range',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).primaryColor,
-                        ),
-                      ),
-                    ),
-                    const CustomDivider(),
-                    RangeSlider(
-                      values: _yearRange,
-                      min: 1900,
-                      max: 2024,
-                      divisions: 124,
-                      activeColor: Colors.white,
-                      inactiveColor: Theme.of(context).primaryColor,
-                      labels: RangeLabels(
-                        _yearRange.start.round().toString(),
-                        _yearRange.end.round().toString(),
-                      ),
-                      onChanged: (RangeValues values) {
-                        setState(() {
-                          _yearRange = values;
-                        });
-                      },
-                    ),
                     Row(
                       children: [
                         Expanded(
@@ -402,6 +373,35 @@ class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
                           ),
                         )
                       ],
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 20),
+                      child: Text(
+                        'Year Range',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                      ),
+                    ),
+                    const CustomDivider(),
+                    RangeSlider(
+                      values: _yearRange,
+                      min: 1900,
+                      max: 2024,
+                      divisions: 124,
+                      activeColor: Colors.white,
+                      inactiveColor: Theme.of(context).primaryColor,
+                      labels: RangeLabels(
+                        _yearRange.start.round().toString(),
+                        _yearRange.end.round().toString(),
+                      ),
+                      onChanged: (RangeValues values) {
+                        setState(() {
+                          _yearRange = values;
+                        });
+                      },
                     ),
                     SingleChildScrollView(
                       child: Padding(
