@@ -190,35 +190,42 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Download APK
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: apk
-          path: ./out/
+          path: ./out/android
 
-      - name: Download EXE
-        uses: actions/download-artifact@v3
+      - name: Download Windows ZIP
+        uses: actions/download-artifact@v4
         with:
           name: windows-zip
-          path: ./out/
+          path: ./out/windows
 
-      - name: Download Linux
-        uses: actions/download-artifact@v3
+      - name: Download Linux ZIP
+        uses: actions/download-artifact@v4
         with:
           name: linux-zip
-          path: ./out/
+          path: ./out/linux
 
-      - name: Download IOS
-        uses: actions/download-artifact@v3
+      - name: Download IOS IPA
+        uses: actions/download-artifact@v4
         with:
           name: ios-app
-          path: ./out/
+          path: ./out/ios
+
+      - name: List output directory
+        run: ls -R ./out
 
       - name: Upload Release
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         with:
-          files: ./out/*
+          files: |
+            ./out/android/*
+            ./out/windows/*
+            ./out/linux/*
+            ./out/ios/*
           tag_name: ${{ steps.version.outputs.VERSION }}
           draft: false
           prerelease: false
