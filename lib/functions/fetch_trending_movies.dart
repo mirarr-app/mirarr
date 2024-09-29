@@ -9,7 +9,7 @@ final apiKey = dotenv.env['TMDB_API_KEY'];
 Future<List<Movie>> fetchTrendingMovies() async {
   final response = await http.get(
     Uri.parse(
-      'https://api.themoviedb.org/3/trending/movie/week?api_key=$apiKey',
+      'https://tmdb.maybeparsa.top/tmdb/trending/movie/week?api_key=$apiKey',
     ),
   );
 

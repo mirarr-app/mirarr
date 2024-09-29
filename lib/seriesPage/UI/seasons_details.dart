@@ -78,7 +78,7 @@ Future<Map<int, String>> fetchSeasonImdbRatings(
 Future<List<dynamic>> fetchSeasons(int serieId) async {
   return _cachedApiCall('seasons_$serieId', () async {
     final response = await http.get(
-      Uri.parse('https://api.themoviedb.org/3/tv/$serieId?api_key=$apiKey'),
+      Uri.parse('https://tmdb.maybeparsa.top/tmdb/tv/$serieId?api_key=$apiKey'),
     );
 
     if (response.statusCode == 200) {
@@ -142,7 +142,7 @@ void seasonsAndEpisodes(
                         (context, index) {
                           final season = seasons[index];
                           final coverUrl = season['poster_path'] != null
-                              ? 'https://image.tmdb.org/t/p/w500${season['poster_path']}'
+                              ? 'https://tmdbpics.maybeparsa.top/t/p/w500${season['poster_path']}'
                               : null;
                           final isAirDateNull = season['air_date'] == null;
                           final isEpisodeCountZero =
@@ -220,7 +220,7 @@ Future<List<dynamic>> fetchEpisodesGuide(
   return _cachedApiCall('episodes_guide_$serieId$seasonNumber', () async {
     final episodesResponse = await http.get(
       Uri.parse(
-          'https://api.themoviedb.org/3/tv/$serieId/season/$seasonNumber?api_key=$apiKey'),
+          'https://tmdb.maybeparsa.top/tmdb/tv/$serieId/season/$seasonNumber?api_key=$apiKey'),
     );
 
     final ratingsMap = await fetchSeasonImdbRatings(imdbId, seasonNumber);
@@ -287,7 +287,7 @@ void episodesGuide(int seasonNumber, BuildContext context, int serieId,
                         itemBuilder: (context, index) {
                           final episode = episodes[index];
                           final coverUrl = episode['still_path'] != null
-                              ? 'https://image.tmdb.org/t/p/w500${episode['still_path']}'
+                              ? 'https://tmdbpics.maybeparsa.top/t/p/w500${episode['still_path']}'
                               : null;
 
                           bool isReleased = true;
@@ -397,7 +397,7 @@ Future<Map<String, dynamic>> fetchEpisodesDetails(
       () async {
     final response = await http.get(
       Uri.parse(
-          'https://api.themoviedb.org/3/tv/$serieId/season/$seasonNumber/episode/$episodeNumber?api_key=$apiKey'),
+          'https://tmdb.maybeparsa.top/tmdb/tv/$serieId/season/$seasonNumber/episode/$episodeNumber?api_key=$apiKey'),
     );
 
     if (response.statusCode == 200) {

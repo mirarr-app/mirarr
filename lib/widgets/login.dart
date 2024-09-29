@@ -49,7 +49,7 @@ class _LoginPageState extends State<LoginPage> {
 
         if (sessionData != null) {
           var accountData = await http.get(Uri.parse(
-              'https://api.themoviedb.org/3/account?api_key=$apiKey&session_id=$sessionData'));
+              'https://tmdb.maybeparsa.top/tmdb/account?api_key=$apiKey&session_id=$sessionData'));
           if (accountData.statusCode == 200) {
             final String accountId =
                 json.decode(accountData.body)['id'].toString();

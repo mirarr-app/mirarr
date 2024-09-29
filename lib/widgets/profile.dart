@@ -61,7 +61,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final String sessionData = openbox.get('sessionData');
     final response = await http.get(
       Uri.parse(
-        'https://api.themoviedb.org/3/account/$accountId/watchlist/movies?api_key=$apiKey&session_id=$sessionData',
+        'https://tmdb.maybeparsa.top/tmdb/account/$accountId/watchlist/movies?api_key=$apiKey&session_id=$sessionData',
       ),
     );
 
@@ -94,7 +94,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final String sessionData = openbox.get('sessionData');
     final response = await http.get(
       Uri.parse(
-        'https://api.themoviedb.org/3/account/$accountId/favorite/movies?api_key=$apiKey&session_id=$sessionData',
+        'https://tmdb.maybeparsa.top/tmdb/account/$accountId/favorite/movies?api_key=$apiKey&session_id=$sessionData',
       ),
     );
 
@@ -127,7 +127,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final String sessionData = openbox.get('sessionData');
     final response = await http.get(
       Uri.parse(
-        'https://api.themoviedb.org/3/account/$accountId/rated/movies?api_key=$apiKey&session_id=$sessionData',
+        'https://tmdb.maybeparsa.top/tmdb/account/$accountId/rated/movies?api_key=$apiKey&session_id=$sessionData',
       ),
     );
 
@@ -225,7 +225,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final String sessionData = openbox.get('sessionData');
     final response = await http.get(
       Uri.parse(
-        'https://api.themoviedb.org/3/account/$accountId/watchlist/tv?api_key=$apiKey&session_id=$sessionData',
+        'https://tmdb.maybeparsa.top/tmdb/account/$accountId/watchlist/tv?api_key=$apiKey&session_id=$sessionData',
       ),
     );
 
@@ -257,7 +257,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final String sessionData = openbox.get('sessionData');
     final response = await http.get(
       Uri.parse(
-        'https://api.themoviedb.org/3/account/$accountId/favorite/tv?api_key=$apiKey&session_id=$sessionData',
+        'https://tmdb.maybeparsa.top/tmdb/account/$accountId/favorite/tv?api_key=$apiKey&session_id=$sessionData',
       ),
     );
 
@@ -289,7 +289,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final String sessionData = openbox.get('sessionData');
     final response = await http.get(
       Uri.parse(
-        'https://api.themoviedb.org/3/account/$accountId/rated/tv?api_key=$apiKey&session_id=$sessionData',
+        'https://tmdb.maybeparsa.top/tmdb/account/$accountId/rated/tv?api_key=$apiKey&session_id=$sessionData',
       ),
     );
 

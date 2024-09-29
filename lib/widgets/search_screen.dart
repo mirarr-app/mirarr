@@ -60,7 +60,7 @@ class _SearchScreenState extends State<SearchScreen>
   Future<void> searchMovies(String query) async {
     final response = await http.get(
       Uri.parse(
-        'https://api.themoviedb.org/3/search/movie?api_key=$apiKey&query=$query',
+        'https://tmdb.maybeparsa.top/tmdb/search/movie?api_key=$apiKey&query=$query',
       ),
     );
     if (response.statusCode == 200) {
@@ -90,7 +90,7 @@ class _SearchScreenState extends State<SearchScreen>
   Future<void> searchSeries(String query) async {
     final response = await http.get(
       Uri.parse(
-        'https://api.themoviedb.org/3/search/tv?api_key=$apiKey&query=$query',
+        'https://tmdb.maybeparsa.top/tmdb/search/tv?api_key=$apiKey&query=$query',
       ),
     );
     if (response.statusCode == 200) {
@@ -120,7 +120,7 @@ class _SearchScreenState extends State<SearchScreen>
   Future<void> searchPerson(String query) async {
     final response = await http.get(
       Uri.parse(
-        'https://api.themoviedb.org/3/search/person?api_key=$apiKey&query=$query',
+        'https://tmdb.maybeparsa.top/tmdb/search/person?api_key=$apiKey&query=$query',
       ),
     );
     if (response.statusCode == 200) {

@@ -80,7 +80,7 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
     final sessionId = openbox.get('sessionData');
     final response = await http.get(
       Uri.parse(
-        'https://api.themoviedb.org/3/tv/${widget.serieId}/account_states?api_key=$apiKey&session_id=$sessionId',
+        'https://tmdb.maybeparsa.top/tmdb/tv/${widget.serieId}/account_states?api_key=$apiKey&session_id=$sessionId',
       ),
     );
 
@@ -102,7 +102,7 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
       // Make an HTTP GET request to fetch movie details from the first API
       final response = await http.get(
         Uri.parse(
-          'https://api.themoviedb.org/3/tv/${widget.serieId}?api_key=$apiKey',
+          'https://tmdb.maybeparsa.top/tmdb/tv/${widget.serieId}?api_key=$apiKey',
         ),
       );
 
@@ -148,7 +148,7 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
       // Make an HTTP GET request to fetch movie details from the first API
       final response = await http.get(
         Uri.parse(
-          'https://api.themoviedb.org/3/tv/${widget.serieId}/external_ids?api_key=$apiKey',
+          'https://tmdb.maybeparsa.top/tmdb/tv/${widget.serieId}/external_ids?api_key=$apiKey',
         ),
       );
 
@@ -177,7 +177,7 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
     try {
       final response = await http.get(
         Uri.parse(
-          'https://api.themoviedb.org/3/tv/$serieId/credits?api_key=$apiKey',
+          'https://tmdb.maybeparsa.top/tmdb/tv/$serieId/credits?api_key=$apiKey',
         ),
       );
 
@@ -225,7 +225,7 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
                       children: [
                         CachedNetworkImage(
                           imageUrl:
-                              'https://image.tmdb.org/t/p/original$backdrops',
+                              'https://tmdbpics.maybeparsa.top/t/p/original$backdrops',
                           placeholder: (context, url) => const Center(
                               child:
                                   CircularProgressIndicator()), // Placeholder widget while loading.

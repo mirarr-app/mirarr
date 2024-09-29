@@ -21,7 +21,7 @@ class PersonSearchResult extends StatelessWidget {
             image: person.profilePath.isNotEmpty
                 ? DecorationImage(
                     image: CachedNetworkImageProvider(
-                      'https://image.tmdb.org/t/p/original${person.profilePath}',
+                      'https://tmdbpics.maybeparsa.top/t/p/original${person.profilePath}',
                     ),
                     fit: BoxFit.cover,
                     opacity: 0.8)

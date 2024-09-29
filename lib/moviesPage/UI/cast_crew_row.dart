@@ -37,7 +37,7 @@ Widget buildCastRow(List<Map<String, dynamic>> castList, BuildContext context) {
                 CircleAvatar(
                   backgroundImage: cast['profile_path'] != null
                       ? CachedNetworkImageProvider(
-                          'https://image.tmdb.org/t/p/w92${cast['profile_path']}',
+                          'https://tmdbpics.maybeparsa.top/t/p/w92${cast['profile_path']}',
                         )
                       : const AssetImage('assets/images/person.png')
                           as ImageProvider,
@@ -103,7 +103,7 @@ Widget buildCrewRow(List<Map<String, dynamic>> crewList, BuildContext context) {
                 CircleAvatar(
                   backgroundImage: crew['profile_path'] != null
                       ? CachedNetworkImageProvider(
-                          'https://image.tmdb.org/t/p/w92${crew['profile_path']}',
+                          'https://tmdbpics.maybeparsa.top/t/p/w92${crew['profile_path']}',
                         )
                       : const AssetImage('assets/images/person.png')
                           as ImageProvider,
@@ -171,7 +171,7 @@ Widget buildCrewRowDesktop(
                 CircleAvatar(
                   backgroundImage: crew['profile_path'] != null
                       ? CachedNetworkImageProvider(
-                          'https://image.tmdb.org/t/p/w185${crew['profile_path']}', // Increase image size
+                          'https://tmdbpics.maybeparsa.top/t/p/w185${crew['profile_path']}', // Increase image size
                         )
                       : const AssetImage('assets/images/person.png')
                           as ImageProvider,
@@ -240,7 +240,7 @@ Widget buildCastRowDesktop(
                 CircleAvatar(
                   backgroundImage: cast['profile_path'] != null
                       ? CachedNetworkImageProvider(
-                          'https://image.tmdb.org/t/p/w185${cast['profile_path']}',
+                          'https://tmdbpics.maybeparsa.top/t/p/w185${cast['profile_path']}',
                         )
                       : const AssetImage('assets/images/person.png')
                           as ImageProvider,

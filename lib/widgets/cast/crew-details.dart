@@ -193,7 +193,7 @@ class _CrewDetailPageState extends State<CrewDetailPage> {
                                     )
                                   : CachedNetworkImage(
                                       imageUrl:
-                                          "https://image.tmdb.org/t/p/original${castData['profile_path']}",
+                                          "https://tmdbpics.maybeparsa.top/t/p/original${castData['profile_path']}",
                                       placeholder: (context, url) =>
                                           const Center(
                                         child: CircularProgressIndicator(),
@@ -352,7 +352,7 @@ class _CrewDetailPageState extends State<CrewDetailPage> {
                               )
                             : CachedNetworkImage(
                                 imageUrl:
-                                    "https://image.tmdb.org/t/p/original${castData['profile_path']}",
+                                    "https://tmdbpics.maybeparsa.top/t/p/original${castData['profile_path']}",
                                 placeholder: (context, url) => const Center(
                                   child: CircularProgressIndicator(),
                                 ),
@@ -491,7 +491,8 @@ class _CrewDetailPageState extends State<CrewDetailPage> {
       child: Stack(
         children: [
           CachedNetworkImage(
-            imageUrl: "https://image.tmdb.org/t/p/w500${movie['poster_path']}",
+            imageUrl:
+                "https://tmdbpics.maybeparsa.top/t/p/w500${movie['poster_path']}",
             placeholder: (context, url) => const Center(
               child: CircularProgressIndicator(),
             ),
