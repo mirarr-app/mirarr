@@ -59,7 +59,7 @@ jobs:
       - name: List APK Directory
         run: ls -alh ${{ github.workspace }}/build/app/outputs/flutter-apk
       - name: Upload APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.4
         with:
           name: apk
           path: ${{ github.workspace }}/build/app/outputs/flutter-apk/app-release.apk
@@ -96,7 +96,7 @@ jobs:
           cd ${{ github.workspace }}/build/windows/x64/runner/Release
           powershell -Command "Compress-Archive -Path * -DestinationPath mirarr-windows.zip"
       - name: Upload binary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.4
         with:
           name: windows-zip
           path: ${{ github.workspace }}/build/windows/x64/runner/Release/mirarr-windows.zip
@@ -135,7 +135,7 @@ jobs:
           cd ${{ github.workspace }}/build/linux/x64/release/bundle
           zip -r mirarr.zip *
       - name: Upload binary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.4
         with:
           name: linux-zip
           path: ${{ github.workspace }}/build/linux/x64/release/bundle/mirarr.zip
@@ -170,7 +170,7 @@ jobs:
               cp -r Runner.app Payload
               zip -r mirarr.ipa Payload
           - name: Upload binary
-            uses: actions/upload-artifact@v4
+            uses: actions/upload-artifact@v4.4
             with:
               name: ios-app
               path: build/ios/iphoneos/mirarr.ipa
