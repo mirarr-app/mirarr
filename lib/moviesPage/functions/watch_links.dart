@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:io';
+// import 'dart:io';
 
 import 'package:Mirarr/functions/show_error_dialog.dart';
 import 'package:Mirarr/widgets/custom_divider.dart';
@@ -66,11 +66,11 @@ String _deobfuscateUrl(List<int> obfuscatedChars) {
 // Function to show watch options in a modal bottom sheet
 void showWatchOptions(BuildContext context, int movieId) {
   Map<String, Map<String, dynamic>> optionUrls = {
-    if (Platform.isAndroid || Platform.isIOS)
-      'Mirarr(Beta)': {
-        'hasAds': false,
-        'hasSubs': true,
-      },
+    // if (Platform.isAndroid || Platform.isIOS)
+    //   'Mirarr(Beta)': {
+    //     'hasAds': false,
+    //     'hasSubs': true,
+    //   },
     'braflix': {
       'url': 'https://www.braflix.video/movie/$movieId',
       'hasAds': true,

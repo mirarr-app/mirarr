@@ -332,35 +332,12 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
                                   borderRadius:
                                       BorderRadius.all(Radius.circular(20)),
                                 ),
-                                width: MediaQuery.of(context).size.width -
-                                    20, // Adjust the width as needed
-                                child: Text(
-                                  widget.serieName,
-                                  style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Positioned(
-                          bottom: 30,
-                          left: 10,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: const BoxDecoration(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(20)),
-                                ),
                                 width: MediaQuery.of(context).size.width - 20,
                                 child: Text(
                                   widget.serieName,
+                                  softWrap: true,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
@@ -371,6 +348,7 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
                             ],
                           ),
                         ),
+
                         Visibility(
                           visible: isUserLoggedIn == true,
                           child: Positioned(
