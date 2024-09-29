@@ -22,7 +22,8 @@ class ImageGalleryPage extends StatelessWidget {
         itemCount: imageUrls.length,
         itemBuilder: (context, index) {
           return CachedNetworkImage(
-            imageUrl: "https://image.tmdb.org/t/p/original${imageUrls[index]}",
+            imageUrl:
+                "https://tmdbpics.maybeparsa.top/t/p/original${imageUrls[index]}",
             placeholder: (context, url) => const Center(
               child: CircularProgressIndicator(),
             ),

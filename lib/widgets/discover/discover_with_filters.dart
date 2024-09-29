@@ -57,7 +57,7 @@ class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
   Future<void> _fetchGenres() async {
     final apiKey = dotenv.env['TMDB_API_KEY'];
     final url = Uri.parse(
-        'https://api.themoviedb.org/3/genre/movie/list?api_key=$apiKey');
+        'https://tmdb.maybeparsa.top/tmdb/genre/movie/list?api_key=$apiKey');
 
     try {
       final response = await http.get(url);
@@ -99,14 +99,14 @@ class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
         .map((entry) => entry.key.toString())
         .join(',');
 
-    final url =
-        Uri.parse('https://api.themoviedb.org/3/discover/movie?api_key=$apiKey'
-            '&include_adult=true'
-            '&primary_release_date.gte=${_yearRange.start.round()}-01-01'
-            '&primary_release_date.lte=${_yearRange.end.round()}-12-31'
-            '&with_people=$withPeople'
-            '&with_genres=$withGenres'
-            '&without_genres=$withoutGenres');
+    final url = Uri.parse(
+        'https://tmdb.maybeparsa.top/tmdb/discover/movie?api_key=$apiKey'
+        '&include_adult=true'
+        '&primary_release_date.gte=${_yearRange.start.round()}-01-01'
+        '&primary_release_date.lte=${_yearRange.end.round()}-12-31'
+        '&with_people=$withPeople'
+        '&with_genres=$withGenres'
+        '&without_genres=$withoutGenres');
 
     try {
       final response = await http.get(url);
@@ -147,7 +147,7 @@ class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
 
     final apiKey = dotenv.env['TMDB_API_KEY'];
     final url = Uri.parse(
-        'https://api.themoviedb.org/3/search/person?api_key=$apiKey&query=$query');
+        'https://tmdb.maybeparsa.top/tmdb/search/person?api_key=$apiKey&query=$query');
 
     try {
       final response = await http.get(url);

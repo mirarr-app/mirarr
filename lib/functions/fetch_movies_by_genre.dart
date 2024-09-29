@@ -15,7 +15,7 @@ class Genre {
 Future<List<Genre>> fetchGenres() async {
   final response = await http.get(
     Uri.parse(
-      'https://api.themoviedb.org/3/genre/movie/list?api_key=$apiKey',
+      'https://tmdb.maybeparsa.top/tmdb/genre/movie/list?api_key=$apiKey',
     ),
   );
 
@@ -38,7 +38,7 @@ Future<List<Genre>> fetchGenres() async {
 Future<List<Movie>> fetchMoviesByGenre(int genreId) async {
   final response = await http.get(
     Uri.parse(
-      'https://api.themoviedb.org/3/discover/movie?api_key=$apiKey&with_genres=$genreId',
+      'https://tmdb.maybeparsa.top/tmdb/discover/movie?api_key=$apiKey&with_genres=$genreId',
     ),
   );
 

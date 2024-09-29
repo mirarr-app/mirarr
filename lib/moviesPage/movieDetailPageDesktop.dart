@@ -90,7 +90,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
   Future<List<dynamic>> _fetchOtherMoviesByDirector(int castId) async {
     final response = await http.get(
       Uri.parse(
-          'https://api.themoviedb.org/3/person/$castId/movie_credits?api_key=$apiKey'),
+          'https://tmdb.maybeparsa.top/tmdb/person/$castId/movie_credits?api_key=$apiKey'),
     );
     if (response.statusCode == 200) {
       final decoded = json.decode(response.body);
@@ -146,7 +146,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
     final sessionId = openbox.get('sessionData');
     final response = await http.get(
       Uri.parse(
-        'https://api.themoviedb.org/3/movie/${widget.movieId}/account_states?api_key=$apiKey&session_id=$sessionId',
+        'https://tmdb.maybeparsa.top/tmdb/movie/${widget.movieId}/account_states?api_key=$apiKey&session_id=$sessionId',
       ),
     );
 
@@ -166,7 +166,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
   Future<List<String>> _fetchMovieImages(int movieId) async {
     final response = await http.get(
       Uri.parse(
-          'https://api.themoviedb.org/3/movie/$movieId/images?api_key=$apiKey'),
+          'https://tmdb.maybeparsa.top/tmdb/movie/$movieId/images?api_key=$apiKey'),
     );
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body)['backdrops'];
@@ -193,7 +193,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
       // Make an HTTP GET request to fetch movie details from the first API
       final response = await http.get(
         Uri.parse(
-          'https://api.themoviedb.org/3/movie/${widget.movieId}?api_key=$apiKey',
+          'https://tmdb.maybeparsa.top/tmdb/movie/${widget.movieId}?api_key=$apiKey',
         ),
       );
 
@@ -235,7 +235,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
     try {
       final response = await http.get(
         Uri.parse(
-          'https://api.themoviedb.org/3/movie/$movieId/credits?api_key=$apiKey',
+          'https://tmdb.maybeparsa.top/tmdb/movie/$movieId/credits?api_key=$apiKey',
         ),
       );
 
@@ -315,7 +315,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                       decoration: BoxDecoration(
                         image: DecorationImage(
                             image: CachedNetworkImageProvider(
-                                'https://image.tmdb.org/t/p/original$backdrops'),
+                                'https://tmdbpics.maybeparsa.top/t/p/original$backdrops'),
                             fit: BoxFit.fitWidth,
                             opacity: 0.5),
                       ),
@@ -327,7 +327,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                           children: [
                             CachedNetworkImage(
                               imageUrl:
-                                  'https://image.tmdb.org/t/p/original$posterPath',
+                                  'https://tmdbpics.maybeparsa.top/t/p/original$posterPath',
                               placeholder: (context, url) => const Center(
                                   child: CircularProgressIndicator()),
                               errorWidget: (context, url, error) =>
@@ -1135,7 +1135,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                                 ? DecorationImage(
                                                                     image:
                                                                         CachedNetworkImageProvider(
-                                                                      'https://image.tmdb.org/t/p/w200${movie['poster_path']}',
+                                                                      'https://tmdbpics.maybeparsa.top/t/p/w200${movie['poster_path']}',
                                                                     ),
                                                                     fit: BoxFit
                                                                         .cover,

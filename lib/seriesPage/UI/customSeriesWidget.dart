@@ -13,7 +13,7 @@ class CustomSeriesWidget extends StatelessWidget {
     final apiKey = dotenv.env['TMDB_API_KEY']; // Replace with your TMDB API Key
     final response = await http.get(
       Uri.parse(
-        'https://api.themoviedb.org/3/movie/$movieId/watch/providers?api_key=$apiKey',
+        'https://tmdb.maybeparsa.top/tmdb/movie/$movieId/watch/providers?api_key=$apiKey',
       ),
     );
 
@@ -40,7 +40,7 @@ class CustomSeriesWidget extends StatelessWidget {
           image: serie.posterPath.isNotEmpty
               ? DecorationImage(
                   image: CachedNetworkImageProvider(
-                    'https://image.tmdb.org/t/p/w500${serie.posterPath}',
+                    'https://tmdbpics.maybeparsa.top/t/p/w500${serie.posterPath}',
                   ),
                   fit: BoxFit.cover,
                 )

@@ -51,7 +51,7 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
   Future<void> fetchTrendingSeries() async {
     final response = await http.get(
       Uri.parse(
-        'https://api.themoviedb.org/3/trending/tv/day?api_key=$apiKey',
+        'https://tmdb.maybeparsa.top/tmdb/trending/tv/day?api_key=$apiKey',
       ),
     );
 
@@ -81,7 +81,7 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
   Future<void> fetchPopularSeries() async {
     final response = await http.get(
       Uri.parse(
-        'https://api.themoviedb.org/3/tv/popular?api_key=$apiKey',
+        'https://tmdb.maybeparsa.top/tmdb/tv/popular?api_key=$apiKey',
       ),
     );
 

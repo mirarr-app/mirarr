@@ -11,7 +11,7 @@ Future<Map<String, List<Map<String, dynamic>>>> fetchEpisodeCastAndCrew(
   try {
     final response = await http.get(
       Uri.parse(
-        'https://api.themoviedb.org/3/tv/$serieId/season/$seasonNumber/episode/$episodeNumber?api_key=$apiKey',
+        'https://tmdb.maybeparsa.top/tmdb/tv/$serieId/season/$seasonNumber/episode/$episodeNumber?api_key=$apiKey',
       ),
     );
 
