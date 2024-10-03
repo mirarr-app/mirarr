@@ -71,18 +71,18 @@ void showWatchOptions(BuildContext context, int movieId) {
     //     'hasAds': false,
     //     'hasSubs': true,
     //   },
+    'movie-web': {
+      'url': '    https://www.movie-web.me/media/tmdb-movie-$movieId',
+      'hasAds': false,
+      'hasSubs': true,
+    },
     'braflix': {
       'url': 'https://www.braflix.video/movie/$movieId',
       'hasAds': true,
       'hasSubs': true,
     },
-    'binged': {
-      'url': 'https://binged.live/watch/movie/$movieId',
-      'hasAds': true,
-      'hasSubs': true,
-    },
-    'lonelil': {
-      'url': 'https://watch.lonelil.ru/watch/movie/$movieId',
+    'freek': {
+      'url': 'https://freek.to/watch/movie/$movieId',
       'hasAds': true,
       'hasSubs': true,
     },
@@ -94,6 +94,16 @@ void showWatchOptions(BuildContext context, int movieId) {
     'vidsrc': {
       'url': 'https://vidsrc.to/embed/movie/$movieId',
       'hasAds': true,
+      'hasSubs': true,
+    },
+    'mrrelax': {
+      'url': 'https://movie.mrrelax.website/media/tmdb-movie-$movieId',
+      'hasAds': false,
+      'hasSubs': true,
+    },
+    'primeflix': {
+      'url': 'https://www.primeflix.lol/movie/$movieId/stream',
+      'hasAds': false,
       'hasSubs': true,
     }
   };
