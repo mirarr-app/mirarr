@@ -20,21 +20,21 @@ void showWatchOptions(
       'hasAds': true,
       'hasSubs': true,
     },
-    'binged': {
+    'freek': {
       'url':
-          'https://binged.live/watch/tv/$serieId?season=$seasonNumber&ep=$episodeNumber',
-      'hasAds': false,
-      'hasSubs': true,
-    },
-    'lonelil': {
-      'url':
-          'https://watch.lonelil.ru/watch/show/$serieId.$seasonNumber.$episodeNumber',
+          'https://freek.to/watch/tv/$serieId?season=$seasonNumber&ep=$episodeNumber',
       'hasAds': false,
       'hasSubs': true,
     },
     'rive': {
       'url':
           'https://rivestream.live/watch?type=tv&id=$serieId&season=$seasonNumber&episode=$episodeNumber',
+      'hasAds': false,
+      'hasSubs': true
+    },
+    'primeflix': {
+      'url':
+          'https://www.primeflix.lol/tv/$serieId/season/$seasonNumber/stream/$episodeNumber',
       'hasAds': false,
       'hasSubs': true
     }
