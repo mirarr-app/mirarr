@@ -838,7 +838,11 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                             backgroundColor:
                                                 Theme.of(context).primaryColor,
                                             onPressed: () => showWatchOptions(
-                                                context, widget.movieId),
+                                                context,
+                                                widget.movieId,
+                                                widget.movieTitle,
+                                                releaseDate ?? '',
+                                                imdbId ?? ''),
                                             child: const Text(
                                               'Watch',
                                               style: TextStyle(

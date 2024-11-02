@@ -111,23 +111,23 @@ class _HLSPlayerState extends State<HLSPlayer> {
                 )
               : const Center(child: CircularProgressIndicator()),
           const SizedBox(height: 20),
-          DropdownButton<String>(
-            value: _currentSubtitleKey,
-            items: widget.subtitleUrls.keys.map((String key) {
-              return DropdownMenuItem<String>(
-                value: key,
-                child: Text(
-                  key,
-                  style: const TextStyle(color: Colors.white),
-                ),
-              );
-            }).toList(),
-            onChanged: (String? newValue) {
-              if (newValue != null) {
-                _setSubtitles(newValue);
-              }
-            },
-          ),
+          // DropdownButton<String>(
+          //   value: _currentSubtitleKey,
+          //   items: widget.subtitleUrls.keys.map((String key) {
+          //     return DropdownMenuItem<String>(
+          //       value: key,
+          //       child: Text(
+          //         key,
+          //         style: const TextStyle(color: Colors.white),
+          //       ),
+          //     );
+          //   }).toList(),
+          //   onChanged: (String? newValue) {
+          //     if (newValue != null) {
+          //       _setSubtitles(newValue);
+          //     }
+          //   },
+          // ),
           const SizedBox(height: 20),
           const Text('SubtitleControllView'),
           if (_chewieController != null && _currentSubtitleKey != null)
