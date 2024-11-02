@@ -1,12 +1,11 @@
-import 'dart:convert';
-// import 'dart:io';
-
+import 'dart:io';
 import 'package:Mirarr/functions/show_error_dialog.dart';
 import 'package:Mirarr/widgets/custom_divider.dart';
 import 'package:Mirarr/widgets/hls_player_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-import 'package:http/http.dart' as http;
+import 'dart:developer';
+import 'whvx_api.dart';
 
 // Function to launch a URL
 Future<void> _launchUrl(Uri url) async {
@@ -17,65 +16,100 @@ Future<void> _launchUrl(Uri url) async {
   }
 }
 
-// Function to get hls playlist
-Future<Map<String, dynamic>> getHLSPlaylistAndSubtitles(int movieId) async {
-  final String obfuscatedUrl = _deobfuscateUrl([
-    114,
-    100,
-    112,
-    46,
-    118,
-    105,
-    100,
-    108,
-    105,
-    110,
-    107,
-    46,
-    112,
-    114,
-    111
-  ]);
-  final response = await http
-      .get(Uri.parse('https://$obfuscatedUrl/api/movie/$movieId?multiLang=0'));
+Future<Map<String, dynamic>?> testWhvxStream(BuildContext context,
+    String movieTitle, String releaseDate, String tmdbId, String imdbId) async {
+  final whvxService = WhvxService();
 
-  if (response.statusCode == 200) {
-    final Map<String, dynamic> data = json.decode(response.body);
-    final String fullUrl = data['stream']['playlist'];
-    final String hlsUrl =
-        fullUrl.split('&').first.split('=').last.split('?').last;
-    Map<String, String> subtitles = {};
-    if (data['stream']['captions'] != null) {
-      for (var caption in data['stream']['captions']) {
-        subtitles[caption['language']] = caption['url'];
+  try {
+    log('Starting WHVX stream test...');
+    final sourcererOutput = await whvxService.search(
+      title: movieTitle,
+      releaseYear: releaseDate.substring(0, 4),
+      tmdbId: tmdbId,
+      imdbId: imdbId,
+      type: 'movie',
+    );
+
+    if (sourcererOutput.embeds.isNotEmpty) {
+      for (final embed in sourcererOutput.embeds) {
+        try {
+          final streamData = await whvxService.getStreams(embed);
+          if (streamData.qualities.isNotEmpty) {
+            // Show quality selection dialog
+            final selectedQuality = await showDialog<StreamQuality>(
+              context: context,
+              builder: (BuildContext context) {
+                return SimpleDialog(
+                  title: Text(
+                    'Select Quality',
+                    style: TextStyle(color: Theme.of(context).primaryColor),
+                  ),
+                  children: streamData.qualities.map((quality) {
+                    return SimpleDialogOption(
+                      onPressed: () {
+                        Navigator.pop(context, quality);
+                      },
+                      child: Text(
+                        quality.quality,
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    );
+                  }).toList(),
+                );
+              },
+            );
+
+            if (selectedQuality != null) {
+              log('Selected quality: ${selectedQuality.quality}, URL: ${selectedQuality.url}');
+              final subtitleUrls = Map.fromEntries(streamData.subtitles.map(
+                  (subtitle) => MapEntry(subtitle.language, subtitle.url)));
+              log('Subtitle URLs: $subtitleUrls');
+
+              return {
+                'videoUrl': selectedQuality.url,
+                'subtitleUrls': subtitleUrls,
+              };
+            } else {
+              log('No quality selected');
+            }
+          } else {
+            log('No qualities available for this embed');
+          }
+        } catch (e) {
+          log('Error getting streams for embed ${embed.embedId}: $e');
+          // Continue to the next embed if this one fails
+        }
       }
+      throw Exception('No valid streams found from any provider');
+    } else {
+      throw Exception('No embeds found');
     }
-    return {
-      'hlsUrl': hlsUrl,
-      'subtitles': subtitles,
-    };
-  } else {
-    throw Exception('Failed to load hls playlist and subtitles');
+  } catch (e) {
+    log('WHVX API Error: $e');
+    if (context.mounted) {
+      showErrorDialog('Error', 'Failed to get stream: $e', context);
+    }
+  } finally {
+    whvxService.dispose();
   }
-}
-
-String _deobfuscateUrl(List<int> obfuscatedChars) {
-  return String.fromCharCodes(obfuscatedChars);
+  return null;
 }
 
 // Function to show watch options in a modal bottom sheet
-void showWatchOptions(BuildContext context, int movieId) {
+void showWatchOptions(BuildContext context, int movieId, String movieTitle,
+    String releaseDate, String imdbId) {
   Map<String, Map<String, dynamic>> optionUrls = {
-    // if (Platform.isAndroid || Platform.isIOS)
-    //   'Mirarr(Beta)': {
-    //     'hasAds': false,
-    //     'hasSubs': true,
-    //   },
-    'movie-web': {
-      'url': '    https://www.movie-web.me/media/tmdb-movie-$movieId',
-      'hasAds': false,
-      'hasSubs': true,
-    },
+    if (Platform.isAndroid || Platform.isIOS)
+      // 'Mirarr(Beta)': {
+      //   'hasAds': false,
+      //   'hasSubs': true,
+      //   'isCustom': true,
+      // },
+      'movie-web': {
+        'url': 'https://www.movie-web.me/media/tmdb-movie-$movieId',
+        'hasAds': false,
+        'hasSubs': true,
+      },
     'braflix': {
       'url': 'https://www.braflix.video/movie/$movieId',
       'hasAds': true,
@@ -96,14 +130,9 @@ void showWatchOptions(BuildContext context, int movieId) {
       'hasAds': true,
       'hasSubs': true,
     },
-    'mrrelax': {
-      'url': 'https://movie.mrrelax.website/media/tmdb-movie-$movieId',
-      'hasAds': false,
-      'hasSubs': true,
-    },
     'primeflix': {
       'url': 'https://www.primeflix.lol/movie/$movieId/stream',
-      'hasAds': false,
+      'hasAds': true,
       'hasSubs': true,
     }
   };
@@ -163,26 +192,31 @@ void showWatchOptions(BuildContext context, int movieId) {
                         onTap: () async {
                           if (option == 'Mirarr(Beta)') {
                             try {
-                              Map<String, dynamic> videoInfo =
-                                  await getHLSPlaylistAndSubtitles(movieId);
-
+                              Map<String, dynamic>? streamData =
+                                  await testWhvxStream(context, movieTitle,
+                                      releaseDate, movieId.toString(), imdbId);
                               Navigator.of(bottomSheetContext).pop();
-
                               Future.delayed(const Duration(milliseconds: 100),
                                   () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => HlsPlayerScreen(
-                                        videoUrl: videoInfo['hlsUrl'],
-                                        subtitleUrls: videoInfo['subtitles']),
-                                  ),
-                                );
+                                if (streamData != null) {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) => HlsPlayerScreen(
+                                          videoUrl: streamData['videoUrl'],
+                                          subtitleUrls:
+                                              streamData['subtitleUrls']),
+                                    ),
+                                  );
+                                } else {
+                                  showErrorDialog(
+                                      'Error', 'Failed to get stream', context);
+                                }
                               });
                             } catch (e) {
                               Navigator.of(bottomSheetContext)
                                   .pop(); // Close the bottom sheet
-                              showErrorDialog('Error',
-                                  'Failed to get HLS playlist: $e', context);
+                              showErrorDialog(
+                                  'Error', 'Failed to get stream: $e', context);
                             }
                           } else if (optionData != null &&
                               optionData['url'] != null) {

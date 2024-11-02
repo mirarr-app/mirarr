@@ -771,7 +771,12 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                               showWatchOptions(
                                                                   context,
                                                                   widget
-                                                                      .movieId),
+                                                                      .movieId,
+                                                                  widget
+                                                                      .movieTitle,
+                                                                  releaseDate ??
+                                                                      '',
+                                                                  imdbId ?? ''),
                                                           child: const Text(
                                                             'Watch',
                                                             style: TextStyle(

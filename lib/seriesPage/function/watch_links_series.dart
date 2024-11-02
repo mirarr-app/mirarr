@@ -35,7 +35,7 @@ void showWatchOptions(
     'primeflix': {
       'url':
           'https://www.primeflix.lol/tv/$serieId/season/$seasonNumber/stream/$episodeNumber',
-      'hasAds': false,
+      'hasAds': true,
       'hasSubs': true
     }
   };
