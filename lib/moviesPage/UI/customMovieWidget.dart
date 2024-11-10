@@ -6,11 +6,17 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class CustomMovieWidget extends StatelessWidget {
+  static final Map<int, bool> _availabilityCache = {};
+
   final Movie movie;
 
   const CustomMovieWidget({super.key, required this.movie});
 
   Future<bool> checkAvailability(int movieId) async {
+    if (_availabilityCache.containsKey(movieId)) {
+      return _availabilityCache[movieId]!;
+    }
+
     final apiKey = dotenv.env['TMDB_API_KEY'];
     final response = await http.get(
       Uri.parse(
@@ -22,8 +28,10 @@ class CustomMovieWidget extends StatelessWidget {
       final Map<String, dynamic> data = json.decode(response.body);
       final Map<String, dynamic> results = data['results'];
 
+      _availabilityCache[movieId] = results.isNotEmpty;
       return results.isNotEmpty;
     } else {
+      _availabilityCache[movieId] = false;
       return false;
     }
   }

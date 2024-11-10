@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:Mirarr/functions/show_error_dialog.dart';
 import 'package:Mirarr/widgets/custom_divider.dart';
 import 'package:Mirarr/widgets/hls_player_screen.dart';
@@ -6,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'dart:developer';
 import 'whvx_api.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 // Function to launch a URL
 Future<void> _launchUrl(Uri url) async {
@@ -95,47 +96,36 @@ Future<Map<String, dynamic>?> testWhvxStream(BuildContext context,
   return null;
 }
 
+// Add this function to fetch and parse sources
+Future<Map<String, Map<String, dynamic>>> fetchSources() async {
+  try {
+    final response = await http.get(Uri.parse(
+        'https://raw.githubusercontent.com/mirarr-app/sources/refs/heads/main/moviesources.txt'));
+
+    if (response.statusCode == 200) {
+      return Map<String, Map<String, dynamic>>.from(json.decode(response.body));
+    } else {
+      throw Exception('Failed to load sources');
+    }
+  } catch (e) {
+    log('Error fetching sources: $e');
+    // Return empty map or handle error as needed
+    return {};
+  }
+}
+
 // Function to show watch options in a modal bottom sheet
 void showWatchOptions(BuildContext context, int movieId, String movieTitle,
-    String releaseDate, String imdbId) {
-  Map<String, Map<String, dynamic>> optionUrls = {
-    if (Platform.isAndroid || Platform.isIOS)
-      // 'Mirarr(Beta)': {
-      //   'hasAds': false,
-      //   'hasSubs': true,
-      //   'isCustom': true,
-      // },
-      'movie-web': {
-        'url': 'https://www.movie-web.me/media/tmdb-movie-$movieId',
-        'hasAds': false,
-        'hasSubs': true,
-      },
-    'braflix': {
-      'url': 'https://www.braflix.video/movie/$movieId',
-      'hasAds': true,
-      'hasSubs': true,
-    },
-    'freek': {
-      'url': 'https://freek.to/watch/movie/$movieId',
-      'hasAds': true,
-      'hasSubs': true,
-    },
-    'rive': {
-      'url': 'https://rivestream.live/watch?type=movie&id=$movieId',
-      'hasAds': false,
-      'hasSubs': true,
-    },
-    'vidsrc': {
-      'url': 'https://vidsrc.to/embed/movie/$movieId',
-      'hasAds': true,
-      'hasSubs': true,
-    },
-    'primeflix': {
-      'url': 'https://www.primeflix.lol/movie/$movieId/stream',
-      'hasAds': true,
-      'hasSubs': true,
-    }
-  };
+    String releaseDate, String imdbId) async {
+  // Fetch sources dynamically
+  Map<String, Map<String, dynamic>> optionUrls = await fetchSources();
+
+  // Replace hardcoded URLs with dynamic ones
+  optionUrls = optionUrls.map((key, value) {
+    final url =
+        value['url'].toString().replaceAll('{movieId}', movieId.toString());
+    return MapEntry(key, {...value, 'url': url});
+  });
 
   List<String> options = optionUrls.keys.toList();
 

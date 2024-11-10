@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:ui';
 
 import 'package:Mirarr/moviesPage/UI/cast_crew_row.dart';
+import 'package:Mirarr/seriesPage/UI/tvchart_table.dart';
 import 'package:Mirarr/seriesPage/function/fetch_episode_cast_crew.dart';
 import 'package:Mirarr/seriesPage/function/torrent_links_series.dart';
 import 'package:Mirarr/seriesPage/function/watch_links_series.dart';
@@ -128,13 +129,45 @@ void seasonsAndEpisodes(
                 child: CustomScrollView(
                   slivers: [
                     SliverToBoxAdapter(
-                      child: Text(
-                        'Seasons',
-                        style: TextStyle(
-                          fontSize: 24,
-                          color: Theme.of(context).primaryColor,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => TvChartTable(
+                                      imdbId: imdbId,
+                                    ),
+                                  ),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Theme.of(context).primaryColor,
+                                minimumSize: const Size(double.infinity, 50),
+                              ),
+                              child: const Text(
+                                'View Episode Ratings Table',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                          Text(
+                            'Seasons',
+                            style: TextStyle(
+                              fontSize: 24,
+                              color: Theme.of(context).primaryColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     SliverList(
