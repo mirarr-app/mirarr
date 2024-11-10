@@ -115,7 +115,7 @@ class WhvxService {
 
       final encodedQuery = Uri.encodeComponent(json.encode(query));
       final searchUrl =
-          Uri.parse('$baseUrl/search?query=$encodedQuery&provider=nova');
+          Uri.parse('$baseUrl/search?query=$encodedQuery&provider=astra');
 
       log('Search URL: ${searchUrl.toString()}');
 

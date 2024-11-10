@@ -21,19 +21,19 @@ class CrewDetailPage extends StatefulWidget {
 
 bool _showIcon = true;
 final apiKey = dotenv.env['TMDB_API_KEY'];
-const baseUrl = 'https://api.themoviedb.org/3';
+const baseUrl = 'https://tmdb.maybeparsa.top/tmdb';
 
 class _CrewDetailPageState extends State<CrewDetailPage> {
   late Future<Map<String, dynamic>> _castDetailsFuture;
   late Future<List<String>> _castImagesFuture;
-  late final List<dynamic> _otherMovies = [];
+  late Future<List<dynamic>> _otherMoviesFuture;
 
   @override
   void initState() {
     super.initState();
-    _loadCastDetails();
-    _loadCastImages();
-    _loadOtherMovies();
+    _castDetailsFuture = _fetchCastDetails(widget.castId);
+    _castImagesFuture = _fetchCastImages(widget.castId);
+    _otherMoviesFuture = _fetchOtherMovies(widget.castId);
     _startTimer();
   }
 
@@ -92,19 +92,6 @@ class _CrewDetailPageState extends State<CrewDetailPage> {
     } else {
       throw Exception('Failed to load cast images');
     }
-  }
-
-  void _loadCastDetails() {
-    _castDetailsFuture = _fetchCastDetails(widget.castId);
-  }
-
-  void _loadCastImages() {
-    _castImagesFuture = _fetchCastImages(widget.castId);
-  }
-
-  void _loadOtherMovies() async {
-    final movies = await _fetchOtherMovies(widget.castId);
-    _otherMovies.addAll(movies);
   }
 
   void _openImageGallery(List<String> imageUrls) {
@@ -468,17 +455,32 @@ class _CrewDetailPageState extends State<CrewDetailPage> {
   }
 
   Widget _buildOtherMoviesGrid() {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: _otherMovies.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
-        childAspectRatio: 0.75,
-      ),
-      itemBuilder: (context, index) {
-        final movie = _otherMovies[index];
-        return _buildMovieItem(movie);
+    return FutureBuilder<List<dynamic>>(
+      future: _otherMoviesFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Center(child: Text('Error loading movies: ${snapshot.error}'));
+        }
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Center(child: Text('No movies found'));
+        }
+
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: snapshot.data!.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 4,
+            childAspectRatio: 0.75,
+          ),
+          itemBuilder: (context, index) {
+            final movie = snapshot.data![index];
+            return _buildMovieItem(movie);
+          },
+        );
       },
     );
   }
@@ -486,46 +488,52 @@ class _CrewDetailPageState extends State<CrewDetailPage> {
   Widget _buildMovieItem(dynamic movie) {
     return GestureDetector(
       onTap: () => Platform.isAndroid || Platform.isIOS
-          ? onTapMovie(movie.title, movie.id, context)
-          : onTapMovieDesktop(movie.title, movie.id, context),
-      child: Stack(
-        children: [
-          CachedNetworkImage(
-            imageUrl:
-                "https://tmdbpics.maybeparsa.top/t/p/w500${movie['poster_path']}",
-            placeholder: (context, url) => const Center(
-              child: CircularProgressIndicator(),
-            ),
-            errorWidget: (context, url, error) => const Icon(Icons.error),
-            imageBuilder: (context, imageProvider) => Container(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  fit: BoxFit.cover,
-                  image: imageProvider,
+          ? onTapMovie(movie['title'], movie['id'], context)
+          : onTapMovieDesktop(movie['title'], movie['id'], context),
+      child: Padding(
+        padding: const EdgeInsets.all(6),
+        child: Stack(
+          children: [
+            CachedNetworkImage(
+              imageUrl:
+                  "https://tmdbpics.maybeparsa.top/t/p/w500${movie['poster_path']}",
+              placeholder: (context, url) => const Center(
+                child: CircularProgressIndicator(),
+              ),
+              errorWidget: (context, url, error) => const Icon(Icons.error),
+              imageBuilder: (context, imageProvider) => Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  image: DecorationImage(
+                    fit: BoxFit.cover,
+                    image: imageProvider,
+                  ),
                 ),
               ),
             ),
-          ),
-          Positioned(
-            bottom: 5,
-            left: 5,
-            child: Container(
-              padding: const EdgeInsets.all(5),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.5),
-                borderRadius: BorderRadius.circular(5),
-              ),
-              child: Text(
-                movie['title'],
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
+            Positioned(
+              bottom: 5,
+              left: 5,
+              child: Container(
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: Text(
+                  movie['title'],
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 8,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

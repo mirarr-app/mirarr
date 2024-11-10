@@ -14,7 +14,7 @@ Future<void> addWatchList(String accountId, String sessionId, int movieId,
   final openbox = await Hive.openBox('sessionBox');
   final String accountId = openbox.get('accountId');
   final String sessionData = openbox.get('sessionData');
-  const String baseUrl = 'https://api.themoviedb.org/3';
+  const String baseUrl = 'https://tmdb.maybeparsa.top/tmdb';
 
   final String url =
       '$baseUrl/account/$accountId/watchlist?api_key=$apiKey&session_id=$sessionData';
@@ -50,7 +50,7 @@ Future<void> addRating(String sessionId, int movieId, double userScore,
     BuildContext context) async {
   final openbox = await Hive.openBox('sessionBox');
   final String sessionData = openbox.get('sessionData');
-  const String baseUrl = 'https://api.themoviedb.org/3';
+  const String baseUrl = 'https://tmdb.maybeparsa.top/tmdb';
 
   final String url =
       '$baseUrl/movie/$movieId/rating?api_key=$apiKey&session_id=$sessionData';
@@ -84,7 +84,7 @@ Future<void> removeRating(
     String sessionId, int movieId, BuildContext context) async {
   final openbox = await Hive.openBox('sessionBox');
   final String sessionData = openbox.get('sessionData');
-  const String baseUrl = 'https://api.themoviedb.org/3';
+  const String baseUrl = 'https://tmdb.maybeparsa.top/tmdb';
 
   final String url =
       '$baseUrl/movie/$movieId/rating?api_key=$apiKey&session_id=$sessionData';
@@ -114,7 +114,7 @@ Future<void> addFavorite(String accountId, String sessionId, int movieId,
   final openbox = await Hive.openBox('sessionBox');
   final String accountId = openbox.get('accountId');
   final String sessionData = openbox.get('sessionData');
-  const String baseUrl = 'https://api.themoviedb.org/3';
+  const String baseUrl = 'https://tmdb.maybeparsa.top/tmdb';
 
   final String url =
       '$baseUrl/account/$accountId/favorite?api_key=$apiKey&session_id=$sessionData';
@@ -151,7 +151,7 @@ Future<void> removeFromWatchList(String accountId, String sessionId,
   final openbox = await Hive.openBox('sessionBox');
   final String accountId = openbox.get('accountId');
   final String sessionData = openbox.get('sessionData');
-  const String baseUrl = 'https://api.themoviedb.org/3';
+  const String baseUrl = 'https://tmdb.maybeparsa.top/tmdb';
 
   final String url =
       '$baseUrl/account/$accountId/watchlist?api_key=$apiKey&session_id=$sessionData';
@@ -189,7 +189,7 @@ Future<void> removeFromFavorite(String accountId, String sessionId, int movieId,
   final openbox = await Hive.openBox('sessionBox');
   final String accountId = openbox.get('accountId');
   final String sessionData = openbox.get('sessionData');
-  const String baseUrl = 'https://api.themoviedb.org/3';
+  const String baseUrl = 'https://tmdb.maybeparsa.top/tmdb';
 
   final String url =
       '$baseUrl/account/$accountId/favorite?api_key=$apiKey&session_id=$sessionData';
