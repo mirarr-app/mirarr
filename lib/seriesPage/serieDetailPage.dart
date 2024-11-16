@@ -1,8 +1,10 @@
+import 'package:Mirarr/functions/fetchers/fetch_serie_details.dart';
+import 'package:Mirarr/functions/fetchers/fetch_series_credits.dart';
 import 'package:Mirarr/seriesPage/UI/seasons_details.dart';
+import 'package:Mirarr/seriesPage/checkers/custom_tmdb_ids_effects_series.dart';
 import 'package:Mirarr/seriesPage/function/get_imdb_rating_series.dart';
 import 'package:Mirarr/seriesPage/function/series_tmdb_actions.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:hive/hive.dart';
@@ -60,7 +62,7 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
     checkUserLogin();
 
     checkAccountState();
-    fetchSerieDetails();
+    _fetchSerieDetails();
     fetchCredits(widget.serieId);
     fetchExternalId();
   }
@@ -97,37 +99,25 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
     }
   }
 
-  Future<void> fetchSerieDetails() async {
+  Future<void> _fetchSerieDetails() async {
     try {
       // Make an HTTP GET request to fetch movie details from the first API
-      final response = await http.get(
-        Uri.parse(
-          'https://tmdb.maybeparsa.top/tmdb/tv/${widget.serieId}?api_key=$apiKey',
-        ),
-      );
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> responseData = json.decode(response.body);
-        setState(() {
-          serieDetails = responseData;
-          budget = responseData['budget'];
-          genres = responseData['genres'];
-          backdrops = responseData['backdrop_path'];
-          score = responseData['vote_average'];
-          about = responseData['overview'];
-          duration = responseData['runtime'];
-          releaseDate = responseData['release_date'];
-          language = responseData['original_language'];
-          seasons = responseData['number_of_seasons'];
-          episodes = responseData['number_of_episodes'];
-        });
-      } else {
-        throw Exception('Failed to load serie details');
-      }
+      final responseData = await fetchSerieDetails(widget.serieId);
+      setState(() {
+        serieDetails = responseData;
+        budget = responseData['budget'];
+        genres = responseData['genres'];
+        backdrops = responseData['backdrop_path'];
+        score = responseData['vote_average'];
+        about = responseData['overview'];
+        duration = responseData['runtime'];
+        releaseDate = responseData['release_date'];
+        language = responseData['original_language'];
+        seasons = responseData['number_of_seasons'];
+        episodes = responseData['number_of_episodes'];
+      });
     } catch (e) {
-      if (kDebugMode) {
-        print('Error: $e');
-      }
+      throw Exception('Failed to load serie details');
     }
   }
 
@@ -166,47 +156,7 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
         throw Exception('Failed to load serie details');
       }
     } catch (e) {
-      if (kDebugMode) {
-        print('Error: $e');
-      }
-    }
-  }
-
-  Future<Map<String, List<Map<String, dynamic>>>> fetchCredits(
-      int serieId) async {
-    try {
-      final response = await http.get(
-        Uri.parse(
-          'https://tmdb.maybeparsa.top/tmdb/tv/$serieId/credits?api_key=$apiKey',
-        ),
-      );
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> responseData = json.decode(response.body);
-        final List<dynamic> castList = responseData['cast'];
-        final List<Map<String, dynamic>> allCastList =
-            castList.cast<Map<String, dynamic>>().toList();
-
-        // Fetch director details
-        final List<dynamic> crewList = responseData['crew'];
-        final List<Map<String, dynamic>> allCrewList =
-            crewList.cast<Map<String, dynamic>>().toList();
-
-        return {
-          'cast': allCastList,
-          'crew': allCrewList,
-        };
-      } else {
-        throw Exception('Failed to load cast and crew details');
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error: $e');
-      }
-      return {
-        'cast': [],
-        'crew': [],
-      };
+      throw Exception('Failed to load external Id');
     }
   }
 
@@ -338,11 +288,8 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
                                   softWrap: true,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
+                                  style:
+                                      getSeriesTitleTextStyle(widget.serieId),
                                 ),
                               ),
                             ],
@@ -648,9 +595,8 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
                           alignment: Alignment.center,
                           child: Text(
                             about!,
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w300),
+                            style: getSeriesAboutTextStyle(
+                                context, widget.serieId),
                             textAlign: TextAlign.left,
                           )),
                     ),
@@ -668,7 +614,8 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
                             child: Container(
                               padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
                               decoration: BoxDecoration(
-                                color: Colors.grey.withOpacity(0.2),
+                                color: getSeriesBackgroundColor(
+                                    context, widget.serieId),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Column(
@@ -701,7 +648,8 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
                             child: Container(
                               padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
                               decoration: BoxDecoration(
-                                color: Colors.grey.withOpacity(0.2),
+                                color: getSeriesBackgroundColor(
+                                    context, widget.serieId),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Column(
@@ -734,7 +682,8 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
                             child: Container(
                               padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
                               decoration: BoxDecoration(
-                                color: Colors.grey.withOpacity(0.2),
+                                color: getSeriesBackgroundColor(
+                                    context, widget.serieId),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Column(
@@ -776,15 +725,13 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
                               child: SizedBox(
                             width: double.maxFinite,
                             child: FloatingActionButton(
-                              backgroundColor: Theme.of(context).primaryColor,
+                              backgroundColor:
+                                  getSeriesColor(context, widget.serieId),
                               onPressed: () => seasonsAndEpisodes(context,
                                   widget.serieId, widget.serieName, imdbId!),
-                              child: const Text(
+                              child: Text(
                                 'Details',
-                                style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold),
+                                style: getSeriesButtonTextStyle(widget.serieId),
                               ),
                             ),
                           ))
@@ -815,17 +762,14 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
                               Row(
                                 children: [
                                   Padding(
-                                    padding:
-                                        const EdgeInsets.fromLTRB(25, 10, 0, 0),
-                                    child: Text(
-                                      'Cast',
-                                      textAlign: TextAlign.justify,
-                                      style: TextStyle(
-                                          color: Theme.of(context).primaryColor,
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.w700),
-                                    ),
-                                  )
+                                      padding: const EdgeInsets.fromLTRB(
+                                          25, 10, 0, 0),
+                                      child: Text(
+                                        'Cast',
+                                        textAlign: TextAlign.justify,
+                                        style: getSeriesTitleTextStyle(
+                                            widget.serieId),
+                                      )),
                                 ],
                               ),
                               const CustomDivider(),
@@ -838,10 +782,8 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
                                     child: Text(
                                       'Crew',
                                       textAlign: TextAlign.justify,
-                                      style: TextStyle(
-                                          color: Theme.of(context).primaryColor,
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.w700),
+                                      style: getSeriesTitleTextStyle(
+                                          widget.serieId),
                                     ),
                                   ),
                                 ],
