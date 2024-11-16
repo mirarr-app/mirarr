@@ -9,8 +9,8 @@ This is a movie app that aims to simplify the process of watching movies and TV 
 
 ## Desktop
 
-<img src="https://github.com/user-attachments/assets/e65dd5ca-bd2f-443f-9cd7-d162c9c7245f" width="50" height="50">
-<img src="https://github.com/user-attachments/assets/6997a0fa-fa88-4cf7-9096-f87f5ccaffc7" width="50" height="50">
+<img src="https://github.com/user-attachments/assets/e65dd5ca-bd2f-443f-9cd7-d162c9c7245f" width="50%" >
+<img src="https://github.com/user-attachments/assets/6997a0fa-fa88-4cf7-9096-f87f5ccaffc7" width="50%">
 
 ## Mobile
 ![Screenshot_20241116_171816](https://github.com/user-attachments/assets/fbdfc3f2-8e38-4787-9a47-bc67df8af172) ![Screenshot_20241116_171723](https://github.com/user-attachments/assets/7beb0804-b33f-4976-b95e-771316eedee8) ![Screenshot_20241116_171651](https://github.com/user-attachments/assets/1e9b5380-581a-470e-a434-a6a62fc2ccbe)
