@@ -1,4 +1,5 @@
 import 'package:Mirarr/functions/show_error_dialog.dart';
+import 'package:Mirarr/seriesPage/checkers/custom_tmdb_ids_effects_series.dart';
 import 'package:Mirarr/widgets/custom_divider.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -30,6 +31,9 @@ Future<Map<String, Map<String, dynamic>>> fetchTvSources() async {
   }
 }
 
+Color getColor(BuildContext context, int serieId) =>
+    getSeriesColor(context, serieId);
+
 void showWatchOptions(BuildContext context, int serieId, int seasonNumber,
     int episodeNumber) async {
   Map<String, Map<String, dynamic>> optionUrls = await fetchTvSources();
@@ -48,14 +52,24 @@ void showWatchOptions(BuildContext context, int serieId, int seasonNumber,
   showModalBottomSheet(
     context: context,
     builder: (BuildContext context) {
+      Color mainColor = getColor(context, serieId);
       return Column(
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
-            child: Text(
-              'These are providers for the movie, choose one of them to play from that source',
-              style: TextStyle(
-                  color: Theme.of(context).primaryColor, fontSize: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Watch from below sources or download the epsiode.',
+                  style: TextStyle(color: mainColor, fontSize: 12),
+                ),
+                IconButton(
+                  onPressed: () => _launchUrl(Uri.parse(
+                      'https://dl.vidsrc.vip/tv/${serieId.toString()}/${seasonNumber.toString()}/${episodeNumber.toString()}')),
+                  icon: Icon(Icons.download, color: mainColor),
+                ),
+              ],
             ),
           ),
           Expanded(
@@ -69,8 +83,7 @@ void showWatchOptions(BuildContext context, int serieId, int seasonNumber,
                       String option = options[index];
                       Map<String, dynamic>? optionData = optionUrls[option];
                       return ListTile(
-                        leading: Icon(Icons.play_arrow,
-                            color: Theme.of(context).primaryColor),
+                        leading: Icon(Icons.play_arrow, color: mainColor),
                         title: Text(
                           option,
                           style: const TextStyle(color: Colors.white),
@@ -89,8 +102,7 @@ void showWatchOptions(BuildContext context, int serieId, int seasonNumber,
                                 padding: const EdgeInsets.only(left: 8.0),
                                 child: Text(
                                   'Subs',
-                                  style: TextStyle(
-                                      color: Theme.of(context).primaryColor),
+                                  style: TextStyle(color: mainColor),
                                 ),
                               ),
                           ],

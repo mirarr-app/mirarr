@@ -1,4 +1,5 @@
 import 'package:Mirarr/functions/show_error_dialog.dart';
+import 'package:Mirarr/moviesPage/checkers/custom_tmdb_ids_effects.dart';
 import 'package:Mirarr/widgets/custom_divider.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -10,6 +11,9 @@ Future<void> _launchUrl(Uri url) async {
     throw Exception('Could not launch url');
   }
 }
+
+Color getColor(BuildContext context, int movieId) =>
+    getMovieColor(context, movieId);
 
 void showTorrentOptions(BuildContext context, int movieId, String movieTitle,
     String? releaseDate, String? imdbId) {
@@ -37,14 +41,14 @@ void showTorrentOptions(BuildContext context, int movieId, String movieTitle,
   showModalBottomSheet(
     context: context,
     builder: (BuildContext context) {
+      Color mainColor = getColor(context, movieId);
       return Column(
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
             child: Text(
               'Search for torrents',
-              style: TextStyle(
-                  color: Theme.of(context).primaryColor, fontSize: 16),
+              style: TextStyle(color: mainColor, fontSize: 16),
             ),
           ),
           Flexible(
@@ -53,8 +57,7 @@ void showTorrentOptions(BuildContext context, int movieId, String movieTitle,
                 const CustomDivider(), // Custom divider
                 Text(
                   'Public Trackers',
-                  style: TextStyle(
-                      color: Theme.of(context).primaryColor, fontSize: 12),
+                  style: TextStyle(color: mainColor, fontSize: 12),
                 ),
                 Expanded(
                   child: ListView.builder(
@@ -63,8 +66,7 @@ void showTorrentOptions(BuildContext context, int movieId, String movieTitle,
                       String option = _publicTorrents[index];
                       String? url = optionPublicTorrents[option];
                       return ListTile(
-                        leading: Icon(Icons.play_arrow,
-                            color: Theme.of(context).primaryColor),
+                        leading: Icon(Icons.play_arrow, color: mainColor),
                         title: Text(
                           option,
                           style: const TextStyle(color: Colors.white),
@@ -85,8 +87,7 @@ void showTorrentOptions(BuildContext context, int movieId, String movieTitle,
                 const Divider(), // Custom divider
                 Text(
                   'Private Trackers',
-                  style: TextStyle(
-                      color: Theme.of(context).primaryColor, fontSize: 12),
+                  style: TextStyle(color: mainColor, fontSize: 12),
                 ),
                 Expanded(
                   child: ListView.builder(
@@ -95,8 +96,7 @@ void showTorrentOptions(BuildContext context, int movieId, String movieTitle,
                       String option = _privateTorrents[index];
                       String? url = optionPrivateTorrents[option];
                       return ListTile(
-                        leading: Icon(Icons.play_arrow,
-                            color: Theme.of(context).primaryColor),
+                        leading: Icon(Icons.play_arrow, color: mainColor),
                         title: Text(
                           option,
                           style: const TextStyle(color: Colors.white),

@@ -3,11 +3,11 @@ import 'dart:ui';
 
 import 'package:Mirarr/moviesPage/UI/cast_crew_row.dart';
 import 'package:Mirarr/seriesPage/UI/tvchart_table.dart';
+import 'package:Mirarr/seriesPage/checkers/custom_tmdb_ids_effects_series.dart';
 import 'package:Mirarr/seriesPage/function/fetch_episode_cast_crew.dart';
 import 'package:Mirarr/seriesPage/function/torrent_links_series.dart';
 import 'package:Mirarr/seriesPage/function/watch_links_series.dart';
 import 'package:Mirarr/widgets/custom_divider.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
@@ -41,9 +41,7 @@ Future<String?> fetchImdbRating(
         return data['imdbRating'];
       }
     } catch (e) {
-      if (kDebugMode) {
-        print(e);
-      }
+      throw Exception('Error fetching IMDb rating: $e');
     }
     return null;
   });
@@ -68,9 +66,7 @@ Future<Map<int, String>> fetchSeasonImdbRatings(
         };
       }
     } catch (e) {
-      if (kDebugMode) {
-        print('Error fetching season IMDb ratings: $e');
-      }
+      throw Exception('Error fetching IMDb rating: $e');
     }
     return {};
   });
@@ -146,26 +142,18 @@ void seasonsAndEpisodes(
                                 );
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Theme.of(context).primaryColor,
+                                backgroundColor:
+                                    getSeriesColor(context, serieId),
                                 minimumSize: const Size(double.infinity, 50),
                               ),
-                              child: const Text(
-                                'View Episode Ratings Table',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                              child: Text('View Episode Ratings Table',
+                                  style: getSeriesButtonTextStyle(serieId)),
                             ),
                           ),
-                          Text(
-                            'Seasons',
-                            style: TextStyle(
-                              fontSize: 24,
-                              color: Theme.of(context).primaryColor,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(8, 0, 0, 16),
+                            child: Text('Seasons',
+                                style: getSeriesTitleTextStyle(serieId)),
                           ),
                         ],
                       ),
@@ -219,7 +207,7 @@ void seasonsAndEpisodes(
                                   Icons.arrow_forward,
                                   color: isAirDateNull
                                       ? Colors.grey
-                                      : Theme.of(context).primaryColor,
+                                      : getSeriesColor(context, serieId),
                                 ),
                                 onTap: isAirDateNull && isEpisodeCountZero
                                     ? null
@@ -295,14 +283,7 @@ void episodesGuide(int seasonNumber, BuildContext context, int serieId,
               height: MediaQuery.of(context).size.height * 0.5,
               child: Column(
                 children: [
-                  Text(
-                    'Episodes',
-                    style: TextStyle(
-                      fontSize: 24,
-                      color: Theme.of(context).primaryColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  Text('Episodes', style: getSeriesTitleTextStyle(serieId)),
                   const SizedBox(height: 10),
                   ScrollConfiguration(
                     behavior: const ScrollBehavior().copyWith(
@@ -395,7 +376,7 @@ void episodesGuide(int seasonNumber, BuildContext context, int serieId,
                                       ),
                                     Icon(Icons.arrow_forward,
                                         color: isReleased
-                                            ? Theme.of(context).primaryColor
+                                            ? getSeriesColor(context, serieId)
                                             : Colors.grey),
                                   ],
                                 ),
@@ -474,14 +455,8 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
                   children: [
                     Padding(
                       padding: EdgeInsets.fromLTRB(25, 10, 0, 0),
-                      child: Text(
-                        'Episode Overview',
-                        style: TextStyle(
-                          color: Theme.of(context).primaryColor,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      child: Text('Episode Overview',
+                          style: getSeriesTitleTextStyle(serieId)),
                     ),
                     const SizedBox(height: 10),
                     if (imdbRating != null && imdbRating.isNotEmpty)
@@ -512,15 +487,12 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
                               child: SizedBox(
                             width: double.infinity,
                             child: FloatingActionButton(
-                              backgroundColor: Theme.of(context).primaryColor,
+                              backgroundColor: getSeriesColor(context, serieId),
                               onPressed: () => showWatchOptions(context,
                                   serieId, seasonNumber, episodeNumber),
-                              child: const Text(
+                              child: Text(
                                 'Watch',
-                                style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold),
+                                style: getSeriesButtonTextStyle(serieId),
                               ),
                             ),
                           ))
@@ -536,7 +508,7 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
                               child: SizedBox(
                             width: double.infinity,
                             child: FloatingActionButton(
-                              backgroundColor: Theme.of(context).primaryColor,
+                              backgroundColor: getSeriesColor(context, serieId),
                               onPressed: () => showTorrentOptions(
                                   context,
                                   serieName,
@@ -544,12 +516,9 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
                                   seasonNumber,
                                   episodeNumber,
                                   imdbId),
-                              child: const Text(
+                              child: Text(
                                 'Torrent Search',
-                                style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold),
+                                style: getSeriesButtonTextStyle(serieId),
                               ),
                             ),
                           ))
@@ -586,10 +555,7 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
                                   child: Text(
                                     'Guest Stars',
                                     textAlign: TextAlign.justify,
-                                    style: TextStyle(
-                                        color: Theme.of(context).primaryColor,
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.w700),
+                                    style: getSeriesTitleTextStyle(serieId),
                                   ),
                                 ),
                                 const CustomDivider(),
@@ -602,10 +568,7 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
                                   child: Text(
                                     'Crew',
                                     textAlign: TextAlign.justify,
-                                    style: TextStyle(
-                                        color: Theme.of(context).primaryColor,
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.w700),
+                                    style: getSeriesTitleTextStyle(serieId),
                                   ),
                                 ),
                                 const CustomDivider(),

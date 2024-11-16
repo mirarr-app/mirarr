@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'dart:ui';
-import 'package:Mirarr/functions/fetch_movies_by_genre.dart';
-import 'package:Mirarr/functions/fetch_popular_movies.dart';
-import 'package:Mirarr/functions/fetch_trending_movies.dart';
+import 'package:Mirarr/functions/fetchers/fetch_movies_by_genre.dart';
+import 'package:Mirarr/functions/fetchers/fetch_popular_movies.dart';
+import 'package:Mirarr/functions/fetchers/fetch_trending_movies.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_gridview_movie.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie_desktop.dart';
