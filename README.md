@@ -8,7 +8,7 @@ This is a movie app that aims to simplify the process of watching movies and TV 
 
 
 ## Desktop
-![Screenshot_2024-11-16-17-13-10_1920x1080](https://github.com/user-attachments/assets/e65dd5ca-bd2f-443f-9cd7-d162c9c7245f) ![Screenshot_2024-11-16-17-12-02_1920x1080](https://github.com/user-attachments/assets/6997a0fa-fa88-4cf7-9096-f87f5ccaffc7)
+![Screenshot_2024-11-16-17-13-10_1920x1080](https://github.com/user-attachments/assets/e65dd5ca-bd2f-443f-9cd7-d162c9c7245f | width=50) ![Screenshot_2024-11-16-17-12-02_1920x1080](https://github.com/user-attachments/assets/6997a0fa-fa88-4cf7-9096-f87f5ccaffc7 | width=50)
 
 
 
@@ -41,7 +41,7 @@ Note: On linux you need to have `xdg-user-dirs` package installed.
 ### Some stuff needs extra love
 
 The app supports custom styles for special movies and TV shows that have enough character.
-You can suggest/request more of them in this issue #58.
+You can suggest/request more of them in [this issue](https://github.com/mirarr-app/mirarr/issues/58).
 
 #### Do I need to login?
 
