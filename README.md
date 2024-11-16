@@ -1,20 +1,35 @@
 # Mirarr
 
-![Screenshot_2024-07-14-21-26-49_1920x1080](https://github.com/user-attachments/assets/1a54e640-0972-4fd7-87d2-29eb8780b80e)
-![Screenshot_2024-07-14-21-27-11_1920x1080](https://github.com/user-attachments/assets/b9850d12-3c41-4e03-9228-939b3877324a)
-
 ## Watch movies and Arr.
 
 ### Available on Android, Windows, Linux and IOS.
 
-This is a movie app that aims to simplify the process of watching movies and tv shows.
+This is a movie app that aims to simplify the process of watching movies and TV shows.
+
+
+## Desktop
+![Screenshot_2024-11-16-17-13-10_1920x1080](https://github.com/user-attachments/assets/e65dd5ca-bd2f-443f-9cd7-d162c9c7245f)
+![Screenshot_2024-11-16-17-12-02_1920x1080](https://github.com/user-attachments/assets/6997a0fa-fa88-4cf7-9096-f87f5ccaffc7)
+
+
+
+## Mobile
+![Screenshot_20241116_171816](https://github.com/user-attachments/assets/fbdfc3f2-8e38-4787-9a47-bc67df8af172)
+![Screenshot_20241116_171723](https://github.com/user-attachments/assets/7beb0804-b33f-4976-b95e-771316eedee8)
+![Screenshot_20241116_171651](https://github.com/user-attachments/assets/1e9b5380-581a-470e-a434-a6a62fc2ccbe)
+
+
 
 ### Features
 
 - Trending movies and TV shows
+- Seperate movies and TV shows by genre
 - Watchlist, Favorites and Rating
 - Feed of released movies and TV shows.
-- External links to movies and tv shows to watch.
+- External links to movies and TV shows to watch.
+- External links to get the movies and TV shows.
+- Custom searching
+- TV shows ratings table
 
 ### Download
 
@@ -25,6 +40,11 @@ Download mirrar.zip for Linux.
 Download mirrar.ipa for sideloading on IOS.
 
 Note: On linux you need to have `xdg-user-dirs` package installed.
+
+### Some stuff needs extra love
+
+The app supports custom styles for special movies and TV shows that have enough character.
+You can suggest/request more of them in this issue #58.
 
 #### Do I need to login?
 
@@ -40,7 +60,9 @@ No you don't have to. But the login process enables extra features like watchlis
 - [TMDB](https://www.themoviedb.org/) for their great free, open source API.
 - [OMDB](http://www.omdbapi.com/) for their mostly free API.
 - [scnsrc](https://scnsrc.me/) for their great RSS feed of released movies.
-- External resources who we refer to when playing movies/tv shows.
+- External resources who we refer to when playing movies/TV shows.
+- vidsrc for dl links.
+- TV chart for TV shows table.
 
 
 #### Support
