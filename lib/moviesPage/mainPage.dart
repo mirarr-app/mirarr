@@ -39,7 +39,7 @@ class _MovieSearchScreenState extends State<MovieSearchScreen> {
         trendingMovies = movies;
       });
     } catch (e) {
-      // Handle error
+      throw Exception('Failed to load trending movies');
     }
   }
 
@@ -50,7 +50,7 @@ class _MovieSearchScreenState extends State<MovieSearchScreen> {
         popularMovies = movies;
       });
     } catch (e) {
-      // Handle error
+      throw Exception('Failed to load popular movies');
     }
   }
 
@@ -64,7 +64,7 @@ class _MovieSearchScreenState extends State<MovieSearchScreen> {
         });
       }
     } catch (e) {
-      // Handle error
+      throw Exception('Failed to load movies by movies');
     }
   }
 

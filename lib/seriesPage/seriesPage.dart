@@ -43,7 +43,7 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
         });
       }
     } catch (e) {
-      // Handle error
+      throw Exception('Failed to load series by gender');
     }
   }
 

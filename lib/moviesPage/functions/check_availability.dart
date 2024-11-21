@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 Future<bool> checkAvailability(int movieId) async {
-  final apiKey = dotenv.env['TMDB_API_KEY']; // Replace with your TMDB API Key
+  final apiKey = dotenv.env['TMDB_API_KEY'];
   final response = await http.get(
     Uri.parse(
       'https://tmdb.maybeparsa.top/tmdb/movie/$movieId/watch/providers?api_key=$apiKey',
@@ -17,7 +17,6 @@ Future<bool> checkAvailability(int movieId) async {
 
     return results.isNotEmpty;
   } else {
-    // Handle error here
     return false;
   }
 }
