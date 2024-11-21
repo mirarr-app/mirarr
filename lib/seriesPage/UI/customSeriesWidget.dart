@@ -10,7 +10,7 @@ class CustomSeriesWidget extends StatelessWidget {
 
   const CustomSeriesWidget({super.key, required this.serie});
   Future<bool> checkAvailability(int movieId) async {
-    final apiKey = dotenv.env['TMDB_API_KEY']; // Replace with your TMDB API Key
+    final apiKey = dotenv.env['TMDB_API_KEY'];
     final response = await http.get(
       Uri.parse(
         'https://tmdb.maybeparsa.top/tmdb/movie/$movieId/watch/providers?api_key=$apiKey',
@@ -23,7 +23,6 @@ class CustomSeriesWidget extends StatelessWidget {
 
       return results.isNotEmpty;
     } else {
-      // Handle error here
       return false;
     }
   }
