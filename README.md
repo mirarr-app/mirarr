@@ -38,6 +38,10 @@ Download mirarr-windows.zip for Windows.
 Download mirrar.zip for Linux.
 Download mirrar.ipa for sideloading on IOS.
 
+Mirarr is available on AUR as well.
+```bash
+yay -S mirarr-bin
+```
 Note: On linux you need to have `xdg-user-dirs` package installed.
 
 ### Some stuff needs extra love
