@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:Mirarr/functions/fetchers/fetch_popular_series.dart';
 import 'package:Mirarr/functions/fetchers/fetch_trending_series.dart';
 import 'package:Mirarr/functions/fetchers/fetch_series_by_genre.dart';
+import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_gridview_serie.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_serie.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_serie_desktop.dart';
@@ -15,6 +16,7 @@ import 'package:Mirarr/seriesPage/models/serie.dart';
 import 'dart:async';
 import 'package:Mirarr/seriesPage/UI/customSeriesWidget.dart';
 import 'package:Mirarr/widgets/bottom_bar.dart';
+import 'package:provider/provider.dart';
 
 class SerieSearchScreen extends StatefulWidget {
   static final GlobalKey<_SerieSearchScreenState> movieSearchKey =
@@ -34,22 +36,26 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
   Map<int, List<Serie>> seriesByGenre = {};
 
   Future<void> _fetchGenresAndSeries() async {
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
     try {
-      genres = await fetchGenres();
+      genres = await fetchGenres(region);
       for (var genre in genres) {
-        final series = await fetchSeriesByGenre(genre.id);
+        final series = await fetchSeriesByGenre(genre.id, region);
         setState(() {
           seriesByGenre[genre.id] = series;
         });
       }
     } catch (e) {
-      throw Exception('Failed to load series by gender');
+      throw Exception('Failed to load series by genre');
     }
   }
 
   Future<void> _fetchTrendingSeries() async {
     try {
-      trendingSeries = await fetchTrendingSeries();
+      final region =
+          Provider.of<RegionProvider>(context, listen: false).currentRegion;
+      trendingSeries = await fetchTrendingSeries(region);
       setState(() {
         trendingSeries = trendingSeries;
       });
@@ -60,7 +66,9 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
 
   Future<void> _fetchPopularSeries() async {
     try {
-      popularSeries = await fetchPopularSeries();
+      final region =
+          Provider.of<RegionProvider>(context, listen: false).currentRegion;
+      popularSeries = await fetchPopularSeries(region);
     } catch (e) {
       throw Exception('Failed to load popular series data');
     }
@@ -119,6 +127,20 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
   void initState() {
     super.initState();
     checkInternetAndFetchData();
+
+    // Add listener for region changes
+    Provider.of<RegionProvider>(context, listen: false).addListener(() {
+      checkInternetAndFetchData();
+    });
+  }
+
+  @override
+  void dispose() {
+    // Remove listener when disposing
+    Provider.of<RegionProvider>(context, listen: false).removeListener(() {
+      checkInternetAndFetchData();
+    });
+    super.dispose();
   }
 
   Future<void> checkInternetAndFetchData() async {

@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
+import 'package:Mirarr/functions/get_base_url.dart';
+import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/moviesPage/UI/cast_crew_row.dart';
 import 'package:Mirarr/moviesPage/UI/movie_result.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie.dart';
@@ -17,6 +19,7 @@ import 'package:http/http.dart' as http;
 import 'package:Mirarr/moviesPage/models/movie.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:Mirarr/seriesPage/models/serie.dart';
+import 'package:provider/provider.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({Key? key}) : super(key: key);
@@ -45,9 +48,9 @@ class _SearchScreenState extends State<SearchScreen>
   void _onSearchChanged() {
     String query = _searchController.text.trim();
     if (query.isNotEmpty) {
-      searchMovies(query);
-      searchSeries(query);
-      searchPerson(query);
+      searchMovies(query, context);
+      searchSeries(query, context);
+      searchPerson(query, context);
     } else {
       setState(() {
         movieResults.clear();
@@ -57,10 +60,13 @@ class _SearchScreenState extends State<SearchScreen>
     }
   }
 
-  Future<void> searchMovies(String query) async {
+  Future<void> searchMovies(String query, BuildContext context) async {
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
+    final baseUrl = getBaseUrl(region);
     final response = await http.get(
       Uri.parse(
-        'https://tmdb.maybeparsa.top/tmdb/search/movie?api_key=$apiKey&query=$query',
+        '${baseUrl}search/movie?api_key=$apiKey&query=$query',
       ),
     );
     if (response.statusCode == 200) {
@@ -87,10 +93,13 @@ class _SearchScreenState extends State<SearchScreen>
     }
   }
 
-  Future<void> searchSeries(String query) async {
+  Future<void> searchSeries(String query, BuildContext context) async {
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
+    final baseUrl = getBaseUrl(region);
     final response = await http.get(
       Uri.parse(
-        'https://tmdb.maybeparsa.top/tmdb/search/tv?api_key=$apiKey&query=$query',
+        '${baseUrl}search/tv?api_key=$apiKey&query=$query',
       ),
     );
     if (response.statusCode == 200) {
@@ -117,10 +126,13 @@ class _SearchScreenState extends State<SearchScreen>
     }
   }
 
-  Future<void> searchPerson(String query) async {
+  Future<void> searchPerson(String query, BuildContext context) async {
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
+    final baseUrl = getBaseUrl(region);
     final response = await http.get(
       Uri.parse(
-        'https://tmdb.maybeparsa.top/tmdb/search/person?api_key=$apiKey&query=$query',
+        '${baseUrl}search/person?api_key=$apiKey&query=$query',
       ),
     );
     if (response.statusCode == 200) {

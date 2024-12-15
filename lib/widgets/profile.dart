@@ -2,13 +2,15 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:Mirarr/functions/get_base_url.dart';
+import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_gridview_movie.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie_desktop.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_gridview_serie.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_serie.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_serie_desktop.dart';
-import 'package:Mirarr/widgets/changecolor.dart';
+import 'package:Mirarr/widgets/settings_screen.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +24,7 @@ import 'package:Mirarr/widgets/bottom_bar.dart';
 import 'package:Mirarr/widgets/login.dart';
 import 'package:http/http.dart' as http;
 import 'package:Mirarr/moviesPage/models/movie.dart';
+import 'package:provider/provider.dart';
 
 class ProfilePage extends StatefulWidget {
   ProfilePage({Key? key}) : super(key: key);
@@ -55,13 +58,16 @@ class _ProfilePageState extends State<ProfilePage> {
     checkInternetAndFetchData();
   }
 
-  Future<void> fetchMovieWatchList() async {
+  Future<void> fetchMovieWatchList(BuildContext context) async {
     final openbox = await Hive.openBox('sessionBox');
     final String accountId = openbox.get('accountId');
     final String sessionData = openbox.get('sessionData');
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
+    final baseUrl = getBaseUrl(region);
     final response = await http.get(
       Uri.parse(
-        'https://tmdb.maybeparsa.top/tmdb/account/$accountId/watchlist/movies?api_key=$apiKey&session_id=$sessionData',
+        '${baseUrl}account/$accountId/watchlist/movies?api_key=$apiKey&session_id=$sessionData',
       ),
     );
 
@@ -88,13 +94,16 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  Future<void> fetchFavoriteMovies() async {
+  Future<void> fetchFavoriteMovies(BuildContext context) async {
     final openbox = await Hive.openBox('sessionBox');
     final String accountId = openbox.get('accountId');
     final String sessionData = openbox.get('sessionData');
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
+    final baseUrl = getBaseUrl(region);
     final response = await http.get(
       Uri.parse(
-        'https://tmdb.maybeparsa.top/tmdb/account/$accountId/favorite/movies?api_key=$apiKey&session_id=$sessionData',
+        '${baseUrl}account/$accountId/favorite/movies?api_key=$apiKey&session_id=$sessionData',
       ),
     );
 
@@ -121,13 +130,16 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  Future<void> fetchRatedMovies() async {
+  Future<void> fetchRatedMovies(BuildContext context) async {
     final openbox = await Hive.openBox('sessionBox');
     final String accountId = openbox.get('accountId');
     final String sessionData = openbox.get('sessionData');
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
+    final baseUrl = getBaseUrl(region);
     final response = await http.get(
       Uri.parse(
-        'https://tmdb.maybeparsa.top/tmdb/account/$accountId/rated/movies?api_key=$apiKey&session_id=$sessionData',
+        '${baseUrl}account/$accountId/rated/movies?api_key=$apiKey&session_id=$sessionData',
       ),
     );
 
@@ -210,22 +222,25 @@ class _ProfilePageState extends State<ProfilePage> {
       handleNetworkError(ClientException('No internet connection'));
     } else {
       // Internet connection available, fetch data
-      fetchMovieWatchList();
-      fetchTvWatchList();
-      fetchFavoriteMovies();
-      fetchRatedMovies();
-      fetchFavoriteSeries();
-      fetchRatedTv();
+      fetchMovieWatchList(context);
+      fetchTvWatchList(context);
+      fetchFavoriteMovies(context);
+      fetchRatedMovies(context);
+      fetchFavoriteSeries(context);
+      fetchRatedTv(context);
     }
   }
 
-  Future<void> fetchTvWatchList() async {
+  Future<void> fetchTvWatchList(BuildContext context) async {
     final openbox = await Hive.openBox('sessionBox');
     final String accountId = openbox.get('accountId');
     final String sessionData = openbox.get('sessionData');
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
+    final baseUrl = getBaseUrl(region);
     final response = await http.get(
       Uri.parse(
-        'https://tmdb.maybeparsa.top/tmdb/account/$accountId/watchlist/tv?api_key=$apiKey&session_id=$sessionData',
+        '${baseUrl}account/$accountId/watchlist/tv?api_key=$apiKey&session_id=$sessionData',
       ),
     );
 
@@ -251,13 +266,16 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  Future<void> fetchFavoriteSeries() async {
+  Future<void> fetchFavoriteSeries(BuildContext context) async {
     final openbox = await Hive.openBox('sessionBox');
     final String accountId = openbox.get('accountId');
     final String sessionData = openbox.get('sessionData');
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
+    final baseUrl = getBaseUrl(region);
     final response = await http.get(
       Uri.parse(
-        'https://tmdb.maybeparsa.top/tmdb/account/$accountId/favorite/tv?api_key=$apiKey&session_id=$sessionData',
+        '${baseUrl}account/$accountId/favorite/tv?api_key=$apiKey&session_id=$sessionData',
       ),
     );
 
@@ -283,13 +301,16 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  Future<void> fetchRatedTv() async {
+  Future<void> fetchRatedTv(BuildContext context) async {
     final openbox = await Hive.openBox('sessionBox');
     final String accountId = openbox.get('accountId');
     final String sessionData = openbox.get('sessionData');
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
+    final baseUrl = getBaseUrl(region);
     final response = await http.get(
       Uri.parse(
-        'https://tmdb.maybeparsa.top/tmdb/account/$accountId/rated/tv?api_key=$apiKey&session_id=$sessionData',
+        '${baseUrl}account/$accountId/rated/tv?api_key=$apiKey&session_id=$sessionData',
       ),
     );
 

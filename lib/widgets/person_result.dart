@@ -1,6 +1,9 @@
 import 'package:Mirarr/widgets/models/person.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:provider/provider.dart';
+import 'package:Mirarr/functions/regionprovider_class.dart';
+import 'package:Mirarr/functions/get_base_url.dart';
 
 class PersonSearchResult extends StatelessWidget {
   final Person person;
@@ -9,6 +12,8 @@ class PersonSearchResult extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
     return Padding(
       padding: const EdgeInsets.fromLTRB(3, 5, 3, 5),
       child: Card(
@@ -21,7 +26,7 @@ class PersonSearchResult extends StatelessWidget {
             image: person.profilePath.isNotEmpty
                 ? DecorationImage(
                     image: CachedNetworkImageProvider(
-                      'https://tmdbpics.maybeparsa.top/t/p/original${person.profilePath}',
+                      '${getImageBaseUrl(region)}/t/p/original${person.profilePath}',
                     ),
                     fit: BoxFit.cover,
                     opacity: 0.8)

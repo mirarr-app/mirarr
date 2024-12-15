@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'package:Mirarr/moviesPage/models/movie.dart';
 import 'package:http/http.dart' as http;
+import 'package:Mirarr/functions/get_base_url.dart';
 
 final apiKey = dotenv.env['TMDB_API_KEY'];
 
@@ -32,10 +33,12 @@ void _isolateFunction(Map<String, dynamic> message) {
   sendPort.send(movies);
 }
 
-Future<List<Movie>> fetchTrendingMovies() async {
+Future<List<Movie>> fetchTrendingMovies(String region) async {
+  final baseUrl = getBaseUrl(region);
+
   final response = await http.get(
     Uri.parse(
-      'https://tmdb.maybeparsa.top/tmdb/trending/movie/week?api_key=$apiKey',
+      '${baseUrl}trending/movie/week?api_key=$apiKey',
     ),
   );
 

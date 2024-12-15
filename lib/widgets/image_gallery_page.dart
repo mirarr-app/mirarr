@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:provider/provider.dart';
+import 'package:Mirarr/functions/regionprovider_class.dart';
+import 'package:Mirarr/functions/get_base_url.dart';
 
 class ImageGalleryPage extends StatelessWidget {
   final List<String> imageUrls;
@@ -8,6 +11,8 @@ class ImageGalleryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).primaryColor,
@@ -23,7 +28,7 @@ class ImageGalleryPage extends StatelessWidget {
         itemBuilder: (context, index) {
           return CachedNetworkImage(
             imageUrl:
-                "https://tmdbpics.maybeparsa.top/t/p/original${imageUrls[index]}",
+                '${getImageBaseUrl(region)}/t/p/original${imageUrls[index]}',
             placeholder: (context, url) => const Center(
               child: CircularProgressIndicator(),
             ),

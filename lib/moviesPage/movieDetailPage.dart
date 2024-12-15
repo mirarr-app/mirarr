@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:Mirarr/functions/fetchers/fetch_movie_credits.dart';
 import 'package:Mirarr/functions/fetchers/fetch_movie_details.dart';
 import 'package:Mirarr/functions/fetchers/fetch_other_movies_by_director.dart';
+import 'package:Mirarr/functions/get_base_url.dart';
+import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/moviesPage/checkers/custom_tmdb_ids_effects.dart';
 import 'package:Mirarr/moviesPage/functions/get_imdb_rating.dart';
 import 'package:Mirarr/moviesPage/functions/movie_tmdb_actions.dart';
@@ -23,6 +25,7 @@ import 'package:Mirarr/moviesPage/functions/check_availability.dart';
 import 'package:Mirarr/widgets/custom_divider.dart';
 import 'package:Mirarr/widgets/image_gallery_page.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:provider/provider.dart';
 
 class MovieDetailPage extends StatefulWidget {
   final String movieTitle;
@@ -75,7 +78,9 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
     checkAccountState();
     _loadMovieImages();
 
-    fetchCredits(widget.movieId);
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
+    fetchCredits(widget.movieId, region);
   }
 
   void _loadMovieImages() {
@@ -104,9 +109,12 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
   Future<void> checkAccountState() async {
     final openbox = await Hive.openBox('sessionBox');
     final sessionId = openbox.get('sessionData');
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
+    final baseUrl = getBaseUrl(region);
     final response = await http.get(
       Uri.parse(
-        'https://tmdb.maybeparsa.top/tmdb/movie/${widget.movieId}/account_states?api_key=$apiKey&session_id=$sessionId',
+        '${baseUrl}movie/${widget.movieId}/account_states?api_key=$apiKey&session_id=$sessionId',
       ),
     );
 
@@ -124,9 +132,11 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
   }
 
   Future<List<String>> _fetchMovieImages(int movieId) async {
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
+    final baseUrl = getBaseUrl(region);
     final response = await http.get(
-      Uri.parse(
-          'https://tmdb.maybeparsa.top/tmdb/movie/$movieId/images?api_key=$apiKey'),
+      Uri.parse('${baseUrl}movie/$movieId/images?api_key=$apiKey'),
     );
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body)['backdrops'];
@@ -150,7 +160,9 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
 
   Future<void> _fetchMovieDetails() async {
     try {
-      final responseData = await fetchMovieDetails(widget.movieId);
+      final region =
+          Provider.of<RegionProvider>(context, listen: false).currentRegion;
+      final responseData = await fetchMovieDetails(widget.movieId, region);
       setState(() {
         moviedetails = responseData;
         budget = responseData['budget'];
@@ -178,6 +190,8 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
     int? hours = duration != null ? duration! ~/ 60 : null;
     int? minutes = duration != null ? duration! % 60 : null;
     String year = releaseDate != null && releaseDate!.isNotEmpty
@@ -202,7 +216,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                       children: [
                         CachedNetworkImage(
                           imageUrl:
-                              'https://tmdbpics.maybeparsa.top/t/p/original$backdrops',
+                              '${getImageBaseUrl(region)}/t/p/original$backdrops',
                           placeholder: (context, url) =>
                               const Center(child: CircularProgressIndicator()),
                           errorWidget: (context, url, error) =>
@@ -738,7 +752,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                       children: [
                         Center(
                           child: FutureBuilder(
-                              future: checkAvailability(widget.movieId),
+                              future: checkAvailability(widget.movieId, region),
                               builder: (context, snapshot) {
                                 if (snapshot.connectionState ==
                                     ConnectionState.waiting) {
@@ -802,7 +816,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                     ),
                   ),
                   FutureBuilder(
-                    future: fetchCredits(widget.movieId),
+                    future: fetchCredits(widget.movieId, region),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());
@@ -859,7 +873,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                   ),
                   const CustomDivider(),
                   FutureBuilder(
-                    future: fetchCredits(widget.movieId),
+                    future: fetchCredits(widget.movieId, region),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());
@@ -899,8 +913,8 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                 ),
                               ),
                               FutureBuilder(
-                                future:
-                                    fetchOtherMoviesByDirector(director['id']),
+                                future: fetchOtherMoviesByDirector(
+                                    director['id'], region),
                                 builder: (context, snapshot) {
                                   if (snapshot.connectionState ==
                                       ConnectionState.waiting) {
@@ -950,7 +964,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                                               ? DecorationImage(
                                                                   image:
                                                                       CachedNetworkImageProvider(
-                                                                    'https://tmdbpics.maybeparsa.top/t/p/w200${movie['poster_path']}',
+                                                                    '${getImageBaseUrl(region)}/t/p/w200${movie['poster_path']}',
                                                                   ),
                                                                   fit: BoxFit
                                                                       .cover,

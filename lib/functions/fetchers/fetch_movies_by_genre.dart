@@ -1,5 +1,6 @@
 import 'dart:isolate';
 import 'dart:convert';
+import 'package:Mirarr/functions/get_base_url.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:Mirarr/moviesPage/models/movie.dart';
 import 'package:http/http.dart' as http;
@@ -60,11 +61,10 @@ void _movieIsolateFunction(Map<String, dynamic> message) {
   sendPort.send(movies);
 }
 
-Future<List<Genre>> fetchGenres() async {
+Future<List<Genre>> fetchGenres(String region) async {
+  final baseUrl = getBaseUrl(region);
   final response = await http.get(
-    Uri.parse(
-      'https://tmdb.maybeparsa.top/tmdb/genre/movie/list?api_key=$apiKey',
-    ),
+    Uri.parse('${baseUrl}genre/movie/list?api_key=$apiKey'),
   );
 
   if (response.statusCode == 200) {
@@ -85,10 +85,12 @@ Future<List<Genre>> fetchGenres() async {
   }
 }
 
-Future<List<Movie>> fetchMoviesByGenre(int genreId) async {
+Future<List<Movie>> fetchMoviesByGenre(int genreId, String region) async {
+  final baseUrl = getBaseUrl(region);
+
   final response = await http.get(
     Uri.parse(
-      'https://tmdb.maybeparsa.top/tmdb/discover/movie?api_key=$apiKey&with_genres=$genreId',
+      '${baseUrl}discover/movie?api_key=$apiKey&with_genres=$genreId',
     ),
   );
 

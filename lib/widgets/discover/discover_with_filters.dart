@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:Mirarr/functions/get_base_url.dart';
+import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/moviesPage/UI/customMovieWidget.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie_desktop.dart';
@@ -12,6 +14,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'package:provider/provider.dart';
 
 class Human {
   final int id;
@@ -51,13 +55,15 @@ class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
   @override
   void initState() {
     super.initState();
-    _fetchGenres();
+    _fetchGenres(context);
   }
 
-  Future<void> _fetchGenres() async {
+  Future<void> _fetchGenres(BuildContext context) async {
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
+    final baseUrl = getBaseUrl(region);
     final apiKey = dotenv.env['TMDB_API_KEY'];
-    final url = Uri.parse(
-        'https://tmdb.maybeparsa.top/tmdb/genre/movie/list?api_key=$apiKey');
+    final url = Uri.parse('${baseUrl}genre/movie/list?api_key=$apiKey');
 
     try {
       final response = await http.get(url);
@@ -80,7 +86,10 @@ class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
     }
   }
 
-  Future<void> _fetchMovies() async {
+  Future<void> _fetchMovies(BuildContext context) async {
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
+    final baseUrl = getBaseUrl(region);
     setState(() {
       isLoading = true;
     });
@@ -99,8 +108,7 @@ class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
         .map((entry) => entry.key.toString())
         .join(',');
 
-    final url = Uri.parse(
-        'https://tmdb.maybeparsa.top/tmdb/discover/movie?api_key=$apiKey'
+    final url = Uri.parse('${baseUrl}discover/movie?api_key=$apiKey'
         '&include_adult=true'
         '&primary_release_date.gte=${_yearRange.start.round()}-01-01'
         '&primary_release_date.lte=${_yearRange.end.round()}-12-31'
@@ -142,12 +150,14 @@ class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
     }
   }
 
-  Future<List<Human>> _searchActors(String query) async {
+  Future<List<Human>> _searchActors(String query, BuildContext context) async {
     if (query.isEmpty) return [];
-
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
+    final baseUrl = getBaseUrl(region);
     final apiKey = dotenv.env['TMDB_API_KEY'];
-    final url = Uri.parse(
-        'https://tmdb.maybeparsa.top/tmdb/search/person?api_key=$apiKey&query=$query');
+    final url =
+        Uri.parse('${baseUrl}search/person?api_key=$apiKey&query=$query');
 
     try {
       final response = await http.get(url);
@@ -280,7 +290,8 @@ class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
                               if (_debounce?.isActive ?? false) {
                                 _debounce!.cancel();
                               }
-                              return _searchActors(textEditingValue.text);
+                              return _searchActors(
+                                  textEditingValue.text, context);
                             },
                             onSelected: _addPerson,
                             fieldViewBuilder: (BuildContext context,
@@ -484,7 +495,7 @@ class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                             backgroundColor: Theme.of(context).primaryColor),
-                        onPressed: _fetchMovies,
+                        onPressed: () => _fetchMovies(context),
                         child: const Text('Search Movies',
                             style: TextStyle(
                                 color: Colors.black,

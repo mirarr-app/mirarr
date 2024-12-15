@@ -1,4 +1,5 @@
 import 'package:Mirarr/functions/themeprovider_class.dart';
+import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/widgets/check_updates.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -24,9 +25,15 @@ void main() async {
   final themeProvider = ThemeProvider(AppThemes.orangeTheme);
   await themeProvider.loadTheme();
 
+  final regionProvider = RegionProvider('worldwide');
+  await regionProvider.loadRegion();
+
   runApp(
-    ChangeNotifierProvider.value(
-      value: themeProvider,
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider.value(value: themeProvider),
+        ChangeNotifierProvider.value(value: regionProvider),
+      ],
       child: const MyApp(),
     ),
   );
@@ -43,8 +50,7 @@ class MyApp extends StatelessWidget {
         title: 'Mirarr',
         theme: themeProvider.currentTheme,
         home: const Scaffold(
-          body:
-              ConnectivityWidget(), // Use ConnectivityWidget as the home screen
+          body: ConnectivityWidget(),
         ),
       );
     });

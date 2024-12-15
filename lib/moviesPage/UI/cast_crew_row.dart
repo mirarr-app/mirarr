@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:Mirarr/widgets/cast/cast-details.dart';
 import 'package:Mirarr/widgets/cast/crew-details.dart';
+import 'package:provider/provider.dart';
+import 'package:Mirarr/functions/regionprovider_class.dart';
+import 'package:Mirarr/functions/get_base_url.dart';
 
 void onTapCast(BuildContext context, int castId) {
   Navigator.push(
@@ -22,6 +25,8 @@ void onTapCrew(BuildContext context, int castId) {
 }
 
 Widget buildCastRow(List<Map<String, dynamic>> castList, BuildContext context) {
+  final region =
+      Provider.of<RegionProvider>(context, listen: false).currentRegion;
   return SingleChildScrollView(
     scrollDirection: Axis.horizontal,
     child: Row(
@@ -37,7 +42,7 @@ Widget buildCastRow(List<Map<String, dynamic>> castList, BuildContext context) {
                 CircleAvatar(
                   backgroundImage: cast['profile_path'] != null
                       ? CachedNetworkImageProvider(
-                          'https://tmdbpics.maybeparsa.top/t/p/w92${cast['profile_path']}',
+                          '${getImageBaseUrl(region)}/t/p/w92${cast['profile_path']}',
                         )
                       : const AssetImage('assets/images/person.png')
                           as ImageProvider,
@@ -88,6 +93,8 @@ Widget buildCastRow(List<Map<String, dynamic>> castList, BuildContext context) {
 }
 
 Widget buildCrewRow(List<Map<String, dynamic>> crewList, BuildContext context) {
+  final region =
+      Provider.of<RegionProvider>(context, listen: false).currentRegion;
   return SingleChildScrollView(
     scrollDirection: Axis.horizontal,
     child: Row(
@@ -103,7 +110,7 @@ Widget buildCrewRow(List<Map<String, dynamic>> crewList, BuildContext context) {
                 CircleAvatar(
                   backgroundImage: crew['profile_path'] != null
                       ? CachedNetworkImageProvider(
-                          'https://tmdbpics.maybeparsa.top/t/p/w92${crew['profile_path']}',
+                          '${getImageBaseUrl(region)}/t/p/w92${crew['profile_path']}',
                         )
                       : const AssetImage('assets/images/person.png')
                           as ImageProvider,
@@ -155,6 +162,8 @@ Widget buildCrewRow(List<Map<String, dynamic>> crewList, BuildContext context) {
 
 Widget buildCrewRowDesktop(
     List<Map<String, dynamic>> crewList, BuildContext context) {
+  final region =
+      Provider.of<RegionProvider>(context, listen: false).currentRegion;
   return SingleChildScrollView(
     scrollDirection: Axis.horizontal,
     child: Row(
@@ -171,7 +180,7 @@ Widget buildCrewRowDesktop(
                 CircleAvatar(
                   backgroundImage: crew['profile_path'] != null
                       ? CachedNetworkImageProvider(
-                          'https://tmdbpics.maybeparsa.top/t/p/w185${crew['profile_path']}', // Increase image size
+                          '${getImageBaseUrl(region)}/t/p/w185${crew['profile_path']}', // Increase image size
                         )
                       : const AssetImage('assets/images/person.png')
                           as ImageProvider,
@@ -225,6 +234,8 @@ Widget buildCrewRowDesktop(
 
 Widget buildCastRowDesktop(
     List<Map<String, dynamic>> castList, BuildContext context) {
+  final region =
+      Provider.of<RegionProvider>(context, listen: false).currentRegion;
   return SingleChildScrollView(
     scrollDirection: Axis.horizontal,
     child: Row(
@@ -240,7 +251,7 @@ Widget buildCastRowDesktop(
                 CircleAvatar(
                   backgroundImage: cast['profile_path'] != null
                       ? CachedNetworkImageProvider(
-                          'https://tmdbpics.maybeparsa.top/t/p/w185${cast['profile_path']}',
+                          '${getImageBaseUrl(region)}/t/p/w185${cast['profile_path']}',
                         )
                       : const AssetImage('assets/images/person.png')
                           as ImageProvider,

@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:Mirarr/functions/show_error_dialog.dart';
-import 'package:Mirarr/widgets/changecolor.dart';
+import 'package:Mirarr/widgets/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:Mirarr/widgets/bottom_bar.dart';

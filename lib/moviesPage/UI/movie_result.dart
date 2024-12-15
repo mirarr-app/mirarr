@@ -1,3 +1,5 @@
+import 'package:Mirarr/functions/get_base_url.dart';
+import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:Mirarr/moviesPage/models/movie.dart';
@@ -5,17 +7,18 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'package:provider/provider.dart';
+
 class MovieSearchResult extends StatelessWidget {
   final Movie movie;
 
   const MovieSearchResult({super.key, required this.movie});
 
-  Future<bool> checkAvailability(int movieId) async {
+  Future<bool> checkAvailability(int movieId, String region) async {
+    final baseUrl = getBaseUrl(region);
     final apiKey = dotenv.env['TMDB_API_KEY'];
     final response = await http.get(
-      Uri.parse(
-        'https://tmdb.maybeparsa.top/tmdb/movie/$movieId/watch/providers?api_key=$apiKey',
-      ),
+      Uri.parse('${baseUrl}movie/$movieId/watch/providers?api_key=$apiKey'),
     );
 
     if (response.statusCode == 200) {
@@ -30,6 +33,8 @@ class MovieSearchResult extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
     return Padding(
       padding: const EdgeInsets.fromLTRB(3, 5, 3, 5),
       child: Card(
@@ -42,7 +47,7 @@ class MovieSearchResult extends StatelessWidget {
             image: movie.backdropPath != null
                 ? DecorationImage(
                     image: CachedNetworkImageProvider(
-                      'https://tmdbpics.maybeparsa.top/t/p/original${movie.backdropPath}',
+                      '${getImageBaseUrl(region)}/t/p/original${movie.backdropPath}',
                     ),
                     fit: BoxFit.cover,
                     opacity: 0.8)
@@ -69,7 +74,7 @@ class MovieSearchResult extends StatelessWidget {
                   padding: const EdgeInsets.all(10),
                   decoration: const BoxDecoration(),
                   child: FutureBuilder(
-                    future: checkAvailability(movie.id),
+                    future: checkAvailability(movie.id, region),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Padding(
