@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
+import 'package:Mirarr/functions/get_base_url.dart';
+import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie_desktop.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +12,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:Mirarr/widgets/custom_divider.dart';
 import 'package:Mirarr/widgets/image_gallery_page.dart';
+import 'package:provider/provider.dart';
 
 class CastDetailPage extends StatefulWidget {
   const CastDetailPage({Key? key, required this.castId}) : super(key: key);
@@ -144,6 +147,8 @@ class _CastDetailPageState extends State<CastDetailPage> {
   }
 
   Widget _buildContent(Map<String, dynamic> castData) {
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
     return Platform.isAndroid || Platform.isIOS
         ? SingleChildScrollView(
             child: Column(
@@ -166,7 +171,7 @@ class _CastDetailPageState extends State<CastDetailPage> {
                             )
                           : CachedNetworkImage(
                               imageUrl:
-                                  "https://tmdbpics.maybeparsa.top/t/p/original${castData['profile_path']}",
+                                  '${getImageBaseUrl(region)}/t/p/original${castData['profile_path']}',
                               placeholder: (context, url) => const Center(
                                 child: CircularProgressIndicator(),
                               ),
@@ -318,7 +323,7 @@ class _CastDetailPageState extends State<CastDetailPage> {
                               )
                             : CachedNetworkImage(
                                 imageUrl:
-                                    "https://tmdbpics.maybeparsa.top/t/p/original${castData['profile_path']}",
+                                    '${getImageBaseUrl(region)}/t/p/original${castData['profile_path']}',
                                 placeholder: (context, url) => const Center(
                                   child: CircularProgressIndicator(),
                                 ),
@@ -466,6 +471,8 @@ class _CastDetailPageState extends State<CastDetailPage> {
   }
 
   Widget _buildMovieItem(dynamic movie) {
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
     return GestureDetector(
       onTap: () => Platform.isAndroid || Platform.isIOS
           ? onTapMovie(movie['title'], movie['id'], context)
@@ -476,7 +483,7 @@ class _CastDetailPageState extends State<CastDetailPage> {
           children: [
             CachedNetworkImage(
               imageUrl:
-                  "https://tmdbpics.maybeparsa.top/t/p/w500${movie['poster_path']}",
+                  '${getImageBaseUrl(region)}/t/p/w500${movie['poster_path']}',
               placeholder: (context, url) => const Center(
                 child: CircularProgressIndicator(),
               ),

@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:ui';
 
+import 'package:Mirarr/functions/get_base_url.dart';
+import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/moviesPage/UI/cast_crew_row.dart';
 import 'package:Mirarr/seriesPage/UI/tvchart_table.dart';
 import 'package:Mirarr/seriesPage/checkers/custom_tmdb_ids_effects_series.dart';
@@ -12,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:provider/provider.dart';
 
 final apiKey = dotenv.env['TMDB_API_KEY'];
 final apiOmdbKey = dotenv.env['OMDB_API_KEY_FOR_EPISODES'];
@@ -72,10 +75,13 @@ Future<Map<int, String>> fetchSeasonImdbRatings(
   });
 }
 
-Future<List<dynamic>> fetchSeasons(int serieId) async {
+Future<List<dynamic>> fetchSeasons(int serieId, BuildContext context) async {
   return _cachedApiCall('seasons_$serieId', () async {
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
+    final baseUrl = getBaseUrl(region);
     final response = await http.get(
-      Uri.parse('https://tmdb.maybeparsa.top/tmdb/tv/$serieId?api_key=$apiKey'),
+      Uri.parse('${baseUrl}tv/$serieId?api_key=$apiKey'),
     );
 
     if (response.statusCode == 200) {
@@ -93,7 +99,7 @@ void seasonsAndEpisodes(
     context: context,
     builder: (BuildContext context) {
       return FutureBuilder<List<dynamic>>(
-        future: fetchSeasons(serieId),
+        future: fetchSeasons(serieId, context),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -162,8 +168,11 @@ void seasonsAndEpisodes(
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
                           final season = seasons[index];
+                          final region = Provider.of<RegionProvider>(context,
+                                  listen: false)
+                              .currentRegion;
                           final coverUrl = season['poster_path'] != null
-                              ? 'https://tmdbpics.maybeparsa.top/t/p/w500${season['poster_path']}'
+                              ? '${getImageBaseUrl(region)}/t/p/w500${season['poster_path']}'
                               : null;
                           final isAirDateNull = season['air_date'] == null;
                           final isEpisodeCountZero =
@@ -236,12 +245,14 @@ void seasonsAndEpisodes(
   );
 }
 
-Future<List<dynamic>> fetchEpisodesGuide(
-    int seasonNumber, int serieId, String serieName, String imdbId) async {
+Future<List<dynamic>> fetchEpisodesGuide(BuildContext context, int seasonNumber,
+    int serieId, String serieName, String imdbId) async {
   return _cachedApiCall('episodes_guide_$serieId$seasonNumber', () async {
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
+    final baseUrl = getBaseUrl(region);
     final episodesResponse = await http.get(
-      Uri.parse(
-          'https://tmdb.maybeparsa.top/tmdb/tv/$serieId/season/$seasonNumber?api_key=$apiKey'),
+      Uri.parse('${baseUrl}tv/$serieId/season/$seasonNumber?api_key=$apiKey'),
     );
 
     final ratingsMap = await fetchSeasonImdbRatings(imdbId, seasonNumber);
@@ -268,7 +279,8 @@ void episodesGuide(int seasonNumber, BuildContext context, int serieId,
     context: context,
     builder: (BuildContext context) {
       return FutureBuilder<List<dynamic>>(
-        future: fetchEpisodesGuide(seasonNumber, serieId, serieName, imdbId),
+        future: fetchEpisodesGuide(
+            context, seasonNumber, serieId, serieName, imdbId),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -300,8 +312,11 @@ void episodesGuide(int seasonNumber, BuildContext context, int serieId,
                         itemCount: episodes.length,
                         itemBuilder: (context, index) {
                           final episode = episodes[index];
+                          final region = Provider.of<RegionProvider>(context,
+                                  listen: false)
+                              .currentRegion;
                           final coverUrl = episode['still_path'] != null
-                              ? 'https://tmdbpics.maybeparsa.top/t/p/w500${episode['still_path']}'
+                              ? '${getImageBaseUrl(region)}/t/p/w500${episode['still_path']}'
                               : null;
 
                           bool isReleased = true;
@@ -405,13 +420,16 @@ void episodesGuide(int seasonNumber, BuildContext context, int serieId,
   );
 }
 
-Future<Map<String, dynamic>> fetchEpisodesDetails(
+Future<Map<String, dynamic>> fetchEpisodesDetails(BuildContext context,
     int seasonNumber, int episodeNumber, int serieId) async {
   return _cachedApiCall('episode_details_$serieId$seasonNumber$episodeNumber',
       () async {
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
+    final baseUrl = getBaseUrl(region);
     final response = await http.get(
       Uri.parse(
-          'https://tmdb.maybeparsa.top/tmdb/tv/$serieId/season/$seasonNumber/episode/$episodeNumber?api_key=$apiKey'),
+          '${baseUrl}tv/$serieId/season/$seasonNumber/episode/$episodeNumber?api_key=$apiKey'),
     );
 
     if (response.statusCode == 200) {
@@ -424,12 +442,14 @@ Future<Map<String, dynamic>> fetchEpisodesDetails(
 
 void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
     int serieId, String serieName, String imdbId) {
+  final region =
+      Provider.of<RegionProvider>(context, listen: false).currentRegion;
   showModalBottomSheet(
     context: context,
     builder: (BuildContext context) {
       return FutureBuilder<Map<String, dynamic>>(
         future: Future.wait([
-          fetchEpisodesDetails(seasonNumber, episodeNumber, serieId),
+          fetchEpisodesDetails(context, seasonNumber, episodeNumber, serieId),
           fetchImdbRating(imdbId, seasonNumber, episodeNumber)
         ]).then((results) =>
             {'episodeDetails': results[0], 'imdbRating': results[1]}),
@@ -527,7 +547,7 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
                     ),
                     FutureBuilder(
                       future: fetchEpisodeCastAndCrew(
-                          serieId, seasonNumber, episodeNumber),
+                          serieId, seasonNumber, episodeNumber, region),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {

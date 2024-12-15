@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:Mirarr/functions/get_base_url.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
@@ -7,11 +8,12 @@ import 'package:http/http.dart' as http;
 final apiKey = dotenv.env['TMDB_API_KEY'];
 
 Future<Map<String, List<Map<String, dynamic>>>> fetchEpisodeCastAndCrew(
-    int serieId, int seasonNumber, int episodeNumber) async {
+    int serieId, int seasonNumber, int episodeNumber, String region) async {
   try {
+    final baseUrl = getBaseUrl(region);
     final response = await http.get(
       Uri.parse(
-        'https://tmdb.maybeparsa.top/tmdb/tv/$serieId/season/$seasonNumber/episode/$episodeNumber?api_key=$apiKey',
+        '${baseUrl}tv/$serieId/season/$seasonNumber/episode/$episodeNumber?api_key=$apiKey',
       ),
     );
 

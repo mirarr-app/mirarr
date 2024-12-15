@@ -1,9 +1,13 @@
+import 'package:Mirarr/functions/get_base_url.dart';
+import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:Mirarr/moviesPage/models/movie.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'package:provider/provider.dart';
 
 class CustomMovieWidget extends StatelessWidget {
   static final Map<int, bool> _availabilityCache = {};
@@ -12,15 +16,16 @@ class CustomMovieWidget extends StatelessWidget {
 
   const CustomMovieWidget({super.key, required this.movie});
 
-  Future<bool> checkAvailability(int movieId) async {
+  Future<bool> checkAvailability(int movieId, BuildContext context) async {
     if (_availabilityCache.containsKey(movieId)) {
       return _availabilityCache[movieId]!;
     }
-
+    final baseUrl =
+        getBaseUrl(Provider.of<RegionProvider>(context).currentRegion);
     final apiKey = dotenv.env['TMDB_API_KEY'];
     final response = await http.get(
       Uri.parse(
-        'https://tmdb.maybeparsa.top/tmdb/movie/$movieId/watch/providers?api_key=$apiKey',
+        '$baseUrl/movie/$movieId/watch/providers?api_key=$apiKey',
       ),
     );
 
@@ -48,7 +53,7 @@ class CustomMovieWidget extends StatelessWidget {
           image: movie.posterPath.isNotEmpty
               ? DecorationImage(
                   image: CachedNetworkImageProvider(
-                    'https://tmdbpics.maybeparsa.top/t/p/w500${movie.posterPath}',
+                    '${getImageBaseUrl(Provider.of<RegionProvider>(context).currentRegion)}/t/p/w500${movie.posterPath}',
                   ),
                   fit: BoxFit.cover,
                 )
@@ -85,7 +90,7 @@ class CustomMovieWidget extends StatelessWidget {
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(),
                 child: FutureBuilder(
-                  future: checkAvailability(movie.id),
+                  future: checkAvailability(movie.id, context),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Padding(

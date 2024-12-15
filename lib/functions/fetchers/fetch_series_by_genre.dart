@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:isolate';
+import 'package:Mirarr/functions/get_base_url.dart';
 import 'package:Mirarr/seriesPage/models/serie.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
@@ -33,11 +34,10 @@ void _genreIsolateFunction(Map<String, dynamic> message) {
   sendPort.send(genres);
 }
 
-Future<List<Genre>> fetchGenres() async {
+Future<List<Genre>> fetchGenres(String region) async {
+  final baseUrl = getBaseUrl(region);
   final response = await http.get(
-    Uri.parse(
-      'https://tmdb.maybeparsa.top/tmdb/genre/tv/list?api_key=$apiKey',
-    ),
+    Uri.parse('${baseUrl}genre/tv/list?api_key=$apiKey'),
   );
 
   if (response.statusCode == 200) {
@@ -81,11 +81,10 @@ void _seriesIsolateFunction(Map<String, dynamic> message) {
   sendPort.send(series);
 }
 
-Future<List<Serie>> fetchSeriesByGenre(int genreId) async {
+Future<List<Serie>> fetchSeriesByGenre(int genreId, String region) async {
+  final baseUrl = getBaseUrl(region);
   final response = await http.get(
-    Uri.parse(
-      'https://tmdb.maybeparsa.top/tmdb/discover/tv?api_key=$apiKey&with_genres=$genreId',
-    ),
+    Uri.parse('${baseUrl}discover/tv?api_key=$apiKey&with_genres=$genreId'),
   );
 
   if (response.statusCode == 200) {

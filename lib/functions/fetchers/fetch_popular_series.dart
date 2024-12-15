@@ -1,5 +1,6 @@
 import 'dart:isolate';
 import 'dart:convert';
+import 'package:Mirarr/functions/get_base_url.dart';
 import 'package:Mirarr/seriesPage/models/serie.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -31,11 +32,10 @@ void _isolateFunction(Map<String, dynamic> message) {
   sendPort.send(series);
 }
 
-Future<List<Serie>> fetchPopularSeries() async {
+Future<List<Serie>> fetchPopularSeries(String region) async {
+  final baseUrl = getBaseUrl(region);
   final response = await http.get(
-    Uri.parse(
-      'https://tmdb.maybeparsa.top/tmdb/tv/popular?api_key=$apiKey',
-    ),
+    Uri.parse('${baseUrl}tv/popular?api_key=$apiKey'),
   );
 
   if (response.statusCode == 200) {

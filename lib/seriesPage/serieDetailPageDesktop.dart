@@ -3,6 +3,8 @@ import 'dart:ui';
 
 import 'package:Mirarr/functions/fetchers/fetch_serie_details.dart';
 import 'package:Mirarr/functions/fetchers/fetch_series_credits.dart';
+import 'package:Mirarr/functions/get_base_url.dart';
+import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/seriesPage/UI/seasons_details.dart';
 import 'package:Mirarr/seriesPage/checkers/custom_tmdb_ids_effects_series.dart';
 import 'package:Mirarr/seriesPage/function/get_imdb_rating_series.dart';
@@ -18,6 +20,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:Mirarr/moviesPage/UI/cast_crew_row.dart';
 import 'package:Mirarr/widgets/bottom_bar.dart';
 import 'package:Mirarr/widgets/custom_divider.dart';
+import 'package:provider/provider.dart';
 
 class SerieDetailPageDesktop extends StatefulWidget {
   final String serieName;
@@ -68,7 +71,9 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
 
     checkAccountState();
     _fetchSerieDetails();
-    fetchCredits(widget.serieId);
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
+    fetchCredits(widget.serieId, region);
     fetchExternalId();
   }
 
@@ -85,9 +90,12 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
   Future<void> checkAccountState() async {
     final openbox = await Hive.openBox('sessionBox');
     final sessionId = openbox.get('sessionData');
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
+    final baseUrl = getBaseUrl(region);
     final response = await http.get(
       Uri.parse(
-        'https://tmdb.maybeparsa.top/tmdb/tv/${widget.serieId}/account_states?api_key=$apiKey&session_id=$sessionId',
+        '${baseUrl}tv/${widget.serieId}/account_states?api_key=$apiKey&session_id=$sessionId',
       ),
     );
 
@@ -106,7 +114,9 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
 
   Future<void> _fetchSerieDetails() async {
     try {
-      final responseData = await fetchSerieDetails(widget.serieId);
+      final region =
+          Provider.of<RegionProvider>(context, listen: false).currentRegion;
+      final responseData = await fetchSerieDetails(widget.serieId, region);
       setState(() {
         serieDetails = responseData;
         budget = responseData['budget'];
@@ -140,11 +150,13 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
 
   Future<void> fetchExternalId() async {
     try {
+      final region =
+          Provider.of<RegionProvider>(context, listen: false).currentRegion;
+      final baseUrl = getBaseUrl(region);
       // Make an HTTP GET request to fetch movie details from the first API
       final response = await http.get(
         Uri.parse(
-          'https://tmdb.maybeparsa.top/tmdb/tv/${widget.serieId}/external_ids?api_key=$apiKey',
-        ),
+            '${baseUrl}tv/${widget.serieId}/external_ids?api_key=$apiKey'),
       );
 
       if (response.statusCode == 200) {
@@ -169,6 +181,8 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
 
   @override
   Widget build(BuildContext context) {
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
     return Scaffold(
       appBar: Platform.isLinux || Platform.isWindows || Platform.isMacOS
           ? AppBar(
@@ -209,7 +223,8 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                       decoration: BoxDecoration(
                         image: DecorationImage(
                             image: CachedNetworkImageProvider(
-                                'https://tmdbpics.maybeparsa.top/t/p/original$backdrops'),
+                              '${getImageBaseUrl(region)}/t/p/original$backdrops',
+                            ),
                             fit: BoxFit.fitWidth,
                             opacity: 0.5),
                       ),
@@ -223,7 +238,7 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                             children: [
                               CachedNetworkImage(
                                 imageUrl:
-                                    'https://tmdbpics.maybeparsa.top/t/p/original$posterPath',
+                                    '${getImageBaseUrl(region)}/t/p/original$posterPath',
                                 placeholder: (context, url) => const Center(
                                     child: CircularProgressIndicator()),
                                 errorWidget: (context, url, error) =>
@@ -831,7 +846,7 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                       ),
                     ),
                     FutureBuilder(
-                      future: fetchCredits(widget.serieId),
+                      future: fetchCredits(widget.serieId, region),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {

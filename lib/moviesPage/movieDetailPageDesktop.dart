@@ -4,6 +4,8 @@ import 'dart:ui';
 import 'package:Mirarr/functions/fetchers/fetch_movie_credits.dart';
 import 'package:Mirarr/functions/fetchers/fetch_movie_details.dart';
 import 'package:Mirarr/functions/fetchers/fetch_other_movies_by_director.dart';
+import 'package:Mirarr/functions/get_base_url.dart';
+import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/moviesPage/checkers/custom_tmdb_ids_effects.dart';
 import 'package:Mirarr/moviesPage/functions/get_imdb_rating.dart';
 import 'package:Mirarr/moviesPage/functions/movie_tmdb_actions.dart';
@@ -24,6 +26,7 @@ import 'package:Mirarr/widgets/custom_divider.dart';
 import 'package:Mirarr/widgets/image_gallery_page.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:Mirarr/moviesPage/functions/watch_links.dart';
+import 'package:provider/provider.dart';
 
 class MovieDetailPageDesktop extends StatefulWidget {
   final String movieTitle;
@@ -76,8 +79,9 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
     _fetchMovieDetails();
     checkAccountState();
     _loadMovieImages();
-
-    fetchCredits(widget.movieId);
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
+    fetchCredits(widget.movieId, region);
   }
 
   void onTapMovie(String movieTitle, int movieId) {
@@ -116,10 +120,12 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
   Future<void> checkAccountState() async {
     final openbox = await Hive.openBox('sessionBox');
     final sessionId = openbox.get('sessionData');
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
+    final baseUrl = getBaseUrl(region);
     final response = await http.get(
       Uri.parse(
-        'https://tmdb.maybeparsa.top/tmdb/movie/${widget.movieId}/account_states?api_key=$apiKey&session_id=$sessionId',
-      ),
+          '${baseUrl}movie/${widget.movieId}/account_states?api_key=$apiKey&session_id=$sessionId'),
     );
 
     if (response.statusCode == 200) {
@@ -136,9 +142,11 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
   }
 
   Future<List<String>> _fetchMovieImages(int movieId) async {
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
+    final baseUrl = getBaseUrl(region);
     final response = await http.get(
-      Uri.parse(
-          'https://tmdb.maybeparsa.top/tmdb/movie/$movieId/images?api_key=$apiKey'),
+      Uri.parse('${baseUrl}movie/$movieId/images?api_key=$apiKey'),
     );
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body)['backdrops'];
@@ -162,7 +170,9 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
 
   Future<void> _fetchMovieDetails() async {
     try {
-      final responseData = await fetchMovieDetails(widget.movieId);
+      final region =
+          Provider.of<RegionProvider>(context, listen: false).currentRegion;
+      final responseData = await fetchMovieDetails(widget.movieId, region);
       setState(() {
         moviedetails = responseData;
         budget = responseData['budget'];
@@ -191,6 +201,8 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
 
   @override
   Widget build(BuildContext context) {
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
     int? hours = duration != null ? duration! ~/ 60 : null;
     int? minutes = duration != null ? duration! % 60 : null;
     String year = releaseDate != null && releaseDate!.isNotEmpty
@@ -236,7 +248,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                       decoration: BoxDecoration(
                         image: DecorationImage(
                             image: CachedNetworkImageProvider(
-                                'https://tmdbpics.maybeparsa.top/t/p/w500$backdrops'),
+                                '${getImageBaseUrl(region)}/t/p/w500$backdrops'),
                             fit: BoxFit.fitWidth,
                             opacity: 0.5),
                       ),
@@ -250,7 +262,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                             children: [
                               CachedNetworkImage(
                                 imageUrl:
-                                    'https://tmdbpics.maybeparsa.top/t/p/original$posterPath',
+                                    '${getImageBaseUrl(region)}/t/p/w500$posterPath',
                                 placeholder: (context, url) => const Center(
                                     child: CircularProgressIndicator()),
                                 errorWidget: (context, url, error) =>
@@ -679,7 +691,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                         Center(
                                           child: FutureBuilder(
                                               future: checkAvailability(
-                                                  widget.movieId),
+                                                  widget.movieId, region),
                                               builder: (context, snapshot) {
                                                 if (snapshot.connectionState ==
                                                     ConnectionState.waiting) {
@@ -910,7 +922,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                       ),
                     ),
                     FutureBuilder(
-                      future: fetchCredits(widget.movieId),
+                      future: fetchCredits(widget.movieId, region),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
@@ -969,7 +981,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                     ),
                     const CustomDivider(),
                     FutureBuilder(
-                      future: fetchCredits(widget.movieId),
+                      future: fetchCredits(widget.movieId, region),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
@@ -1010,7 +1022,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                 ),
                                 FutureBuilder(
                                   future: fetchOtherMoviesByDirector(
-                                      director['id']),
+                                      director['id'], region),
                                   builder: (context, snapshot) {
                                     if (snapshot.connectionState ==
                                         ConnectionState.waiting) {
@@ -1060,7 +1072,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                                 ? DecorationImage(
                                                                     image:
                                                                         CachedNetworkImageProvider(
-                                                                      'https://tmdbpics.maybeparsa.top/t/p/w200${movie['poster_path']}',
+                                                                      '${getImageBaseUrl(region)}/t/p/w200${movie['poster_path']}',
                                                                     ),
                                                                     fit: BoxFit
                                                                         .cover,

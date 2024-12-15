@@ -1,19 +1,25 @@
+import 'package:Mirarr/functions/get_base_url.dart';
+import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:flutter/material.dart';
 import 'package:Mirarr/seriesPage/models/serie.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:provider/provider.dart';
 
 class SerieSearchResult extends StatelessWidget {
   final Serie serie;
 
   const SerieSearchResult({super.key, required this.serie});
-  Future<bool> checkAvailability(int movieId) async {
+  Future<bool> checkAvailability(int movieId, BuildContext context) async {
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
+    final baseUrl = getBaseUrl(region);
     final apiKey = dotenv.env['TMDB_API_KEY'];
     final response = await http.get(
       Uri.parse(
-        'https://tmdb.maybeparsa.top/tmdb/movie/$movieId/watch/providers?api_key=$apiKey',
+        '${baseUrl}movie/$movieId/watch/providers?api_key=$apiKey',
       ),
     );
 
@@ -29,6 +35,8 @@ class SerieSearchResult extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
     return Padding(
       padding: const EdgeInsets.fromLTRB(3, 5, 3, 5),
       child: Card(
@@ -41,7 +49,7 @@ class SerieSearchResult extends StatelessWidget {
             image: serie.backdropPath != null
                 ? DecorationImage(
                     image: CachedNetworkImageProvider(
-                      'https://tmdbpics.maybeparsa.top/t/p/original${serie.backdropPath}',
+                      '${getImageBaseUrl(region)}/t/p/original${serie.backdropPath}',
                     ),
                     fit: BoxFit.cover,
                     opacity: 0.8)

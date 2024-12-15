@@ -1,14 +1,16 @@
+import 'package:Mirarr/functions/get_base_url.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 final apiKey = dotenv.env['TMDB_API_KEY'];
-Future<Map<String, dynamic>> fetchMovieDetails(int movieId) async {
+Future<Map<String, dynamic>> fetchMovieDetails(
+    int movieId, String region) async {
   try {
-    // Make an HTTP GET request to fetch movie details from the first API
+    final baseUrl = getBaseUrl(region);
     final response = await http.get(
       Uri.parse(
-        'https://tmdb.maybeparsa.top/tmdb/movie/$movieId?api_key=$apiKey',
+        '${baseUrl}movie/$movieId?api_key=$apiKey',
       ),
     );
 

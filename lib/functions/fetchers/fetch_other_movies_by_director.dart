@@ -1,5 +1,6 @@
 import 'dart:isolate';
 
+import 'package:Mirarr/functions/get_base_url.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -36,10 +37,11 @@ void _isolateFunction(Map<String, dynamic> message) {
   sendPort.send(filteredMovies);
 }
 
-Future<List<dynamic>> fetchOtherMoviesByDirector(int castId) async {
+Future<List<dynamic>> fetchOtherMoviesByDirector(
+    int castId, String region) async {
+  final baseUrl = getBaseUrl(region);
   final response = await http.get(
-    Uri.parse(
-        'https://tmdb.maybeparsa.top/tmdb/person/$castId/movie_credits?api_key=$apiKey'),
+    Uri.parse('${baseUrl}person/$castId/movie_credits?api_key=$apiKey'),
   );
   if (response.statusCode == 200) {
     final receivePort = ReceivePort();

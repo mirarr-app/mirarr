@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:Mirarr/functions/fetchers/fetch_movies_by_genre.dart';
 import 'package:Mirarr/functions/fetchers/fetch_popular_movies.dart';
 import 'package:Mirarr/functions/fetchers/fetch_trending_movies.dart';
+import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_gridview_movie.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie_desktop.dart';
@@ -15,6 +16,7 @@ import 'package:Mirarr/moviesPage/UI/customMovieWidget.dart';
 import 'package:Mirarr/moviesPage/models/movie.dart';
 import 'package:Mirarr/widgets/bottom_bar.dart';
 import 'dart:async';
+import 'package:provider/provider.dart';
 
 class MovieSearchScreen extends StatefulWidget {
   static final GlobalKey<_MovieSearchScreenState> movieSearchKey =
@@ -32,9 +34,13 @@ class _MovieSearchScreenState extends State<MovieSearchScreen> {
   List<Movie> popularMovies = [];
   List<Genre> genres = [];
   Map<int, List<Movie>> moviesByGenre = {};
+  late RegionProvider regionProvider;
+
   Future<void> _fetchTrendingMovies() async {
     try {
-      final movies = await fetchTrendingMovies();
+      final region =
+          Provider.of<RegionProvider>(context, listen: false).currentRegion;
+      final movies = await fetchTrendingMovies(region);
       setState(() {
         trendingMovies = movies;
       });
@@ -45,7 +51,9 @@ class _MovieSearchScreenState extends State<MovieSearchScreen> {
 
   Future<void> _fetchPopularMovies() async {
     try {
-      final movies = await fetchPopularMovies();
+      final region =
+          Provider.of<RegionProvider>(context, listen: false).currentRegion;
+      final movies = await fetchPopularMovies(region);
       setState(() {
         popularMovies = movies;
       });
@@ -56,15 +64,17 @@ class _MovieSearchScreenState extends State<MovieSearchScreen> {
 
   Future<void> _fetchGenresAndMovies() async {
     try {
-      genres = await fetchGenres();
+      final region =
+          Provider.of<RegionProvider>(context, listen: false).currentRegion;
+      genres = await fetchGenres(region);
       for (var genre in genres) {
-        final movies = await fetchMoviesByGenre(genre.id);
+        final movies = await fetchMoviesByGenre(genre.id, region);
         setState(() {
           moviesByGenre[genre.id] = movies;
         });
       }
     } catch (e) {
-      throw Exception('Failed to load movies by movies');
+      throw Exception('Failed to load movies by genre');
     }
   }
 
@@ -121,6 +131,20 @@ class _MovieSearchScreenState extends State<MovieSearchScreen> {
   void initState() {
     super.initState();
     checkInternetAndFetchData();
+
+    // Add listener for region changes
+    Provider.of<RegionProvider>(context, listen: false).addListener(() {
+      checkInternetAndFetchData();
+    });
+  }
+
+  @override
+  void dispose() {
+    // Remove listener when disposing
+    Provider.of<RegionProvider>(context, listen: false).removeListener(() {
+      checkInternetAndFetchData();
+    });
+    super.dispose();
   }
 
   Future<void> checkInternetAndFetchData() async {
