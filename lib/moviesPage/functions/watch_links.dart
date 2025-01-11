@@ -1,7 +1,9 @@
+import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/functions/show_error_dialog.dart';
 import 'package:Mirarr/moviesPage/checkers/custom_tmdb_ids_effects.dart';
 import 'package:Mirarr/widgets/custom_divider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -53,6 +55,8 @@ void showWatchOptions(BuildContext context, int movieId, String movieTitle,
     context: context,
     builder: (BuildContext bottomSheetContext) {
       Color mainColor = getColor(context, movieId);
+      final region = Provider.of<RegionProvider>(context).currentRegion;
+      final year = releaseDate.split('-')[0];
       return Column(
         children: [
           Padding(
@@ -64,10 +68,44 @@ void showWatchOptions(BuildContext context, int movieId, String movieTitle,
                   'Watch from below sources or download the movie.',
                   style: TextStyle(color: mainColor, fontSize: 12),
                 ),
-                IconButton(
-                  onPressed: () => _launchUrl(Uri.parse(
-                      'https://dl.vidsrc.vip/movie/${movieId.toString()}')),
-                  icon: Icon(Icons.download, color: mainColor),
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed: () => _launchUrl(Uri.parse(
+                          'https://dl.vidsrc.vip/movie/${movieId.toString()}')),
+                      icon: Icon(Icons.download, color: mainColor),
+                    ),
+                    if (region == 'iran')
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            onPressed: () => _launchUrl(Uri.parse(
+                                'https://berlin.saymyname.website/Movies/$year/${movieId.toString()}')),
+                            icon: Icon(Icons.download, color: mainColor),
+                          ),
+                          Text(
+                            '🇮🇷',
+                            style: TextStyle(
+                              color: mainColor,
+                              fontSize: 10,
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () => _launchUrl(Uri.parse(
+                                'https://tokyo.saymyname.website/Movies/$year/${movieId.toString()}')),
+                            icon: Icon(Icons.download, color: mainColor),
+                          ),
+                          Text(
+                            '🇮🇷',
+                            style: TextStyle(
+                              color: mainColor,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ],
+                      ),
+                  ],
                 ),
               ],
             ),
