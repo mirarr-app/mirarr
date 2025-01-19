@@ -65,7 +65,7 @@ void showWatchOptions(BuildContext context, int movieId, String movieTitle,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Watch from below sources or download the movie.',
+                  'Watch or Download',
                   style: TextStyle(color: mainColor, fontSize: 12),
                 ),
                 Row(

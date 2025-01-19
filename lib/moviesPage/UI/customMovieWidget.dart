@@ -25,7 +25,7 @@ class CustomMovieWidget extends StatelessWidget {
     final apiKey = dotenv.env['TMDB_API_KEY'];
     final response = await http.get(
       Uri.parse(
-        '$baseUrl/movie/$movieId/watch/providers?api_key=$apiKey',
+        '${baseUrl}movie/$movieId/watch/providers?api_key=$apiKey',
       ),
     );
 
