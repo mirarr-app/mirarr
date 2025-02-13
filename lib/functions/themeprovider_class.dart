@@ -81,6 +81,13 @@ class ThemeProvider extends ChangeNotifier {
 
 class AppThemes {
   static final ThemeData orangeTheme = ThemeData(
+    progressIndicatorTheme: const ProgressIndicatorThemeData(year2023: false),
+    pageTransitionsTheme: PageTransitionsTheme(
+      builders: Map<TargetPlatform, PageTransitionsBuilder>.fromIterable(
+        TargetPlatform.values,
+        value: (_) => const FadeForwardsPageTransitionsBuilder(),
+      ),
+    ),
     fontFamily: 'Poppins',
     colorScheme: const ColorScheme(
       brightness: Brightness.light,
@@ -103,6 +110,13 @@ class AppThemes {
   );
 
   static final ThemeData blueTheme = ThemeData(
+    progressIndicatorTheme: const ProgressIndicatorThemeData(year2023: false),
+    pageTransitionsTheme: PageTransitionsTheme(
+      builders: Map<TargetPlatform, PageTransitionsBuilder>.fromIterable(
+        TargetPlatform.values,
+        value: (_) => const FadeForwardsPageTransitionsBuilder(),
+      ),
+    ),
     fontFamily: 'Poppins',
     colorScheme: const ColorScheme(
       brightness: Brightness.light,
@@ -125,6 +139,13 @@ class AppThemes {
   );
 
   static final ThemeData redTheme = ThemeData(
+    progressIndicatorTheme: const ProgressIndicatorThemeData(year2023: false),
+    pageTransitionsTheme: PageTransitionsTheme(
+      builders: Map<TargetPlatform, PageTransitionsBuilder>.fromIterable(
+        TargetPlatform.values,
+        value: (_) => const FadeForwardsPageTransitionsBuilder(),
+      ),
+    ),
     fontFamily: 'Poppins',
     colorScheme: const ColorScheme(
       brightness: Brightness.light,
@@ -147,6 +168,13 @@ class AppThemes {
   );
 
   static final ThemeData greyTheme = ThemeData(
+    progressIndicatorTheme: const ProgressIndicatorThemeData(year2023: false),
+    pageTransitionsTheme: PageTransitionsTheme(
+      builders: Map<TargetPlatform, PageTransitionsBuilder>.fromIterable(
+        TargetPlatform.values,
+        value: (_) => const FadeForwardsPageTransitionsBuilder(),
+      ),
+    ),
     fontFamily: 'Poppins',
     colorScheme: const ColorScheme(
       brightness: Brightness.light,
@@ -169,6 +197,13 @@ class AppThemes {
   );
 
   static final ThemeData yellowTheme = ThemeData(
+    progressIndicatorTheme: const ProgressIndicatorThemeData(year2023: false),
+    pageTransitionsTheme: PageTransitionsTheme(
+      builders: Map<TargetPlatform, PageTransitionsBuilder>.fromIterable(
+        TargetPlatform.values,
+        value: (_) => const FadeForwardsPageTransitionsBuilder(),
+      ),
+    ),
     fontFamily: 'Poppins',
     colorScheme: const ColorScheme(
       brightness: Brightness.light,
@@ -191,6 +226,13 @@ class AppThemes {
   );
 
   static final ThemeData brownTheme = ThemeData(
+    progressIndicatorTheme: const ProgressIndicatorThemeData(year2023: false),
+    pageTransitionsTheme: PageTransitionsTheme(
+      builders: Map<TargetPlatform, PageTransitionsBuilder>.fromIterable(
+        TargetPlatform.values,
+        value: (_) => const FadeForwardsPageTransitionsBuilder(),
+      ),
+    ),
     fontFamily: 'Poppins',
     colorScheme: const ColorScheme(
       brightness: Brightness.light,
@@ -212,6 +254,13 @@ class AppThemes {
     scaffoldBackgroundColor: Colors.black,
   );
   static final ThemeData greenTheme = ThemeData(
+    progressIndicatorTheme: const ProgressIndicatorThemeData(year2023: false),
+    pageTransitionsTheme: PageTransitionsTheme(
+      builders: Map<TargetPlatform, PageTransitionsBuilder>.fromIterable(
+        TargetPlatform.values,
+        value: (_) => const FadeForwardsPageTransitionsBuilder(),
+      ),
+    ),
     fontFamily: 'Poppins',
     colorScheme: const ColorScheme(
       brightness: Brightness.light,
@@ -233,6 +282,13 @@ class AppThemes {
     scaffoldBackgroundColor: Colors.black,
   );
   static final ThemeData monoFontTheme = ThemeData(
+    progressIndicatorTheme: const ProgressIndicatorThemeData(year2023: false),
+    pageTransitionsTheme: PageTransitionsTheme(
+      builders: Map<TargetPlatform, PageTransitionsBuilder>.fromIterable(
+        TargetPlatform.values,
+        value: (_) => const FadeForwardsPageTransitionsBuilder(),
+      ),
+    ),
     fontFamily: 'RobotoMono',
     colorScheme: const ColorScheme(
       brightness: Brightness.light,
@@ -255,6 +311,13 @@ class AppThemes {
   );
 
   static final ThemeData nothingFontTheme = ThemeData(
+    progressIndicatorTheme: const ProgressIndicatorThemeData(year2023: false),
+    pageTransitionsTheme: PageTransitionsTheme(
+      builders: Map<TargetPlatform, PageTransitionsBuilder>.fromIterable(
+        TargetPlatform.values,
+        value: (_) => const FadeForwardsPageTransitionsBuilder(),
+      ),
+    ),
     fontFamily: 'Nothing',
     colorScheme: const ColorScheme(
       brightness: Brightness.light,
