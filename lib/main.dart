@@ -62,10 +62,14 @@ class ConnectivityWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder(
-      stream: Connectivity().onConnectivityChanged,
-      builder: (context, AsyncSnapshot<ConnectivityResult> snapshot) {
-        if (!snapshot.hasData || snapshot.data == ConnectivityResult.none) {
+    return FutureBuilder<List<ConnectivityResult>>(
+      future: Connectivity().checkConnectivity(),
+      builder: (context, AsyncSnapshot<List<ConnectivityResult>> snapshot) {
+        if (!snapshot.hasData ||
+            snapshot.data?.isEmpty == true ||
+            snapshot.data
+                    ?.every((result) => result == ConnectivityResult.none) ==
+                true) {
           return const Padding(
             padding: EdgeInsets.all(20.0),
             child: Center(
