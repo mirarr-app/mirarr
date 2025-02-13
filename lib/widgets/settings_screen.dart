@@ -165,6 +165,15 @@ class SettingsPage extends StatelessWidget {
                         .setTheme(AppThemes.monoFontTheme);
                   },
                 ),
+                ListTile(
+                  title: const Text('Nothing',
+                      style: TextStyle(color: Colors.white, fontSize: 16)),
+                  trailing: const Icon(Icons.circle, color: Colors.grey),
+                  onTap: () {
+                    Provider.of<ThemeProvider>(context, listen: false)
+                        .setTheme(AppThemes.nothingFontTheme);
+                  },
+                ),
               ],
             ),
           ),

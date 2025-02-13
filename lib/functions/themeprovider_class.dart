@@ -47,6 +47,9 @@ class ThemeProvider extends ChangeNotifier {
         case 'mono':
           _currentTheme = AppThemes.monoFontTheme;
           break;
+        case 'nothing':
+          _currentTheme = AppThemes.nothingFontTheme;
+          break;
         // Add more cases for additional themes
       }
       notifyListeners();
@@ -69,6 +72,8 @@ class ThemeProvider extends ChangeNotifier {
       themeName = 'green';
     } else if (_currentTheme == AppThemes.monoFontTheme) {
       themeName = 'mono';
+    } else if (_currentTheme == AppThemes.nothingFontTheme) {
+      themeName = 'nothing';
     }
     await _prefs?.setString('theme', themeName);
   }
@@ -229,6 +234,28 @@ class AppThemes {
   );
   static final ThemeData monoFontTheme = ThemeData(
     fontFamily: 'RobotoMono',
+    colorScheme: const ColorScheme(
+      brightness: Brightness.light,
+      primary: Colors.grey,
+      onPrimary: Colors.blueGrey,
+      secondary: Colors.blueGrey,
+      onSecondary: Colors.grey,
+      error: Colors.red,
+      onError: Colors.grey,
+      background: Colors.black,
+      onBackground: Colors.black,
+      surface: Colors.black,
+      onSurface: Colors.black,
+    ),
+    highlightColor: Colors.blueGrey,
+    secondaryHeaderColor: Colors.blueGrey,
+    hintColor: Colors.grey[400],
+    cardColor: Colors.grey,
+    scaffoldBackgroundColor: Colors.black,
+  );
+
+  static final ThemeData nothingFontTheme = ThemeData(
+    fontFamily: 'Nothing',
     colorScheme: const ColorScheme(
       brightness: Brightness.light,
       primary: Colors.grey,

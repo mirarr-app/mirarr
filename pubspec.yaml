@@ -87,3 +87,6 @@ flutter:
     - family: Lotr
       fonts:
         - asset: assets/fonts/lotr.ttf
+    - family: Nothing
+      fonts:
+        - asset: assets/fonts/nothing.ttf
