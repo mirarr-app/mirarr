@@ -17,53 +17,43 @@ class BottomBar extends StatefulWidget {
 int _selectedIndex = 0;
 
 class _BottomBarState extends State<BottomBar> {
-  void _navigateTo(Widget page) {
-    Navigator.push(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => page,
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          const begin = Offset(0.0, 1.0);
-          const end = Offset.zero;
-          const curve = Curves.ease;
-
-          var tween =
-              Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-          return SlideTransition(
-            position: animation.drive(tween),
-            child: child,
-          );
-        },
-      ),
-    );
-  }
-
   void toSeries() {
     setState(() {
       _selectedIndex = 1;
-      _navigateTo(const SerieSearchScreen());
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const SerieSearchScreen()),
+      );
     });
   }
 
   void toMovies() {
     setState(() {
       _selectedIndex = 0;
-      _navigateTo(const MovieSearchScreen());
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const MovieSearchScreen()),
+      );
     });
   }
 
   void toRSS() {
     setState(() {
       _selectedIndex = 3;
-      _navigateTo(RssScreen());
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => RssScreen()),
+      );
     });
   }
 
   void toSearch() {
     setState(() {
       _selectedIndex = 2;
-      _navigateTo(SearchScreen());
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const SearchScreen()),
+      );
     });
   }
 
@@ -73,9 +63,15 @@ class _BottomBarState extends State<BottomBar> {
     setState(() {
       _selectedIndex = 4;
       if (sessionData != null) {
-        _navigateTo(ProfilePage());
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ProfilePage()),
+        );
       } else {
-        _navigateTo(const LoginPage());
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginPage()),
+        );
       }
     });
   }
