@@ -5,6 +5,7 @@ import 'package:Mirarr/functions/fetchers/fetch_movie_details.dart';
 import 'package:Mirarr/functions/fetchers/fetch_other_movies_by_director.dart';
 import 'package:Mirarr/functions/get_base_url.dart';
 import 'package:Mirarr/functions/regionprovider_class.dart';
+import 'package:Mirarr/functions/share_content.dart';
 import 'package:Mirarr/moviesPage/checkers/custom_tmdb_ids_effects.dart';
 import 'package:Mirarr/moviesPage/functions/get_imdb_rating.dart';
 import 'package:Mirarr/moviesPage/functions/movie_tmdb_actions.dart';
@@ -333,6 +334,20 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                             ],
                           ),
                         ),
+                        Positioned(
+                          top: 140,
+                          right: 30,
+                          child: GestureDetector(
+                            onTap: () {
+                              ShareContent.shareMovie(widget.movieId);
+                            },
+                            child: const Icon(
+                              Icons.share,
+                              color: Colors.white,
+                              size: 25,
+                            ),
+                          ),
+                        ),
                         Visibility(
                           visible: isUserLoggedIn == true,
                           child: Positioned(
@@ -373,7 +388,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                         ? Icons.bookmark
                                         : Icons.bookmark_border,
                                 color: Colors.white,
-                                size: 30,
+                                size: 25,
                               ),
                             ),
                           ),
@@ -381,8 +396,8 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                         Visibility(
                           visible: isUserLoggedIn == true,
                           child: Positioned(
-                            top: 40,
-                            right: 80,
+                            top: 90,
+                            right: 30,
                             child: GestureDetector(
                               onTap: () async {
                                 if (isMovieFavorite == null) {
@@ -416,7 +431,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                         ? Icons.favorite
                                         : Icons.favorite_border,
                                 color: Colors.white,
-                                size: 30,
+                                size: 25,
                               ),
                             ),
                           ),

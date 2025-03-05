@@ -2,6 +2,7 @@ import 'package:Mirarr/functions/fetchers/fetch_serie_details.dart';
 import 'package:Mirarr/functions/fetchers/fetch_series_credits.dart';
 import 'package:Mirarr/functions/get_base_url.dart';
 import 'package:Mirarr/functions/regionprovider_class.dart';
+import 'package:Mirarr/functions/share_content.dart';
 import 'package:Mirarr/seriesPage/UI/seasons_details.dart';
 import 'package:Mirarr/seriesPage/checkers/custom_tmdb_ids_effects_series.dart';
 import 'package:Mirarr/seriesPage/function/get_imdb_rating_series.dart';
@@ -28,8 +29,6 @@ class SerieDetailPage extends StatefulWidget {
   @override
   _SerieDetailPageState createState() => _SerieDetailPageState();
 }
-
-int _selectedIndex = 0;
 
 class _SerieDetailPageState extends State<SerieDetailPage> {
   final apiKey = dotenv.env['TMDB_API_KEY'];
@@ -238,7 +237,9 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
                           ),
                         ),
                         Visibility(
-                          visible: imdbRating != null && imdbRating!.isNotEmpty,
+                          visible: imdbRating != null &&
+                              imdbRating!.isNotEmpty &&
+                              imdbRating != 'N/A',
                           child: Positioned(
                             bottom: 70,
                             left: 110,
@@ -308,6 +309,20 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
                             ],
                           ),
                         ),
+                        Positioned(
+                          top: 140,
+                          right: 30,
+                          child: GestureDetector(
+                            onTap: () {
+                              ShareContent.shareTVShow(widget.serieId);
+                            },
+                            child: const Icon(
+                              Icons.share,
+                              color: Colors.white,
+                              size: 25,
+                            ),
+                          ),
+                        ),
 
                         Visibility(
                           visible: isUserLoggedIn == true,
@@ -349,7 +364,7 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
                                         ? Icons.bookmark
                                         : Icons.bookmark_border,
                                 color: Colors.white,
-                                size: 30,
+                                size: 25,
                               ),
                             ),
                           ),
@@ -357,8 +372,8 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
                         Visibility(
                           visible: isUserLoggedIn == true,
                           child: Positioned(
-                            top: 40,
-                            right: 80,
+                            top: 90,
+                            right: 30,
                             child: GestureDetector(
                               onTap: () async {
                                 if (isSerieFavorite == null) {
@@ -392,7 +407,7 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
                                         ? Icons.favorite
                                         : Icons.favorite_border,
                                 color: Colors.white,
-                                size: 30,
+                                size: 25,
                               ),
                             ),
                           ),
