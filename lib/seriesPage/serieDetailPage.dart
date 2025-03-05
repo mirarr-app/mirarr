@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:Mirarr/functions/fetchers/fetch_serie_details.dart';
 import 'package:Mirarr/functions/fetchers/fetch_series_credits.dart';
 import 'package:Mirarr/functions/get_base_url.dart';
@@ -311,86 +313,90 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
                           ],
                         ),
                       ),
-                      Positioned(
-                        top: 140,
-                        right: 30,
-                        child: GestureDetector(
-                          onTap: () {
-                            showGeneralDialog(
-                              context: context,
-                              barrierDismissible: true,
-                              barrierLabel: '',
-                              transitionDuration:
-                                  const Duration(milliseconds: 300),
-                              pageBuilder: (context, animation1, animation2) =>
-                                  Container(),
-                              transitionBuilder:
-                                  (context, animation1, animation2, child) {
-                                final curvedValue = Curves.easeInOut
-                                        .transform(animation1.value) -
-                                    1.0;
-                                return Transform(
-                                  transform: Matrix4.translationValues(
-                                      curvedValue * 300, 0, 0),
-                                  child: Align(
-                                    alignment: Alignment.centerRight,
-                                    child: Container(
-                                      height: 200,
-                                      width: 60,
-                                      decoration: BoxDecoration(
-                                        color: Theme.of(context)
-                                            .scaffoldBackgroundColor,
-                                        borderRadius: const BorderRadius.only(
-                                          topLeft: Radius.circular(20),
-                                          bottomLeft: Radius.circular(20),
+                      Visibility(
+                        visible: Platform.isAndroid,
+                        child: Positioned(
+                          top: 140,
+                          right: 30,
+                          child: GestureDetector(
+                            onTap: () {
+                              showGeneralDialog(
+                                context: context,
+                                barrierDismissible: true,
+                                barrierLabel: '',
+                                transitionDuration:
+                                    const Duration(milliseconds: 300),
+                                pageBuilder:
+                                    (context, animation1, animation2) =>
+                                        Container(),
+                                transitionBuilder:
+                                    (context, animation1, animation2, child) {
+                                  final curvedValue = Curves.easeInOut
+                                          .transform(animation1.value) -
+                                      1.0;
+                                  return Transform(
+                                    transform: Matrix4.translationValues(
+                                        curvedValue * 300, 0, 0),
+                                    child: Align(
+                                      alignment: Alignment.centerRight,
+                                      child: Container(
+                                        height: 200,
+                                        width: 60,
+                                        decoration: BoxDecoration(
+                                          color: Theme.of(context)
+                                              .scaffoldBackgroundColor,
+                                          borderRadius: const BorderRadius.only(
+                                            topLeft: Radius.circular(20),
+                                            bottomLeft: Radius.circular(20),
+                                          ),
                                         ),
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 20),
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            IconButton(
-                                              onPressed: () {
-                                                ShareContent.shareTVShow(
-                                                    widget.serieId);
-                                              },
-                                              icon: const Icon(
-                                                Icons.share,
-                                                color: Colors.white,
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 20),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              IconButton(
+                                                onPressed: () {
+                                                  ShareContent.shareTVShow(
+                                                      widget.serieId);
+                                                },
+                                                icon: const Icon(
+                                                  Icons.share,
+                                                  color: Colors.white,
+                                                ),
                                               ),
-                                            ),
-                                            const SizedBox(height: 20),
-                                            IconButton(
-                                              onPressed: () {
-                                                ShareContent
-                                                    .sharePartialScreenshotTV(
-                                                  screenShotController,
-                                                  _buildScreenShotImage(),
-                                                  widget.serieId,
-                                                );
-                                              },
-                                              icon: const Icon(
-                                                Icons.image,
-                                                color: Colors.white,
+                                              const SizedBox(height: 20),
+                                              IconButton(
+                                                onPressed: () {
+                                                  ShareContent
+                                                      .sharePartialScreenshotTV(
+                                                    screenShotController,
+                                                    _buildScreenShotImage(),
+                                                    widget.serieId,
+                                                  );
+                                                },
+                                                icon: const Icon(
+                                                  Icons.image,
+                                                  color: Colors.white,
+                                                ),
                                               ),
-                                            ),
-                                          ],
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                          child: const Icon(
-                            Icons.share,
-                            color: Colors.white,
-                            size: 25,
+                                  );
+                                },
+                              );
+                            },
+                            child: const Icon(
+                              Icons.share,
+                              color: Colors.white,
+                              size: 25,
+                            ),
                           ),
                         ),
                       ),
@@ -1019,6 +1025,7 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
                           color: Colors.white70,
                           fontSize: 12,
                           fontWeight: FontWeight.w200,
+                          fontFamily: 'RobotoMono',
                         ),
                       ),
                       Padding(
@@ -1029,6 +1036,7 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
                             color: Colors.white,
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
+                            fontFamily: 'Poppins',
                           ),
                         ),
                       ),
@@ -1052,6 +1060,7 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
                           color: Colors.white70,
                           fontSize: 12,
                           fontWeight: FontWeight.w200,
+                          fontFamily: 'RobotoMono',
                         ),
                       ),
                       Padding(
@@ -1062,6 +1071,7 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
                             color: Colors.white,
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
+                            fontFamily: 'Poppins',
                           ),
                         ),
                       ),
@@ -1085,6 +1095,7 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
                           color: Colors.white70,
                           fontSize: 12,
                           fontWeight: FontWeight.w200,
+                          fontFamily: 'RobotoMono',
                         ),
                       ),
                       Padding(
@@ -1095,6 +1106,7 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
                             color: Colors.white,
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
+                            fontFamily: 'Poppins',
                           ),
                         ),
                       ),

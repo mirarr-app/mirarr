@@ -336,87 +336,91 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                             ],
                           ),
                         ),
-                        Positioned(
-                          top: 140,
-                          right: 30,
-                          child: GestureDetector(
-                            onTap: () {
-                              showGeneralDialog(
-                                context: context,
-                                barrierDismissible: true,
-                                barrierLabel: '',
-                                transitionDuration:
-                                    const Duration(milliseconds: 300),
-                                pageBuilder:
-                                    (context, animation1, animation2) =>
-                                        Container(),
-                                transitionBuilder:
-                                    (context, animation1, animation2, child) {
-                                  final curvedValue = Curves.easeInOut
-                                          .transform(animation1.value) -
-                                      1.0;
-                                  return Transform(
-                                    transform: Matrix4.translationValues(
-                                        curvedValue * 300, 0, 0),
-                                    child: Align(
-                                      alignment: Alignment.centerRight,
-                                      child: Container(
-                                        height: 200,
-                                        width: 60,
-                                        decoration: BoxDecoration(
-                                          color: Theme.of(context)
-                                              .scaffoldBackgroundColor,
-                                          borderRadius: const BorderRadius.only(
-                                            topLeft: Radius.circular(20),
-                                            bottomLeft: Radius.circular(20),
+                        Visibility(
+                          visible: Platform.isAndroid,
+                          child: Positioned(
+                            top: 140,
+                            right: 30,
+                            child: GestureDetector(
+                              onTap: () {
+                                showGeneralDialog(
+                                  context: context,
+                                  barrierDismissible: true,
+                                  barrierLabel: '',
+                                  transitionDuration:
+                                      const Duration(milliseconds: 300),
+                                  pageBuilder:
+                                      (context, animation1, animation2) =>
+                                          Container(),
+                                  transitionBuilder:
+                                      (context, animation1, animation2, child) {
+                                    final curvedValue = Curves.easeInOut
+                                            .transform(animation1.value) -
+                                        1.0;
+                                    return Transform(
+                                      transform: Matrix4.translationValues(
+                                          curvedValue * 300, 0, 0),
+                                      child: Align(
+                                        alignment: Alignment.centerRight,
+                                        child: Container(
+                                          height: 200,
+                                          width: 60,
+                                          decoration: BoxDecoration(
+                                            color: Theme.of(context)
+                                                .scaffoldBackgroundColor,
+                                            borderRadius:
+                                                const BorderRadius.only(
+                                              topLeft: Radius.circular(20),
+                                              bottomLeft: Radius.circular(20),
+                                            ),
                                           ),
-                                        ),
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 20),
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              IconButton(
-                                                onPressed: () {
-                                                  ShareContent.shareMovie(
-                                                      widget.movieId);
-                                                },
-                                                icon: const Icon(
-                                                  Icons.share,
-                                                  color: Colors.white,
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 20),
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                IconButton(
+                                                  onPressed: () {
+                                                    ShareContent.shareMovie(
+                                                        widget.movieId);
+                                                  },
+                                                  icon: const Icon(
+                                                    Icons.share,
+                                                    color: Colors.white,
+                                                  ),
                                                 ),
-                                              ),
-                                              const SizedBox(height: 20),
-                                              IconButton(
-                                                onPressed: () {
-                                                  ShareContent
-                                                      .sharePartialScreenshot(
-                                                    screenshotController,
-                                                    _buildScreenShotImage(),
-                                                    widget.movieId,
-                                                  );
-                                                },
-                                                icon: const Icon(
-                                                  Icons.image,
-                                                  color: Colors.white,
+                                                const SizedBox(height: 20),
+                                                IconButton(
+                                                  onPressed: () {
+                                                    ShareContent
+                                                        .sharePartialScreenshot(
+                                                      screenshotController,
+                                                      _buildScreenShotImage(),
+                                                      widget.movieId,
+                                                    );
+                                                  },
+                                                  icon: const Icon(
+                                                    Icons.image,
+                                                    color: Colors.white,
+                                                  ),
                                                 ),
-                                              ),
-                                            ],
+                                              ],
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                  );
-                                },
-                              );
-                            },
-                            child: const Icon(
-                              Icons.share,
-                              color: Colors.white,
-                              size: 25,
+                                    );
+                                  },
+                                );
+                              },
+                              child: const Icon(
+                                Icons.share,
+                                color: Colors.white,
+                                size: 25,
+                              ),
                             ),
                           ),
                         ),
