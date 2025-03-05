@@ -1,3 +1,5 @@
+** /.cxx
+android/app/.cxx/
 # Miscellaneous
 *.class
 *.log
@@ -9,6 +11,7 @@
 .history
 .svn/
 migrate_working_dir/
+.env
 
 # IntelliJ related
 *.iml
