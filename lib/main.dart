@@ -81,7 +81,7 @@ class _MyAppState extends State<MyApp> {
 
       // Handle incoming links while the app is running
       _appLinks.uriLinkStream.listen((uri) async {
-        if (uri != null && navigatorKey.currentContext != null) {
+        if (navigatorKey.currentContext != null) {
           await TMDBUrlParser.handleUrl(
               uri.toString(), navigatorKey.currentContext!);
         }
