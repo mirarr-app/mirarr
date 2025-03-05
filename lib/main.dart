@@ -1,5 +1,6 @@
 import 'package:Mirarr/functions/themeprovider_class.dart';
 import 'package:Mirarr/functions/regionprovider_class.dart';
+import 'package:Mirarr/functions/url_parser.dart';
 import 'package:Mirarr/widgets/check_updates.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -7,8 +8,11 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:Mirarr/moviesPage/mainPage.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:provider/provider.dart';
+import 'package:app_links/app_links.dart';
 import 'dart:io';
 import 'package:window_manager/window_manager.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,13 +43,61 @@ void main() async {
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  late AppLinks _appLinks;
+  bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initAppLinks();
+  }
+
+  Future<void> _initAppLinks() async {
+    if (!_isInitialized && !Platform.isLinux) {
+      _appLinks = AppLinks();
+
+      // Handle initial URI if the app was launched from a link
+      try {
+        final uri = await _appLinks.getInitialAppLink();
+        if (uri != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) async {
+            if (navigatorKey.currentContext != null) {
+              await TMDBUrlParser.handleUrl(
+                  uri.toString(), navigatorKey.currentContext!);
+            }
+          });
+        }
+      } catch (e) {
+        debugPrint('Error handling initial app link: $e');
+      }
+
+      // Handle incoming links while the app is running
+      _appLinks.uriLinkStream.listen((uri) async {
+        if (uri != null && navigatorKey.currentContext != null) {
+          await TMDBUrlParser.handleUrl(
+              uri.toString(), navigatorKey.currentContext!);
+        }
+      }, onError: (err) {
+        debugPrint('Error handling app links: $err');
+      });
+
+      _isInitialized = true;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<ThemeProvider>(builder: (context, themeProvider, child) {
       return MaterialApp(
+        navigatorKey: navigatorKey,
         debugShowCheckedModeBanner: false,
         title: 'Mirarr',
         theme: themeProvider.currentTheme,
