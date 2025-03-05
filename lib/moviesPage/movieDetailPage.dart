@@ -5,6 +5,7 @@ import 'package:Mirarr/functions/fetchers/fetch_movie_details.dart';
 import 'package:Mirarr/functions/fetchers/fetch_other_movies_by_director.dart';
 import 'package:Mirarr/functions/get_base_url.dart';
 import 'package:Mirarr/functions/regionprovider_class.dart';
+import 'package:Mirarr/functions/share_content.dart';
 import 'package:Mirarr/moviesPage/checkers/custom_tmdb_ids_effects.dart';
 import 'package:Mirarr/moviesPage/functions/get_imdb_rating.dart';
 import 'package:Mirarr/moviesPage/functions/movie_tmdb_actions.dart';
@@ -26,6 +27,7 @@ import 'package:Mirarr/widgets/custom_divider.dart';
 import 'package:Mirarr/widgets/image_gallery_page.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:provider/provider.dart';
+import 'package:screenshot/screenshot.dart';
 
 class MovieDetailPage extends StatefulWidget {
   final String movieTitle;
@@ -46,6 +48,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
   dynamic isMovieRated;
   double? userRating;
   double? userScore;
+  final screenshotController = ScreenshotController();
 
   final apiKey = dotenv.env['TMDB_API_KEY'];
 
@@ -334,6 +337,94 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                           ),
                         ),
                         Visibility(
+                          visible: Platform.isAndroid,
+                          child: Positioned(
+                            top: 140,
+                            right: 30,
+                            child: GestureDetector(
+                              onTap: () {
+                                showGeneralDialog(
+                                  context: context,
+                                  barrierDismissible: true,
+                                  barrierLabel: '',
+                                  transitionDuration:
+                                      const Duration(milliseconds: 300),
+                                  pageBuilder:
+                                      (context, animation1, animation2) =>
+                                          Container(),
+                                  transitionBuilder:
+                                      (context, animation1, animation2, child) {
+                                    final curvedValue = Curves.easeInOut
+                                            .transform(animation1.value) -
+                                        1.0;
+                                    return Transform(
+                                      transform: Matrix4.translationValues(
+                                          curvedValue * 300, 0, 0),
+                                      child: Align(
+                                        alignment: Alignment.centerRight,
+                                        child: Container(
+                                          height: 200,
+                                          width: 60,
+                                          decoration: BoxDecoration(
+                                            color: Theme.of(context)
+                                                .scaffoldBackgroundColor,
+                                            borderRadius:
+                                                const BorderRadius.only(
+                                              topLeft: Radius.circular(20),
+                                              bottomLeft: Radius.circular(20),
+                                            ),
+                                          ),
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 20),
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                IconButton(
+                                                  onPressed: () {
+                                                    ShareContent.shareMovie(
+                                                        widget.movieId);
+                                                  },
+                                                  icon: const Icon(
+                                                    Icons.share,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 20),
+                                                IconButton(
+                                                  onPressed: () {
+                                                    ShareContent
+                                                        .sharePartialScreenshot(
+                                                      screenshotController,
+                                                      _buildScreenShotImage(),
+                                                      widget.movieId,
+                                                    );
+                                                  },
+                                                  icon: const Icon(
+                                                    Icons.image,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                              child: const Icon(
+                                Icons.share,
+                                color: Colors.white,
+                                size: 25,
+                              ),
+                            ),
+                          ),
+                        ),
+                        Visibility(
                           visible: isUserLoggedIn == true,
                           child: Positioned(
                             top: 40,
@@ -373,7 +464,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                         ? Icons.bookmark
                                         : Icons.bookmark_border,
                                 color: Colors.white,
-                                size: 30,
+                                size: 25,
                               ),
                             ),
                           ),
@@ -381,8 +472,8 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                         Visibility(
                           visible: isUserLoggedIn == true,
                           child: Positioned(
-                            top: 40,
-                            right: 80,
+                            top: 90,
+                            right: 30,
                             child: GestureDetector(
                               onTap: () async {
                                 if (isMovieFavorite == null) {
@@ -416,7 +507,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                         ? Icons.favorite
                                         : Icons.favorite_border,
                                 color: Colors.white,
-                                size: 30,
+                                size: 25,
                               ),
                             ),
                           ),
@@ -1176,6 +1267,235 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
               ),
             ),
       bottomNavigationBar: BottomBar(),
+    );
+  }
+
+  Widget _buildScreenShotImage() {
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
+
+    int? hours = duration != null ? duration! ~/ 60 : null;
+    int? minutes = duration != null ? duration! % 60 : null;
+    String year = releaseDate != null && releaseDate!.isNotEmpty
+        ? releaseDate!.substring(0, 4)
+        : 'NA';
+
+    return Container(
+      constraints: const BoxConstraints(maxHeight: 800),
+      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Theme.of(context).primaryColor, width: 2),
+        color: Colors.black,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Stack(children: [
+            CachedNetworkImage(
+              imageUrl: '${getImageBaseUrl(region)}/t/p/original$backdrops',
+              placeholder: (context, url) =>
+                  const Center(child: CircularProgressIndicator()),
+              errorWidget: (context, url, error) => const Icon(Icons.error),
+              imageBuilder: (context, imageProvider) => Container(
+                height: 300,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    fit: BoxFit.cover,
+                    image: imageProvider,
+                  ),
+                ),
+              ),
+            ),
+            Container(
+              height: 320,
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [Colors.black, Colors.transparent],
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: 28,
+              left: 10,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: const BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(20)),
+                    ),
+                    width: MediaQuery.of(context).size.width - 20,
+                    child: Text(
+                      widget.movieTitle,
+                      softWrap: true,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Poppins',
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ]),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: (genres as List<dynamic>).map<Widget>((genre) {
+                return Text(
+                  genre['name'] + ' | ',
+                  softWrap: true,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.white,
+                      fontFamily: 'RobotoMono'),
+                );
+              }).toList(),
+            ),
+          ),
+          const CustomDivider(),
+          Container(
+            alignment: Alignment.center,
+            child: Text(
+              about!,
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.white,
+                fontWeight: FontWeight.w200,
+                fontFamily: 'Poppins',
+              ),
+              textAlign: TextAlign.left,
+              maxLines: 8,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const CustomDivider(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              SizedBox(
+                width: 110,
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
+                  decoration: BoxDecoration(
+                    color: getMovieBackgroundColor(context, widget.movieId),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Column(
+                    children: [
+                      const Text(
+                        'Duration',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w200,
+                          fontFamily: 'RobotoMono',
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          "${hours}H ${minutes}M",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Poppins',
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: 110,
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
+                  decoration: BoxDecoration(
+                    color: getMovieBackgroundColor(context, widget.movieId),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Column(
+                    children: [
+                      const Text(
+                        'Year',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w200,
+                          fontFamily: 'RobotoMono',
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          year,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Poppins',
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: 110,
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
+                  decoration: BoxDecoration(
+                    color: getMovieBackgroundColor(context, widget.movieId),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Column(
+                    children: [
+                      const Text(
+                        'Language',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w200,
+                          fontFamily: 'RobotoMono',
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          language != null ? language!.toUpperCase() : 'N/A',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Poppins',
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

@@ -2,7 +2,7 @@ name: Mirarr
 description: A new Flutter project.
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
-version: 1.7.3
+version: 1.8.0
 
 environment:
   sdk: ">=3.4.3 <4.0.0"
@@ -27,6 +27,10 @@ dependencies:
   cupertino_icons: ^1.0.2
   provider: ^6.1.2
   shared_preferences: ^2.0.15
+  app_links: ^3.5.0
+  share_plus: ^10.1.4
+  screenshot: ^3.0.0
+  path_provider: ^2.0.15
 
 dev_dependencies:
   flutter_test:
