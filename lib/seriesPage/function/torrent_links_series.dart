@@ -25,8 +25,11 @@ void showTorrentOptions(BuildContext context, String serieTitle, int serieId,
     '1337x': 'https://1337x.to/search/$serieTitle s${seasonStr}e$episodeStr/1/',
     'SolidTorrents':
         'https://solidtorrents.to/search?q=$serieTitle s${seasonStr}e$episodeStr',
-    'TorrentGalaxy':
-        'https://torrentgalaxy.to/torrents.php?search=$serieTitle s${seasonStr}e$episodeStr#results'
+    'Ext':
+        'https://ext.to/browse/?q=$serieTitle s${seasonStr}e$episodeStr',
+    'Limetorrents':
+        'https://www.limetorrents.lol/search/all/$serieTitle s${seasonStr}e$episodeStr',
+
   };
   Map<String, String> optionPrivateTorrents = {
     'IPTorrents': 'https://www.iptorrents.com/t?q=$serieImdbId',
