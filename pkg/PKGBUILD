@@ -1,6 +1,6 @@
 # Maintainer: mirarrapp <iknowarch@proton.me>
 pkgname=mirarr-bin
-pkgver=1.8.1
+pkgver=1.8.2
 pkgrel=1
 pkgdesc="A Flutter-based movie and TV show app"
 arch=('x86_64')
@@ -14,19 +14,19 @@ source=("$pkgname-$pkgver.zip::https://github.com/mirarr-app/mirarr/releases/dow
 sha256sums=('SKIP')
 
 package() {
-    install -dm755 "$pkgdir/opt/mirarr"
-    cp -r "$srcdir"/* "$pkgdir/opt/mirarr/"
-    
-    # Create executable
-    install -dm755 "$pkgdir/usr/bin"
-    cat > "$pkgdir/usr/bin/mirarr" << EOF
+  install -dm755 "$pkgdir/opt/mirarr"
+  cp -r "$srcdir"/* "$pkgdir/opt/mirarr/"
+
+  # Create executable
+  install -dm755 "$pkgdir/usr/bin"
+  cat >"$pkgdir/usr/bin/mirarr" <<EOF
 #!/bin/sh
 exec /opt/mirarr/Mirarr "\$@"
 EOF
-    chmod +x "$pkgdir/usr/bin/mirarr"
+  chmod +x "$pkgdir/usr/bin/mirarr"
 
-    # Desktop file
-    install -Dm644 /dev/stdin "$pkgdir/usr/share/applications/mirarr.desktop" << EOF
+  # Desktop file
+  install -Dm644 /dev/stdin "$pkgdir/usr/share/applications/mirarr.desktop" <<EOF
 [Desktop Entry]
 Name=Mirarr
 Comment=Movie and TV show app
