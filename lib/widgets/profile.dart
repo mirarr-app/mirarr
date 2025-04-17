@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:Mirarr/functions/fetchers/fetch_serie_details.dart';
 import 'package:Mirarr/functions/get_base_url.dart';
 import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_gridview_movie.dart';
@@ -12,7 +13,6 @@ import 'package:Mirarr/seriesPage/function/on_tap_serie.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_serie_desktop.dart';
 import 'package:Mirarr/widgets/settings_screen.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive/hive.dart';
@@ -39,6 +39,7 @@ List<Serie> tvFavorites = [];
 List<Movie> movieFavorites = [];
 List<Serie> tvRated = [];
 List<Movie> movieRated = [];
+List<Serie> recentEpisodes = [];
 
 class _ProfilePageState extends State<ProfilePage> {
   final apiKey = dotenv.env['TMDB_API_KEY'];
@@ -247,7 +248,7 @@ class _ProfilePageState extends State<ProfilePage> {
     if (response.statusCode == 200) {
       final List<Serie> series = [];
       final List<dynamic> results = json.decode(response.body)['results'];
-
+      recentEpisodes.clear();
       for (var result in results) {
         final serie = Serie(
             name: result['name'],
@@ -260,6 +261,35 @@ class _ProfilePageState extends State<ProfilePage> {
 
       setState(() {
         tvWatchList = series;
+      });
+
+      final today = DateTime.now();
+      for (var serie in series) {
+        final serieDetails = await fetchSerieDetails(serie.id, region);
+        final serieLatestAir = serieDetails['last_air_date'];
+        final serieLastEpisodeSeasonNumber = serieDetails['last_episode_to_air']['season_number'];
+        final serieLastEpisodeEpisodeNumber = serieDetails['last_episode_to_air']['episode_number'];
+        final serieLatestAirDate = DateTime.parse(serieLatestAir);
+        //check if the serie is aired in the last 14 days
+        final difference = today.difference(serieLatestAirDate).inDays;
+        if (difference <= 14) {
+          final updatedSerie = Serie(
+            name: serie.name,
+            posterPath: serie.posterPath,
+            overView: serie.overView,
+            id: serie.id,
+            score: serie.score,
+            lastAirDate: serieLatestAir,
+            lastEpisodeSeasonNumber: serieLastEpisodeSeasonNumber,
+            lastEpisodeEpisodeNumber: serieLastEpisodeEpisodeNumber,
+          );
+          recentEpisodes.add(updatedSerie);
+        }
+      }
+      // Sort recentEpisodes by lastAirDate in descending order (newest first)
+      recentEpisodes.sort((a, b) => DateTime.parse(b.lastAirDate!).compareTo(DateTime.parse(a.lastAirDate!)));
+      setState(() {
+        recentEpisodes = recentEpisodes;
       });
     } else {
       throw Exception('Failed to load trending series data');
@@ -338,6 +368,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
         appBar: AppBar(
           title: const Text(
@@ -480,6 +511,132 @@ class _ProfilePageState extends State<ProfilePage> {
                               padding: const EdgeInsets.all(18.0),
                               child: Text(
                                 'No movies in the watchlist yet',
+                                style: TextStyle(
+                                    color: Theme.of(context).primaryColor,
+                                    fontSize: 14),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),    const SizedBox(
+                        height: 10,
+                      ),
+                      Row(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(15, 15, 0, 5),
+                            child: GestureDetector(
+                              onTap: () => onTapGridSerie(recentEpisodes, context),
+                              child: Row(
+                                children: [
+                                  const Text(
+                                    'Watchlist Recent Episodes',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 5),
+                                  Icon(
+                                    Icons.arrow_forward_ios,
+                                    color: Theme.of(context).primaryColor,
+                                    size: 16,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Visibility(
+                        visible: recentEpisodes.isNotEmpty,
+                        child: SizedBox(
+                          height: 300, // Set the height for the movie cards
+                          child: ScrollConfiguration(
+                            behavior: ScrollConfiguration.of(context).copyWith(
+                              dragDevices: {
+                                PointerDeviceKind.touch,
+                                PointerDeviceKind.mouse,
+                                PointerDeviceKind.trackpad,
+                              },
+                            ),
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: recentEpisodes.length,
+                              itemBuilder: (context, index) {
+  
+                                final serie = recentEpisodes[index];
+                                return GestureDetector(
+                                  onTap: () =>
+                                      Platform.isAndroid || Platform.isIOS
+                                          ? onTapSerie(
+                                              serie.name, serie.id, context)
+                                          : onTapSerieDesktop(
+                                              serie.name, serie.id, context),
+                                  child: Stack(
+                                    children: [
+                                      CustomSeriesWidget(
+                                        serie: serie,
+                                      ),
+                                      Visibility(
+                                        visible: serie.lastAirDate != null,
+                                        child: Positioned(
+                                          top: 50,
+                                          left: 10,
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                            decoration: BoxDecoration(
+                                              color: Colors.black.withOpacity(0.7),
+                                              borderRadius: BorderRadius.circular(4),
+                                            ),
+                                            child: Text(
+                                              '${serie.lastAirDate}',
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),  Visibility(
+                                        visible: serie.lastEpisodeSeasonNumber != null && serie.lastEpisodeEpisodeNumber != null,
+                                        child: Positioned(
+                                          top: 80,
+                                          left: 10,
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                            decoration: BoxDecoration(
+                                              color: Colors.black.withOpacity(0.7),
+                                              borderRadius: BorderRadius.circular(4),
+                                            ),
+                                            child: Text(
+                                              'S${serie.lastEpisodeSeasonNumber}E${serie.lastEpisodeEpisodeNumber}',
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+                      Visibility(
+                        visible: recentEpisodes.isEmpty,
+                        child: Row(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(18.0),
+                              child: Text(
+                                'No series in your watchlist aired in the last 14 days',
                                 style: TextStyle(
                                     color: Theme.of(context).primaryColor,
                                     fontSize: 14),

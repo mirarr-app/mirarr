@@ -237,8 +237,7 @@ class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
         avatar = const Icon(Icons.remove, color: Colors.white, size: 18);
         break;
       case GenreSelection.none:
-      default:
-        chipColor = Colors.grey;
+      chipColor = Colors.grey;
         avatar = null;
     }
 

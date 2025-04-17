@@ -5,6 +5,9 @@ class Serie {
   final String overView;
   final int id;
   final double? score;
+  final String? lastAirDate;
+  final int? lastEpisodeSeasonNumber;
+  final int? lastEpisodeEpisodeNumber;
 
   Serie(
       {required this.name,
@@ -12,5 +15,8 @@ class Serie {
       required this.overView,
       required this.id,
       this.backdropPath,
-      required this.score});
+      required this.score,
+      this.lastAirDate,
+      this.lastEpisodeSeasonNumber,
+      this.lastEpisodeEpisodeNumber});
 }
