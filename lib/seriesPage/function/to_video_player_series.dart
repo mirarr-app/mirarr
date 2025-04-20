@@ -7,8 +7,9 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
 
+const String _encodedBaseUrl = 'aHR0cHM6Ly94cHJpbWUudHYvcHJpbWVib3g/aWQ9';
 
-
+String get baseStreamUrl => utf8.decode(base64.decode(_encodedBaseUrl));
 
 Future<void> _openInVLC(String url) async {
   try {
@@ -36,7 +37,7 @@ Color getColor(BuildContext context, int serieId) {
 Future<Map<String, dynamic>> fetchSourcesDirectTV(int serieId, int seasonNumber, int episodeNumber) async {
   try {
     final response = await http.get(Uri.parse(
-        'https://xprime.tv/primebox?id=$serieId&season=$seasonNumber&episode=$episodeNumber'));
+        '$baseStreamUrl$serieId&season=$seasonNumber&episode=$episodeNumber'));
 
     if (response.statusCode == 200) {
       return Map<String, dynamic>.from(json.decode(response.body));
