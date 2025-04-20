@@ -45,6 +45,7 @@ flutter:
     - .env
     - assets/images/person.png
     - assets/images/duckie.png
+    - assets/images/vlc.png
   fonts:
     - family: Poppins
       fonts:
