@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:Mirarr/functions/get_base_url.dart';
@@ -530,7 +531,7 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
                                     ? const SizedBox(width: 6)
                                     : const SizedBox(),
                                 Visibility(
-                                  visible: xprimeAvailable,
+                                  visible: xprimeAvailable && !Platform.isIOS,
                                   child: FloatingActionButton(onPressed: () => showWatchOptionsDirectTV(context, serieId, seasonNumber, episodeNumber),
                                     child: Image.asset(
                                         'assets/images/vlc.png',
