@@ -9,13 +9,6 @@ import 'dart:io';
 
 
 
-Future<void> _launchUrl(Uri url) async {
-  if (await canLaunchUrlString(url.toString())) {
-    await launchUrlString(url.toString());
-  } else {
-    throw Exception('Could not launch url');
-  }
-}
 
 Future<void> _openInVLC(String url) async {
   try {
