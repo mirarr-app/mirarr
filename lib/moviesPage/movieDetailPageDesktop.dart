@@ -756,13 +756,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                                   onPressed: () => showWatchOptionsDirect(
                                                                       context,
                                                                       widget
-                                                                          .movieId,
-                                                                      widget
-                                                                          .movieTitle,
-                                                                      releaseDate ??
-                                                                          '',
-                                                                      imdbId ??
-                                                                          ''),
+                                                                          .movieId),
                                                                     child: Image.asset(
                                                                         'assets/images/vlc.png',
                                                                         width: 30,

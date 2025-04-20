@@ -898,10 +898,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                                 child: FloatingActionButton(
                                                   onPressed: () => showWatchOptionsDirect(
                                                       context,
-                                                      widget.movieId,
-                                                      widget.movieTitle,
-                                                      releaseDate ?? '',
-                                                      imdbId ?? ''),
+                                                      widget.movieId),
                                                   child: Image.asset(
                                                       'assets/images/vlc.png',
                                                       width: 30,

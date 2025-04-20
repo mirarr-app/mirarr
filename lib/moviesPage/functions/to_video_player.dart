@@ -48,8 +48,7 @@ Future<Map<String, dynamic>> fetchSourcesDirect(int movieId) async {
   }
 }
 
-void showWatchOptionsDirect(BuildContext context, int movieId, String movieTitle,
-    String releaseDate, String imdbId) async {
+void showWatchOptionsDirect(BuildContext context, int movieId) async {
   // Fetch sources dynamically
   Map<String, dynamic> response = await fetchSourcesDirect(movieId);
 
