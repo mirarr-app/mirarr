@@ -21,8 +21,7 @@ Future<void> _openInVLC(String url) async {
     } else if (Platform.isMacOS) {
       await Process.run('/Applications/VLC.app/Contents/MacOS/VLC', [url]);
     } else if (Platform.isAndroid) {
-      final cleanUrl = url.replaceFirst(RegExp(r'^https?://'), '');
-      await launchUrlString('vlc://$cleanUrl');
+      await launchUrlString('vlc://$url');
     } else {
       throw Exception('Platform not supported for VLC');
     }
