@@ -264,12 +264,25 @@ class _ProfilePageState extends State<ProfilePage> {
       });
 
       final today = DateTime.now();
-      for (var serie in series) {
-        final serieDetails = await fetchSerieDetails(serie.id, region);
+      
+      // Create a list of futures for all series detail requests
+      final List<Future<Map<String, dynamic>>> detailFutures = series.map((serie) => 
+        fetchSerieDetails(serie.id, region)
+      ).toList();
+
+      // Wait for all requests to complete in parallel
+      final List<Map<String, dynamic>> allSerieDetails = await Future.wait(detailFutures);
+
+      // Process the results
+      for (var i = 0; i < series.length; i++) {
+        final serie = series[i];
+        final serieDetails = allSerieDetails[i];
+        
         final serieLatestAir = serieDetails['last_air_date'];
         final serieLastEpisodeSeasonNumber = serieDetails['last_episode_to_air']['season_number'];
         final serieLastEpisodeEpisodeNumber = serieDetails['last_episode_to_air']['episode_number'];
         final serieLatestAirDate = DateTime.parse(serieLatestAir);
+        
         //check if the serie is aired in the last 14 days
         final difference = today.difference(serieLatestAirDate).inDays;
         if (difference <= 14) {

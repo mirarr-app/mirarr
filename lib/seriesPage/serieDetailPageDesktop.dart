@@ -33,7 +33,6 @@ class SerieDetailPageDesktop extends StatefulWidget {
   _SerieDetailPageDesktopState createState() => _SerieDetailPageDesktopState();
 }
 
-int _selectedIndex = 0;
 
 class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
   final apiKey = dotenv.env['TMDB_API_KEY'];
