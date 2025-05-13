@@ -455,7 +455,7 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
         future: Future.wait([
           fetchEpisodesDetails(context, seasonNumber, episodeNumber, serieId),
           fetchImdbRating(imdbId, seasonNumber, episodeNumber),
-          checkXprimeSeries(serieId, seasonNumber, episodeNumber) 
+          checkXprimeSeries(serieId, seasonNumber, episodeNumber, serieName) 
         ]).then((results) =>
             {'episodeDetails': results[0], 'imdbRating': results[1], 'xprimeAvailable': results[2]}),
         builder: (context, snapshot) {

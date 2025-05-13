@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
 
-const String _encodedBaseUrl = 'aHR0cHM6Ly94cHJpbWUudHYvcHJpbWVib3g/aWQ9';
+const String _encodedBaseUrl = 'aHR0cHM6Ly94cHJpbWUudHYvcHJpbWVib3g/bmFtZT0=';
 
 String get baseStreamUrl => utf8.decode(base64.decode(_encodedBaseUrl));
 
@@ -34,10 +34,10 @@ Color getColor(BuildContext context, int movieId) {
   return getMovieColor(context, movieId);
 }
 
-Future<Map<String, dynamic>> fetchSourcesDirect(int movieId) async {
+Future<Map<String, dynamic>> fetchSourcesDirect(int movieId, String movieName) async {
   try {
     final response = await http.get(Uri.parse(
-        '$baseStreamUrl$movieId'));
+        '$baseStreamUrl$movieName'));
 
     if (response.statusCode == 200) {
       return Map<String, dynamic>.from(json.decode(response.body));
@@ -49,9 +49,9 @@ Future<Map<String, dynamic>> fetchSourcesDirect(int movieId) async {
   }
 }
 
-void showWatchOptionsDirect(BuildContext context, int movieId) async {
+void showWatchOptionsDirect(BuildContext context, int movieId, String movieName) async {
   // Fetch sources dynamically
-  Map<String, dynamic> response = await fetchSourcesDirect(movieId);
+  Map<String, dynamic> response = await fetchSourcesDirect(movieId, movieName);
 
   // Get available qualities and streams
   List<String> availableQualities = List<String>.from(response['available_qualities'] ?? []);
@@ -77,9 +77,16 @@ void showWatchOptionsDirect(BuildContext context, int movieId) async {
             ),
           ),
           const CustomDivider(),
-          Expanded(
-            child: ListView.builder(
-              itemCount: availableQualities.length,
+          if (availableQualities.isEmpty)
+            const Expanded(
+              child: Center(
+                child: Text('No streams available', style: TextStyle(color: Colors.redAccent),),
+              ),
+            )
+          else
+            Expanded(
+              child: ListView.builder(
+                itemCount: availableQualities.length,
               itemBuilder: (BuildContext context, int index) {
                 String quality = availableQualities[index];
                 String? streamUrl = streams[quality];

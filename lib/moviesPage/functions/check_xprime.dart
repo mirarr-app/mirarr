@@ -1,14 +1,14 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-const String _encodedBaseUrl = 'aHR0cHM6Ly94cHJpbWUudHYvcHJpbWVib3g/aWQ9';
+const String _encodedBaseUrl = 'aHR0cHM6Ly94cHJpbWUudHYvcHJpbWVib3g/bmFtZT0=';
 
 String get baseStreamUrl => utf8.decode(base64.decode(_encodedBaseUrl));
 
-Future<bool> checkXprime(int movieId) async {
+Future<bool> checkXprime(int movieId, String movieName) async {
   try {
     final response = await http.get(Uri.parse(
-        '$baseStreamUrl$movieId'));
+        '$baseStreamUrl$movieName'));
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
@@ -26,10 +26,10 @@ Future<bool> checkXprime(int movieId) async {
 }
 
 
-Future<bool> checkXprimeSeries(int serieId, int seasonNumber, int episodeNumber) async {
+Future<bool> checkXprimeSeries(int serieId, int seasonNumber, int episodeNumber, String serieName) async {
   try {
     final response = await http.get(Uri.parse(
-        '$baseStreamUrl$serieId&season=$seasonNumber&episode=$episodeNumber'));
+        '$baseStreamUrl$serieName&season=$seasonNumber&episode=$episodeNumber'));
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);

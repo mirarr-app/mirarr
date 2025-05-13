@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
 
-const String _encodedBaseUrl = 'aHR0cHM6Ly94cHJpbWUudHYvcHJpbWVib3g/aWQ9';
+const String _encodedBaseUrl = 'aHR0cHM6Ly94cHJpbWUudHYvcHJpbWVib3g/bmFtZT0=';
 
 String get baseStreamUrl => utf8.decode(base64.decode(_encodedBaseUrl));
 
@@ -20,8 +20,7 @@ Future<void> _openInVLC(String url) async {
     } else if (Platform.isMacOS) {
       await Process.run('/Applications/VLC.app/Contents/MacOS/VLC', [url]);
     } else if (Platform.isAndroid) {
-      final cleanUrl = url.replaceFirst(RegExp(r'^https?://'), '');
-      await launchUrlString('vlc://$cleanUrl');
+      await launchUrlString('vlc://$url');
     } else {
       throw Exception('Platform not supported for VLC');
     }
@@ -77,9 +76,16 @@ void showWatchOptionsDirectTV(BuildContext context, int serieId, int seasonNumbe
             ),
           ),
           const CustomDivider(),
-          Expanded(
-            child: ListView.builder(
-              itemCount: availableQualities.length,
+          if (availableQualities.isEmpty)
+            const Expanded(
+              child: Center(
+                child: Text('No streams available', style: TextStyle(color: Colors.redAccent),),
+              ),
+            )
+          else
+            Expanded(
+              child: ListView.builder(
+                itemCount: availableQualities.length,
               itemBuilder: (BuildContext context, int index) {
                 String quality = availableQualities[index];
                 String? streamUrl = streams[quality];

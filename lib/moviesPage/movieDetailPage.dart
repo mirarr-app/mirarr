@@ -87,7 +87,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
     fetchCredits(widget.movieId, region);
-    checkXprime(widget.movieId).then((value) {
+    checkXprime(widget.movieId, widget.movieTitle).then((value) {
       setState(() {
         xprimeAvailable = value;
       });
@@ -898,7 +898,8 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                                 child: FloatingActionButton(
                                                   onPressed: () => showWatchOptionsDirect(
                                                       context,
-                                                      widget.movieId),
+                                                      widget.movieId,
+                                                      widget.movieTitle),
                                                   child: Image.asset(
                                                       'assets/images/vlc.png',
                                                       width: 30,
