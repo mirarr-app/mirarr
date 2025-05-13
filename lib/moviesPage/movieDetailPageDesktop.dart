@@ -85,7 +85,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
     fetchCredits(widget.movieId, region);
-    checkXprime(widget.movieId).then((value) {
+    checkXprime(widget.movieId, widget.movieTitle).then((value) {
       setState(() {
         xprimeAvailable = value;
       });
@@ -756,7 +756,9 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                                   onPressed: () => showWatchOptionsDirect(
                                                                       context,
                                                                       widget
-                                                                          .movieId),
+                                                                          .movieId,
+                                                                      widget
+                                                                          .movieTitle),
                                                                     child: Image.asset(
                                                                         'assets/images/vlc.png',
                                                                         width: 30,
