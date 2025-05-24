@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqlite3/sqlite3.dart';
@@ -8,7 +7,6 @@ class WatchHistoryDatabase {
   static Database? _database;
   static const String _databaseName = 'watch_history.db';
   static const String _tableName = 'watch_history';
-  static const int _databaseVersion = 1;
 
   Future<Database> get database async {
     if (_database != null) return _database!;

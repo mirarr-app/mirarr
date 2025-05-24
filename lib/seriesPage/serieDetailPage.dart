@@ -63,7 +63,6 @@ String? posterPath;
   String? imdbId;
   String? imdbRating;
   String rottenTomatoesRating = 'N/A';
-  final WatchHistoryDatabase _watchHistoryDb = WatchHistoryDatabase();
   
   // Key to force refresh of ShowWatchToggle
   final GlobalKey<_ShowWatchToggleState> _showWatchToggleKey = GlobalKey<_ShowWatchToggleState>();

@@ -21,13 +21,10 @@ import 'package:Mirarr/moviesPage/UI/cast_crew_row.dart';
 import 'package:Mirarr/widgets/bottom_bar.dart';
 import 'package:Mirarr/widgets/custom_divider.dart';
 import 'package:provider/provider.dart';
-import 'package:Mirarr/database/watch_history_database.dart';
 
 // Import the ShowWatchToggle from the main series detail page
 import 'package:Mirarr/seriesPage/serieDetailPage.dart' show ShowWatchToggle;
 
-// We need to access the private state class, so let's create a proper key type
-// by importing the state class through a different approach
 
 class SerieDetailPageDesktop extends StatefulWidget {
   final String serieName;
@@ -70,8 +67,6 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
 
   String rottenTomatoesRating = 'N/A';
   
-  // Watch history variables
-  final WatchHistoryDatabase _watchHistoryDb = WatchHistoryDatabase();
   
   // Counter to force refresh of ShowWatchToggle
   int _showWatchToggleRefreshCounter = 0;

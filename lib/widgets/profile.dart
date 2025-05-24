@@ -26,7 +26,6 @@ import 'package:Mirarr/widgets/login.dart';
 import 'package:http/http.dart' as http;
 import 'package:Mirarr/moviesPage/models/movie.dart';
 import 'package:provider/provider.dart';
-import 'package:webfeed_plus/domain/rss_feed.dart';
 
 class ProfilePage extends StatefulWidget {
   ProfilePage({Key? key}) : super(key: key);
