@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:Mirarr/database/watch_history_database.dart';
 import 'package:Mirarr/functions/fetchers/fetch_serie_details.dart';
 import 'package:Mirarr/functions/fetchers/fetch_series_credits.dart';
 import 'package:Mirarr/functions/get_base_url.dart';
@@ -45,7 +46,7 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
   dynamic isSerieRated;
   double? userRating;
   double? userScore;
-
+String? posterPath;
   final screenShotController = ScreenshotController();
 
   double? popularity;
@@ -62,6 +63,10 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
   String? imdbId;
   String? imdbRating;
   String rottenTomatoesRating = 'N/A';
+  final WatchHistoryDatabase _watchHistoryDb = WatchHistoryDatabase();
+  
+  // Key to force refresh of ShowWatchToggle
+  final GlobalKey<_ShowWatchToggleState> _showWatchToggleKey = GlobalKey<_ShowWatchToggleState>();
 
   @override
   void initState() {
@@ -70,6 +75,7 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
 
     checkAccountState();
     _fetchSerieDetails();
+
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
     fetchCredits(widget.serieId, region);
@@ -124,6 +130,8 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
         score = responseData['vote_average'];
         about = responseData['overview'];
         duration = responseData['runtime'];
+                posterPath = responseData['poster_path'];
+
         releaseDate = responseData['release_date'];
         language = responseData['original_language'];
         seasons = responseData['number_of_seasons'];
@@ -173,6 +181,10 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
     } catch (e) {
       throw Exception('Failed to load external Id');
     }
+  }
+
+  void _refreshShowWatchStatus() {
+    _showWatchToggleKey.currentState?.refresh();
   }
 
   @override
@@ -594,8 +606,8 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
                           isSerieRated == false &&
                           userRating == null)
                         Positioned(
-                          top: 40,
-                          left: 20,
+                          top: 90,
+                          left: 15,
                           child: Container(
                               decoration: const BoxDecoration(
                                   color: Colors.black38,
@@ -658,6 +670,20 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
                                     Icons.add_reaction,
                                     color: Colors.white,
                                   ))),
+                        ),
+
+                        Positioned(
+                          top: 40,
+                          left: 20,
+                          child: ShowWatchToggle(
+                            key: _showWatchToggleKey,
+                            serieId: widget.serieId,
+                            serieName: widget.serieName,
+                            posterPath: posterPath,
+                            onToggle: () {
+                              // The widget handles its own state, no need to call _checkShowWatchedStatus
+                            },
+                          ),
                         ),
                     ],
                   ),
@@ -826,7 +852,8 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
                             backgroundColor:
                                 getSeriesColor(context, widget.serieId),
                             onPressed: () => seasonsAndEpisodes(context,
-                                widget.serieId, widget.serieName, imdbId!),
+                                widget.serieId, widget.serieName, imdbId!,
+                                onWatchStatusChanged: _refreshShowWatchStatus),
                             child: Text(
                               'Details',
                               style: getSeriesButtonTextStyle(widget.serieId),
@@ -1117,6 +1144,277 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+// Custom widget for smooth show watch toggle
+class ShowWatchToggle extends StatefulWidget {
+  final int serieId;
+  final String serieName;
+  final String? posterPath;
+  final VoidCallback? onToggle;
+
+  const ShowWatchToggle({
+    Key? key,
+    required this.serieId,
+    required this.serieName,
+    required this.posterPath,
+    this.onToggle,
+  }) : super(key: key);
+
+  @override
+  State<ShowWatchToggle> createState() => _ShowWatchToggleState();
+}
+
+class _ShowWatchToggleState extends State<ShowWatchToggle> {
+  bool? _isWatched;
+  bool _isLoading = false;
+  final WatchHistoryDatabase _watchHistoryDb = WatchHistoryDatabase();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadWatchStatus();
+  }
+
+  Future<void> _loadWatchStatus() async {
+    try {
+      final region = Provider.of<RegionProvider>(context, listen: false).currentRegion;
+      final baseUrl = getBaseUrl(region);
+      final apiKey = dotenv.env['TMDB_API_KEY'];
+      
+      // Get total episode count for the show
+      final seasonsResponse = await http.get(
+        Uri.parse('${baseUrl}tv/${widget.serieId}?api_key=$apiKey'),
+      );
+      
+      if (seasonsResponse.statusCode == 200) {
+        final data = json.decode(seasonsResponse.body);
+        final seasonsList = data['seasons'] as List<dynamic>;
+        
+        int totalEpisodes = 0;
+        for (final season in seasonsList) {
+          final seasonNumber = season['season_number'];
+          if (seasonNumber == 0) continue; // Skip specials
+          
+          final episodesResponse = await http.get(
+            Uri.parse('${baseUrl}tv/${widget.serieId}/season/$seasonNumber?api_key=$apiKey'),
+          );
+          
+          if (episodesResponse.statusCode == 200) {
+            final episodeData = json.decode(episodesResponse.body);
+            final episodesList = episodeData['episodes'] as List<dynamic>;
+            totalEpisodes += episodesList.length;
+          }
+        }
+        
+        // Check how many episodes are watched
+        final watchHistory = await _watchHistoryDb.getWatchHistoryByTmdbId(widget.serieId, 'tv');
+        final watchedEpisodes = watchHistory.where((item) => item.seasonNumber != 0).length; // Exclude specials
+        
+        if (mounted) {
+          setState(() {
+            _isWatched = totalEpisodes > 0 && watchedEpisodes == totalEpisodes;
+          });
+        }
+      }
+    } catch (e) {
+      // Fallback to old logic if API calls fail
+      final watchHistory = await _watchHistoryDb.getWatchHistoryByTmdbId(widget.serieId, 'tv');
+      if (mounted) {
+        setState(() {
+          _isWatched = watchHistory.isNotEmpty;
+        });
+      }
+    }
+  }
+
+  Future<void> _toggleWatchStatus() async {
+    if (_isLoading) return;
+    
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      if (_isWatched ?? false) {
+        // Remove all episodes of this show from watch history
+        final watchHistory = await _watchHistoryDb.getWatchHistoryByTmdbId(widget.serieId, 'tv');
+        for (final item in watchHistory) {
+          await _watchHistoryDb.deleteWatchHistoryItem(item.id!);
+        }
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${widget.serieName} removed from watched!'),
+              backgroundColor: Colors.orange,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      } else {
+        // Mark entire show as watched by adding all episodes
+        await _markEntireShowAsWatched();
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${widget.serieName} marked as watched!'),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      }
+      
+      // Update local state immediately for smooth transition
+      setState(() {
+        _isWatched = !(_isWatched ?? false);
+        _isLoading = false;
+      });
+      
+      // Call the callback to refresh parent state
+      widget.onToggle?.call();
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error updating watch status: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _markEntireShowAsWatched() async {
+    final region = Provider.of<RegionProvider>(context, listen: false).currentRegion;
+    final baseUrl = getBaseUrl(region);
+    final apiKey = dotenv.env['TMDB_API_KEY'];
+    
+    try {
+      // Fetch all seasons
+      final seasonsResponse = await http.get(
+        Uri.parse('${baseUrl}tv/${widget.serieId}?api_key=$apiKey'),
+      );
+      
+      if (seasonsResponse.statusCode == 200) {
+        final data = json.decode(seasonsResponse.body);
+        final seasonsList = data['seasons'] as List<dynamic>;
+        
+        for (final season in seasonsList) {
+          final seasonNumber = season['season_number'];
+          if (seasonNumber == 0) continue; // Skip specials
+          
+          // Fetch episodes for this season
+          final episodesResponse = await http.get(
+            Uri.parse('${baseUrl}tv/${widget.serieId}/season/$seasonNumber?api_key=$apiKey'),
+          );
+          
+          if (episodesResponse.statusCode == 200) {
+            final episodeData = json.decode(episodesResponse.body);
+            final episodesList = episodeData['episodes'] as List<dynamic>;
+            
+            for (final episode in episodesList) {
+              await _watchHistoryDb.addShowToHistory(
+                tmdbId: widget.serieId,
+                title: widget.serieName,
+                posterPath: widget.posterPath,
+                seasonNumber: seasonNumber,
+                episodeNumber: episode['episode_number'],
+                episodeTitle: episode['name'],
+              );
+            }
+          }
+        }
+      }
+    } catch (e) {
+      throw Exception('Failed to mark entire show as watched: $e');
+    }
+  }
+
+  // Method to refresh the watch status from external calls
+  void refresh() {
+    _loadWatchStatus();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isWatched == null) {
+      return Container(
+        padding: const EdgeInsets.all(10),
+        decoration: const BoxDecoration(
+          color: Colors.black38,
+          borderRadius: BorderRadius.all(Radius.circular(30)),
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Colors.white,
+              ),
+            ),
+            SizedBox(width: 4),
+            Text(
+              'Loading...',
+              style: TextStyle(
+                fontWeight: FontWeight.w300,
+                fontSize: 13,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return GestureDetector(
+      onTap: _toggleWatchStatus,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: _isWatched! ? Colors.green.withOpacity(0.7) : Colors.black38,
+          borderRadius: const BorderRadius.all(Radius.circular(30)),
+        ),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          transitionBuilder: (Widget child, Animation<double> animation) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+          child: Row(
+            key: ValueKey(_isWatched),
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                _isWatched! ? Icons.check_circle : Icons.visibility,
+                color: Colors.white,
+                size: 16,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                _isWatched! ? 'Show Watched' : 'Mark Show as Watched',
+                style: const TextStyle(
+                  fontWeight: FontWeight.w300,
+                  fontSize: 13,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

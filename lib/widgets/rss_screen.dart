@@ -99,7 +99,6 @@ class _RssScreenState extends State<RssScreen> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
         backgroundColor: Theme.of(context).primaryColor,
         title: const Text(
           'RSS Feed',

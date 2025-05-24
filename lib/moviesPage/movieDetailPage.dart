@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:Mirarr/database/watch_history_database.dart';
 import 'package:Mirarr/functions/fetchers/fetch_movie_credits.dart';
 import 'package:Mirarr/functions/fetchers/fetch_movie_details.dart';
 import 'package:Mirarr/functions/fetchers/fetch_other_movies_by_director.dart';
@@ -52,6 +53,10 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
   double? userScore;
   final screenshotController = ScreenshotController();
 
+
+  // Watch history variables
+  final WatchHistoryDatabase _watchHistoryDb = WatchHistoryDatabase();
+  bool isWatched = false;
   final apiKey = dotenv.env['TMDB_API_KEY'];
 
   Map<String, dynamic>? moviedetails;
@@ -71,6 +76,8 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
   int? duration;
   String? releaseDate;
   String? language;
+    String? posterPath;
+
   String? imdbId;
   String? imdbRating;
   String rottenTomatoesRating = 'N/A';
@@ -84,7 +91,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
     _fetchMovieDetails();
     checkAccountState();
     _loadMovieImages();
-
+    _checkWatchedStatus();
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
     fetchCredits(widget.movieId, region);
@@ -191,6 +198,8 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
         duration = responseData['runtime'];
         releaseDate = responseData['release_date'];
         language = responseData['original_language'];
+                posterPath = responseData['poster_path'];
+
         productionCountries = responseData['production_countries'];
         productionCompanies = responseData['production_companies'];
         spokenLanguages = responseData['spoken_languages'];
@@ -202,6 +211,80 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
       }
     } catch (e) {
       throw Exception('Failed to load movie details');
+    }
+  }
+
+  Future<void> _checkWatchedStatus() async {
+    final watched = await _watchHistoryDb.isWatched(widget.movieId, 'movie');
+    setState(() {
+      isWatched = watched;
+    });
+  }
+
+  Future<void> _markAsWatched() async {
+    try {
+      await _watchHistoryDb.addMovieToHistory(
+        tmdbId: widget.movieId,
+        title: widget.movieTitle,
+        posterPath: posterPath,
+        userRating: userRating,
+      );
+      
+      setState(() {
+        isWatched = true;
+      });
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${widget.movieTitle} marked as watched!'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error marking movie as watched: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _removeFromWatched() async {
+    try {
+      final watchHistory = await _watchHistoryDb.getWatchHistoryByTmdbId(widget.movieId, 'movie');
+      if (watchHistory.isNotEmpty) {
+        await _watchHistoryDb.deleteWatchHistoryItem(watchHistory.first.id!);
+        setState(() {
+          isWatched = false;
+        });
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${widget.movieTitle} removed from watched!'),
+              backgroundColor: Colors.orange,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error removing movie from watched: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
     }
   }
 
@@ -353,7 +436,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                         Visibility(
                           visible: Platform.isAndroid,
                           child: Positioned(
-                            top: 140,
+                            top: 190,
                             right: 30,
                             child: GestureDetector(
                               onTap: () {
@@ -439,9 +522,10 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                           ),
                         ),
                         Visibility(
+                          
                           visible: isUserLoggedIn == true,
                           child: Positioned(
-                            top: 40,
+                            top: 140,
                             right: 30,
                             child: GestureDetector(
                               onTap: () async {
@@ -532,10 +616,9 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                             userRating != null)
                           Positioned(
                             top: 40,
-                            left: 8,
+                            right: 20,
                             child: Container(
-                              margin: const EdgeInsets.all(10),
-                              padding: const EdgeInsets.all(10),
+                              padding: const EdgeInsets.all(6),
                               decoration: const BoxDecoration(
                                   color: Colors.black38,
                                   borderRadius:
@@ -631,77 +714,107 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                               ),
                             ),
                           ),
+
+                             Positioned(
+                              top: 40,
+                              left: 20,
+                               child: GestureDetector(
+                                          onTap: isWatched ? _removeFromWatched : _markAsWatched,
+                                          child: Container(
+                                            padding: const EdgeInsets.all(10),
+                                            decoration: BoxDecoration(
+                                              color: isWatched ? Colors.green.withOpacity(0.7) : Colors.black38,
+                                              borderRadius: const BorderRadius.all(Radius.circular(30)),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(
+                                                  isWatched ? Icons.check_circle : Icons.visibility,
+                                                  color: Colors.white,
+                                                  size: 16,
+                                                ),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  isWatched ? 'Watched' : 'Mark as Watched',
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.w300,
+                                                    fontSize: 13,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                             ),
                         //logged in not rated
                         if (isUserLoggedIn == true &&
                             isMovieRated == false &&
                             userRating == null)
                           Positioned(
                             top: 40,
-                            left: 20,
-                            child: Container(
-                                decoration: const BoxDecoration(
-                                    color: Colors.black38,
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(30))),
-                                child: IconButton(
-                                    onPressed: () {
-                                      showModalBottomSheet(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              const SizedBox(
-                                                height: 20,
-                                              ),
-                                              RatingBar.builder(
-                                                initialRating: 5,
-                                                minRating: 1,
-                                                maxRating: 10,
-                                                itemSize: 35,
-                                                unratedColor: Colors.grey,
-                                                direction: Axis.horizontal,
-                                                allowHalfRating: true,
-                                                itemCount: 10,
-                                                itemPadding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 0),
-                                                itemBuilder: (context, _) =>
-                                                    const Icon(
-                                                  Icons.star,
-                                                  color: Colors.amber,
-                                                ),
-                                                onRatingUpdate: (rating) async {
-                                                  final movieId =
-                                                      widget.movieId;
-                                                  final openbox =
-                                                      await Hive.openBox(
-                                                          'sessionBox');
-
-                                                  final String sessionData =
-                                                      openbox
-                                                          .get('sessionData');
-                                                  addRating(sessionData,
-                                                      movieId, rating, context);
-                                                  setState(() {
-                                                    isMovieRated =
-                                                        '"value":$rating';
-                                                    userRating = rating;
-                                                  });
-                                                },
-                                              ),
-                                              const SizedBox(
-                                                height: 40,
-                                              ),
-                                            ],
-                                          );
-                                        },
+                            right: 30,
+                            child: GestureDetector(
+                                onTap: () {
+                                  showModalBottomSheet(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const SizedBox(
+                                            height: 20,
+                                          ),
+                                          RatingBar.builder(
+                                            initialRating: 5,
+                                            minRating: 1,
+                                            maxRating: 10,
+                                            itemSize: 35,
+                                            unratedColor: Colors.grey,
+                                            direction: Axis.horizontal,
+                                            allowHalfRating: true,
+                                            itemCount: 10,
+                                            itemPadding:
+                                                const EdgeInsets.symmetric(
+                                                    horizontal: 0),
+                                            itemBuilder: (context, _) =>
+                                                const Icon(
+                                              Icons.star,
+                                              color: Colors.amber,
+                                            ),
+                                            onRatingUpdate: (rating) async {
+                                              final movieId =
+                                                  widget.movieId;
+                                              final openbox =
+                                                  await Hive.openBox(
+                                                      'sessionBox');
+                            
+                                              final String sessionData =
+                                                  openbox
+                                                      .get('sessionData');
+                                              addRating(sessionData,
+                                                  movieId, rating, context);
+                                              setState(() {
+                                                isMovieRated =
+                                                    '"value":$rating';
+                                                userRating = rating;
+                                              });
+                                            },
+                                          ),
+                                          const SizedBox(
+                                            height: 40,
+                                          ),
+                                        ],
                                       );
                                     },
-                                    icon: const Icon(
-                                      Icons.add_reaction,
-                                      color: Colors.white,
-                                    ))),
+                                  );
+                                },
+                                child: const Icon(
+                                  Icons.add_reaction,
+                                  color: Colors.white,
+                                ),
+                              ),
                           ),
                       ],
                     ),

@@ -11,6 +11,7 @@ import 'package:Mirarr/moviesPage/functions/on_tap_movie_desktop.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_gridview_serie.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_serie.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_serie_desktop.dart';
+import 'package:Mirarr/widgets/rss_screen.dart';
 import 'package:Mirarr/widgets/settings_screen.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
@@ -25,6 +26,7 @@ import 'package:Mirarr/widgets/login.dart';
 import 'package:http/http.dart' as http;
 import 'package:Mirarr/moviesPage/models/movie.dart';
 import 'package:provider/provider.dart';
+import 'package:webfeed_plus/domain/rss_feed.dart';
 
 class ProfilePage extends StatefulWidget {
   ProfilePage({Key? key}) : super(key: key);
@@ -422,6 +424,15 @@ class _ProfilePageState extends State<ProfilePage> {
                 );
               },
               icon: const Icon(Icons.logout),
+            ),
+            IconButton(
+              icon: const Icon(Icons.rss_feed),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) =>  RssScreen()),
+                );
+              },
             ),
             IconButton(
               icon: const Icon(Icons.settings),

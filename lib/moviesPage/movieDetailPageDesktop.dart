@@ -29,6 +29,7 @@ import 'package:Mirarr/widgets/image_gallery_page.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:Mirarr/moviesPage/functions/watch_links.dart';
 import 'package:provider/provider.dart';
+import 'package:Mirarr/database/watch_history_database.dart';
 
 class MovieDetailPageDesktop extends StatefulWidget {
   final String movieTitle;
@@ -50,6 +51,10 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
   double? userRating;
   double? userScore;
   String? imdbId;
+  
+  // Watch history variables
+  final WatchHistoryDatabase _watchHistoryDb = WatchHistoryDatabase();
+  bool isWatched = false;
 
   final apiKey = dotenv.env['TMDB_API_KEY'];
 
@@ -83,6 +88,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
     _fetchMovieDetails();
     checkAccountState();
     _loadMovieImages();
+    _checkWatchedStatus();
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
     fetchCredits(widget.movieId, region);
@@ -210,6 +216,80 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
       }
     } catch (e) {
       throw Exception('Failed to load movie details');
+    }
+  }
+
+  Future<void> _checkWatchedStatus() async {
+    final watched = await _watchHistoryDb.isWatched(widget.movieId, 'movie');
+    setState(() {
+      isWatched = watched;
+    });
+  }
+
+  Future<void> _markAsWatched() async {
+    try {
+      await _watchHistoryDb.addMovieToHistory(
+        tmdbId: widget.movieId,
+        title: widget.movieTitle,
+        posterPath: posterPath,
+        userRating: userRating,
+      );
+      
+      setState(() {
+        isWatched = true;
+      });
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${widget.movieTitle} marked as watched!'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error marking movie as watched: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _removeFromWatched() async {
+    try {
+      final watchHistory = await _watchHistoryDb.getWatchHistoryByTmdbId(widget.movieId, 'movie');
+      if (watchHistory.isNotEmpty) {
+        await _watchHistoryDb.deleteWatchHistoryItem(watchHistory.first.id!);
+        setState(() {
+          isWatched = false;
+        });
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${widget.movieTitle} removed from watched!'),
+              backgroundColor: Colors.orange,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error removing movie from watched: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
     }
   }
 
@@ -667,6 +747,38 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                               fontSize: 13,
                                               color: Colors.white,
                                             ),
+                                          ),
+                                        ),
+                                      ),
+
+                                      // Mark as Watched button
+                                      GestureDetector(
+                                        onTap: isWatched ? _removeFromWatched : _markAsWatched,
+                                        child: Container(
+                                          margin: const EdgeInsets.all(5),
+                                          padding: const EdgeInsets.all(10),
+                                          decoration: BoxDecoration(
+                                            color: isWatched ? Colors.green.withOpacity(0.7) : Colors.black38,
+                                            borderRadius: const BorderRadius.all(Radius.circular(30)),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                isWatched ? Icons.check_circle : Icons.visibility,
+                                                color: Colors.white,
+                                                size: 16,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                isWatched ? 'Watched' : 'Mark as Watched',
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.w300,
+                                                  fontSize: 13,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ),
                                       ),
