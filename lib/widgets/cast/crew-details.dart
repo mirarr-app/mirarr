@@ -24,7 +24,6 @@ class CrewDetailPage extends StatefulWidget {
 
 bool _showIcon = true;
 final apiKey = dotenv.env['TMDB_API_KEY'];
-const baseUrl = 'https://tmdb.maybeparsa.top/tmdb';
 
 class _CrewDetailPageState extends State<CrewDetailPage> {
   late Future<Map<String, dynamic>> _castDetailsFuture;
@@ -49,8 +48,11 @@ class _CrewDetailPageState extends State<CrewDetailPage> {
   }
 
   Future<Map<String, dynamic>> _fetchCastDetails(int castId) async {
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
+    final baseUrl = getBaseUrl(region);
     final response = await http.get(
-      Uri.parse('$baseUrl/person/$castId?api_key=$apiKey'),
+      Uri.parse('${baseUrl}person/$castId?api_key=$apiKey'),
     );
     if (response.statusCode == 200) {
       return json.decode(response.body);
@@ -60,8 +62,11 @@ class _CrewDetailPageState extends State<CrewDetailPage> {
   }
 
   Future<List<dynamic>> _fetchOtherMovies(int castId) async {
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
+    final baseUrl = getBaseUrl(region);
     final response = await http.get(
-      Uri.parse('$baseUrl/person/$castId/movie_credits?api_key=$apiKey'),
+      Uri.parse('${baseUrl}person/$castId/movie_credits?api_key=$apiKey'),
     );
     if (response.statusCode == 200) {
       final decoded = json.decode(response.body);
@@ -86,8 +91,11 @@ class _CrewDetailPageState extends State<CrewDetailPage> {
   }
 
   Future<List<String>> _fetchCastImages(int castId) async {
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
+    final baseUrl = getBaseUrl(region);
     final response = await http.get(
-      Uri.parse('$baseUrl/person/$castId/images?api_key=$apiKey'),
+      Uri.parse('${baseUrl}person/$castId/images?api_key=$apiKey'),
     );
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body)['profiles'];

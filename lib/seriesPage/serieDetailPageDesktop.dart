@@ -22,6 +22,10 @@ import 'package:Mirarr/widgets/bottom_bar.dart';
 import 'package:Mirarr/widgets/custom_divider.dart';
 import 'package:provider/provider.dart';
 
+// Import the ShowWatchToggle from the main series detail page
+import 'package:Mirarr/seriesPage/serieDetailPage.dart' show ShowWatchToggle;
+
+
 class SerieDetailPageDesktop extends StatefulWidget {
   final String serieName;
   final int serieId;
@@ -62,12 +66,15 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
   String? imdbRating;
 
   String rottenTomatoesRating = 'N/A';
+  
+  
+  // Counter to force refresh of ShowWatchToggle
+  int _showWatchToggleRefreshCounter = 0;
 
   @override
   void initState() {
     super.initState();
     checkUserLogin();
-
     checkAccountState();
     _fetchSerieDetails();
     final region =
@@ -176,6 +183,13 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
         print('Error: $e');
       }
     }
+  }
+
+  void _refreshShowWatchStatus() {
+    // Increment counter to force ShowWatchToggle widget to rebuild with new state
+    setState(() {
+      _showWatchToggleRefreshCounter++;
+    });
   }
 
   @override
@@ -638,6 +652,20 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                         ),
                                       ),
 
+                                      // Mark as Watched toggle button
+                                      Padding(
+                                        padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
+                                        child: ShowWatchToggle(
+                                          key: ValueKey('show_watch_toggle_$_showWatchToggleRefreshCounter'),
+                                          serieId: widget.serieId,
+                                          serieName: widget.serieName,
+                                          posterPath: posterPath,
+                                          onToggle: () {
+                                            // The widget handles its own state
+                                          },
+                                        ),
+                                      ),
+
                                       Center(
                                         child: SingleChildScrollView(
                                           scrollDirection: Axis.horizontal,
@@ -679,7 +707,8 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                                 context,
                                                 widget.serieId,
                                                 widget.serieName,
-                                                imdbId!),
+                                                imdbId!,
+                                                onWatchStatusChanged: _refreshShowWatchStatus),
                                             child: Text('Details',
                                                 style: getSeriesButtonTextStyle(
                                                     widget.serieId)),

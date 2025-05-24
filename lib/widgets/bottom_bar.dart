@@ -5,7 +5,7 @@ import 'package:Mirarr/seriesPage/seriesPage.dart';
 import 'package:Mirarr/widgets/login.dart';
 import 'package:Mirarr/widgets/profile.dart';
 import 'package:hive/hive.dart';
-import 'package:Mirarr/widgets/rss_screen.dart';
+import 'package:Mirarr/widgets/shelf_page.dart';
 
 class BottomBar extends StatefulWidget {
   const BottomBar({Key? key}) : super(key: key);
@@ -37,12 +37,12 @@ class _BottomBarState extends State<BottomBar> {
     });
   }
 
-  void toRSS() {
+  void toShelf() {
     setState(() {
       _selectedIndex = 3;
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => RssScreen()),
+        MaterialPageRoute(builder: (context) => ShelfPage()),
       );
     });
   }
@@ -93,7 +93,7 @@ class _BottomBarState extends State<BottomBar> {
           } else if (index == 4) {
             toAccount();
           } else if (index == 3) {
-            toRSS();
+            toShelf();
           } else if (index == 2) {
             toSearch();
           }
@@ -120,9 +120,9 @@ class _BottomBarState extends State<BottomBar> {
         ),
         BottomNavigationBarItem(
           icon: Icon(
-            Icons.rss_feed,
+            Icons.shelves,
           ),
-          label: 'RSS',
+          label: 'Shelf',
         ),
         BottomNavigationBarItem(
           icon: Icon(
