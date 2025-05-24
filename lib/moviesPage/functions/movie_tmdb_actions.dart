@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:Mirarr/functions/get_base_url.dart';
+import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/functions/show_error_dialog.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +8,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:hive/hive.dart';
+import 'package:provider/provider.dart';
 
 final apiKey = dotenv.env['TMDB_API_KEY'];
 
@@ -14,10 +17,12 @@ Future<void> addWatchList(String accountId, String sessionId, int movieId,
   final openbox = await Hive.openBox('sessionBox');
   final String accountId = openbox.get('accountId');
   final String sessionData = openbox.get('sessionData');
-  const String baseUrl = 'https://tmdb.maybeparsa.top/tmdb';
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
+    final baseUrl = getBaseUrl(region);
 
   final String url =
-      '$baseUrl/account/$accountId/watchlist?api_key=$apiKey&session_id=$sessionData';
+      '${baseUrl}account/$accountId/watchlist?api_key=$apiKey&session_id=$sessionData';
 
   Map<String, dynamic> requestBody = {
     'media_type': 'movie',
@@ -50,10 +55,12 @@ Future<void> addRating(String sessionId, int movieId, double userScore,
     BuildContext context) async {
   final openbox = await Hive.openBox('sessionBox');
   final String sessionData = openbox.get('sessionData');
-  const String baseUrl = 'https://tmdb.maybeparsa.top/tmdb';
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
+    final baseUrl = getBaseUrl(region);
 
   final String url =
-      '$baseUrl/movie/$movieId/rating?api_key=$apiKey&session_id=$sessionData';
+      '${baseUrl}movie/$movieId/rating?api_key=$apiKey&session_id=$sessionData';
 
   Map<String, dynamic> requestBody = {
     'value': userScore,
@@ -84,10 +91,12 @@ Future<void> removeRating(
     String sessionId, int movieId, BuildContext context) async {
   final openbox = await Hive.openBox('sessionBox');
   final String sessionData = openbox.get('sessionData');
-  const String baseUrl = 'https://tmdb.maybeparsa.top/tmdb';
+  final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
+    final baseUrl = getBaseUrl(region);
 
   final String url =
-      '$baseUrl/movie/$movieId/rating?api_key=$apiKey&session_id=$sessionData';
+      '${baseUrl}movie/$movieId/rating?api_key=$apiKey&session_id=$sessionData';
 
   try {
     final http.Response response = await http.delete(
@@ -114,10 +123,12 @@ Future<void> addFavorite(String accountId, String sessionId, int movieId,
   final openbox = await Hive.openBox('sessionBox');
   final String accountId = openbox.get('accountId');
   final String sessionData = openbox.get('sessionData');
-  const String baseUrl = 'https://tmdb.maybeparsa.top/tmdb';
+  final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
+    final baseUrl = getBaseUrl(region);
 
   final String url =
-      '$baseUrl/account/$accountId/favorite?api_key=$apiKey&session_id=$sessionData';
+      '${baseUrl}account/$accountId/favorite?api_key=$apiKey&session_id=$sessionData';
 
   Map<String, dynamic> requestBody = {
     'media_type': 'movie',
@@ -151,10 +162,12 @@ Future<void> removeFromWatchList(String accountId, String sessionId,
   final openbox = await Hive.openBox('sessionBox');
   final String accountId = openbox.get('accountId');
   final String sessionData = openbox.get('sessionData');
-  const String baseUrl = 'https://tmdb.maybeparsa.top/tmdb';
+  final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
+    final baseUrl = getBaseUrl(region);
 
   final String url =
-      '$baseUrl/account/$accountId/watchlist?api_key=$apiKey&session_id=$sessionData';
+      '${baseUrl}account/$accountId/watchlist?api_key=$apiKey&session_id=$sessionData';
 
   Map<String, dynamic> requestBody = {
     'media_type': 'movie',
@@ -189,10 +202,12 @@ Future<void> removeFromFavorite(String accountId, String sessionId, int movieId,
   final openbox = await Hive.openBox('sessionBox');
   final String accountId = openbox.get('accountId');
   final String sessionData = openbox.get('sessionData');
-  const String baseUrl = 'https://tmdb.maybeparsa.top/tmdb';
+  final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
+    final baseUrl = getBaseUrl(region);
 
   final String url =
-      '$baseUrl/account/$accountId/favorite?api_key=$apiKey&session_id=$sessionData';
+      '${baseUrl}account/$accountId/favorite?api_key=$apiKey&session_id=$sessionData';
 
   Map<String, dynamic> requestBody = {
     'media_type': 'movie',

@@ -17,7 +17,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
-import 'package:Mirarr/moviesPage/functions/check_xprime.dart';
+import 'package:Mirarr/moviesPage/functions/check_direct_streams.dart';
 
 final apiKey = dotenv.env['TMDB_API_KEY'];
 final apiOmdbKey = dotenv.env['OMDB_API_KEY_FOR_EPISODES'];
@@ -142,6 +142,7 @@ void seasonsAndEpisodes(
                             padding: const EdgeInsets.symmetric(vertical: 8.0),
                             child: ElevatedButton(
                               onPressed: () {
+                                Navigator.pop(context);
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -367,6 +368,12 @@ void episodesGuide(int seasonNumber, BuildContext context, int serieId,
                                           ? Colors.white
                                           : Colors.grey),
                                 ),
+                                subtitle: episode['name'] != null ? Text(
+                                  episode['name'],
+                                  style: const TextStyle(
+                                    color: Colors.grey,
+                                  ),
+                                ) : null,
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
@@ -455,9 +462,10 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
         future: Future.wait([
           fetchEpisodesDetails(context, seasonNumber, episodeNumber, serieId),
           fetchImdbRating(imdbId, seasonNumber, episodeNumber),
-          checkXprimeSeries(serieId, seasonNumber, episodeNumber, serieName) 
+          checkXprimeSeries(serieId, seasonNumber, episodeNumber, serieName),
+          checkRiveSeries(serieId, seasonNumber, episodeNumber, serieName)
         ]).then((results) =>
-            {'episodeDetails': results[0], 'imdbRating': results[1], 'xprimeAvailable': results[2]}),
+            {'episodeDetails': results[0], 'imdbRating': results[1], 'xprimeAvailable': results[2], 'riveAvailable': results[3]}),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -471,7 +479,9 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
             final imdbRating = snapshot.data!['imdbRating'];
             final overview =
                 episodeDetails['overview'] ?? 'No overview available.';
+            final episodeName = episodeDetails['name'];
             final xprimeAvailable = snapshot.data!['xprimeAvailable'];
+            final riveAvailable = snapshot.data!['riveAvailable'];
             return SingleChildScrollView(
               child: Container(
                 padding: const EdgeInsets.all(10),
@@ -479,12 +489,13 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
-                      padding: EdgeInsets.fromLTRB(25, 10, 0, 0),
-                      child: Text('Episode Overview',
+                      padding: const EdgeInsets.fromLTRB(25, 10, 0, 0),
+                      child: episodeName.isNotEmpty ? Text(episodeName,
+                          style: getSeriesTitleTextStyle(serieId)) : Text('Episode Overview',
                           style: getSeriesTitleTextStyle(serieId)),
                     ),
                     const SizedBox(height: 10),
-                    if (imdbRating != null && imdbRating.isNotEmpty)
+                    if (imdbRating != null && imdbRating.isNotEmpty && imdbRating != 'N/A')
                       Padding(
                         padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
                         child: Text(
@@ -527,11 +538,11 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
                                     ),
                                   ),
                                 ),
-                                xprimeAvailable
+                               xprimeAvailable && !Platform.isIOS || riveAvailable && !Platform.isIOS
                                     ? const SizedBox(width: 6)
                                     : const SizedBox(),
                                 Visibility(
-                                  visible: xprimeAvailable && !Platform.isIOS,
+                                  visible: xprimeAvailable && !Platform.isIOS || riveAvailable && !Platform.isIOS,
                                   child: FloatingActionButton(onPressed: () => showWatchOptionsDirectTV(context, serieId, seasonNumber, episodeNumber),
                                     child: Image.asset(
                                         'assets/images/vlc.png',
