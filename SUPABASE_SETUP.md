@@ -85,7 +85,7 @@ FOR ALL USING (true);
 - Check that the table name is exactly `watch_history`
 
 ### Project Paused
-If you don't upload or download anything from your project for 7 days on free tier, the project gets paused (Supabase will email you about it.). Just open up your supabase dashboard and click resume if this happens. 
+If you don't upload or download anything from your project for 7 days on free tier, the project gets paused (Supabase will email you about it.). Just open up your Supabase dashboard and click resume if this happens. 
 
 
 ## Support
