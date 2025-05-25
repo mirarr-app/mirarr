@@ -286,7 +286,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         const SizedBox(height: 16),
                         Row(
                           children: [
-                            Expanded(
+                            Flexible(
                               child: ElevatedButton(
                                 onPressed: _saveSupabaseConfig,
                                 style: ElevatedButton.styleFrom(
@@ -315,14 +315,9 @@ class _SettingsPageState extends State<SettingsPage> {
                         ),
                         const SizedBox(height: 8),
                         if (supabaseProvider.isConfigured)
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.green),
-                            ),
-                            child: const Row(
+                          const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Row(
                               children: [
                                 Icon(Icons.check_circle, color: Colors.green, size: 20),
                                 SizedBox(width: 8),
@@ -379,9 +374,10 @@ class _SettingsPageState extends State<SettingsPage> {
                           ],
                           // link to documentation
                   
+                          const SizedBox(height: 8),
                           Row(
                             children: [
-                              Expanded(
+                               Flexible(
                                 child: ElevatedButton.icon(
                                   onPressed: _isSyncing ? null : _syncWatchHistory,
                                   icon: _isSyncing 
@@ -401,16 +397,13 @@ class _SettingsPageState extends State<SettingsPage> {
                                   ),
                                 ),
                               ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Expanded(
+                                                            const SizedBox(width: 8),
+
+                              Flexible(
                                 child: ElevatedButton.icon(
                                   onPressed: _isSyncing ? null : _uploadWatchHistory,
                                   icon: const Icon(Icons.cloud_upload),
-                                  label: const Text('Upload & Sync'),
+                                  label: const Text('Upload'),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.blue,
                                     foregroundColor: Colors.white,
@@ -421,7 +414,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              Expanded(
+                              Flexible(
                                 child: ElevatedButton.icon(
                                   onPressed: _isSyncing ? null : _downloadWatchHistory,
                                   icon: const Icon(Icons.cloud_download),

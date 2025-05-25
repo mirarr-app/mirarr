@@ -59,15 +59,10 @@ FOR ALL USING (true);
 
 ## Step 5: Sync Your Data
 
-Once configured, you can:
-
-- **Sync All**: Bidirectional sync (download from Supabase, then upload local changes)
-- **Upload & Sync**: Send your local watch history to Supabase and remove items that were deleted locally
-- **Download**: Get watch history from Supabase to your device
 
 ### Sync Behavior Details
 
-- **Upload & Sync**: Compares your local database with Supabase and ensures they match exactly. Items deleted locally will be removed from Supabase, and new/updated items will be uploaded.
+- **Upload**: Compares your local database with Supabase and ensures they match exactly. Items deleted locally will be removed from Supabase, and new/updated items will be uploaded.
 - **Download**: Merges remote data with local data without removing anything locally.
 - **Sync All**: Combines both operations for complete synchronization.
 
