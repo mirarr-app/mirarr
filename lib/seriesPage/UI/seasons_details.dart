@@ -431,7 +431,7 @@ void episodesGuide(int seasonNumber, BuildContext context, int serieId,
                                           seasonNumber: seasonNumber,
                                           episodeNumber: episode['episode_number'],
                                           episodeTitle: episode['name'],
-                                          posterPath: null,
+                                          posterPath: coverUrl,
                                           onToggle: () {
                                             onWatchStatusChanged?.call();
                                           },
@@ -450,6 +450,7 @@ void episodesGuide(int seasonNumber, BuildContext context, int serieId,
                                         serieId,
                                         serieName,
                                         imdbId,
+                                        coverUrl,
                                         onWatchStatusChanged: onWatchStatusChanged),
                                   ),
                                   const CustomDivider()
@@ -492,7 +493,7 @@ Future<Map<String, dynamic>> fetchEpisodesDetails(BuildContext context,
 }
 
 void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
-    int serieId, String serieName, String imdbId, {VoidCallback? onWatchStatusChanged}) {
+    int serieId, String serieName, String imdbId, String? coverUrl, {VoidCallback? onWatchStatusChanged}) {
   final region =
       Provider.of<RegionProvider>(context, listen: false).currentRegion;
   showModalBottomSheet(
@@ -558,7 +559,7 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
                             seasonNumber: seasonNumber,
                             episodeNumber: episodeNumber,
                             episodeTitle: episodeName,
-                            posterPath: null,
+                            posterPath: coverUrl,
                             onToggle: () {
                               onWatchStatusChanged?.call();
                             },
