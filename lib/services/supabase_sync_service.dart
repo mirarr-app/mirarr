@@ -55,7 +55,7 @@ class SupabaseSyncService {
       
       
       for (final itemToDelete in itemsToDelete) {
-        await _client!.from(_tableName).delete().match({
+        await _client.from(_tableName).delete().match({
           'tmdb_id': itemToDelete['tmdb_id'],
           'type': itemToDelete['type'],
           'season_number': itemToDelete['season_number'],
@@ -80,7 +80,7 @@ class SupabaseSyncService {
           'notes': item.notes,
         };
 
-        await _client!.from(_tableName).upsert(
+        await _client.from(_tableName).upsert(
           data,
           onConflict: 'tmdb_id,type,season_number,episode_number',
         );
