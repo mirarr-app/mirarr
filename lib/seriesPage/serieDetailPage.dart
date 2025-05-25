@@ -327,7 +327,7 @@ String? posterPath;
                       Visibility(
                         visible: Platform.isAndroid,
                         child: Positioned(
-                          top: 140,
+                          top: 190,
                           right: 30,
                           child: GestureDetector(
                             onTap: () {
@@ -415,7 +415,7 @@ String? posterPath;
                       Visibility(
                         visible: isUserLoggedIn == true,
                         child: Positioned(
-                          top: 40,
+                          top: 140,
                           right: 30,
                           child: GestureDetector(
                             onTap: () async {
@@ -502,10 +502,9 @@ String? posterPath;
                           userRating != null)
                         Positioned(
                           top: 40,
-                          left: 8,
+                          right: 20,
                           child: Container(
-                            margin: const EdgeInsets.all(10),
-                            padding: const EdgeInsets.all(10),
+                            padding: const EdgeInsets.all(6),
                             decoration: const BoxDecoration(
                                 color: Colors.black38,
                                 borderRadius:
@@ -605,15 +604,15 @@ String? posterPath;
                           isSerieRated == false &&
                           userRating == null)
                         Positioned(
-                          top: 90,
-                          left: 15,
+                          top: 40,
+                          right: 30,
                           child: Container(
                               decoration: const BoxDecoration(
                                   color: Colors.black38,
                                   borderRadius:
                                       BorderRadius.all(Radius.circular(30))),
-                              child: IconButton(
-                                  onPressed: () {
+                              child: GestureDetector(
+                                  onTap: () {
                                     showModalBottomSheet(
                                       context: context,
                                       builder: (BuildContext context) {
@@ -665,11 +664,14 @@ String? posterPath;
                                       },
                                     );
                                   },
-                                  icon: const Icon(
+                                  child: const Icon(
                                     Icons.add_reaction,
                                     color: Colors.white,
-                                  ))),
-                        ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                        
 
                         Positioned(
                           top: 40,

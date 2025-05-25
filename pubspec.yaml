@@ -2,7 +2,7 @@ name: Mirarr
 description: A new Flutter project.
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
-version: 2.0.0
+version: 2.1.0
 
 environment:
   sdk: ">=3.4.3 <4.0.0"
@@ -34,6 +34,7 @@ dependencies:
   sqlite3: ^2.7.6
   sqlite3_flutter_libs: ^0.5.0
   path: ^1.8.3
+  supabase_flutter: ^2.9.0
 
 dev_dependencies:
   flutter_test:
