@@ -1,5 +1,6 @@
 import 'package:Mirarr/functions/themeprovider_class.dart';
 import 'package:Mirarr/functions/regionprovider_class.dart';
+import 'package:Mirarr/functions/supabase_provider.dart';
 import 'package:Mirarr/functions/url_parser.dart';
 import 'package:Mirarr/widgets/check_updates.dart';
 import 'package:flutter/material.dart';
@@ -32,11 +33,15 @@ void main() async {
   final regionProvider = RegionProvider('worldwide');
   await regionProvider.loadRegion();
 
+  final supabaseProvider = SupabaseProvider();
+  await supabaseProvider.loadSupabaseConfig();
+
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: themeProvider),
         ChangeNotifierProvider.value(value: regionProvider),
+        ChangeNotifierProvider.value(value: supabaseProvider),
       ],
       child: const MyApp(),
     ),
