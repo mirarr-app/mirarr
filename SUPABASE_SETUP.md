@@ -12,12 +12,15 @@ This guide will help you set up Supabase to sync your watch history across devic
 1. Go to [supabase.com](https://supabase.com) and sign up/sign in
 2. Click "New Project"
 3. Choose your organization and enter project details
-4. Wait for the project to be created
+4. The name doesn't matter. Don't change other settings
+5. For region choose somewhere closest to you for better latency
+6. Wait for the project to be created
+
 
 ## Step 2: Create the Watch History Table
 
 1. In your Supabase dashboard, go to the "SQL Editor"
-2. Run the following SQL command to create the watch history table:
+2. Copy and paste the following SQL command to create the watch history table. Click run:
 
 ```sql
 CREATE TABLE IF NOT EXISTS watch_history (
@@ -43,7 +46,7 @@ FOR ALL USING (true);
 
 ## Step 3: Get Your Project Credentials
 
-1. In your Supabase dashboard, go to "Settings" > "API"
+1. In your Supabase dashboard, go to "Settings" > "Data API"
 2. Copy the following values:
    - **Project URL** (looks like `https://your-project-id.supabase.co`)
    - **Anon/Public Key** (the `anon` key, not the `service_role` key)
@@ -80,6 +83,9 @@ FOR ALL USING (true);
 ### Table doesn't exist error
 - Make sure you ran the SQL commands from Step 2
 - Check that the table name is exactly `watch_history`
+
+### Project Paused
+If you don't upload or download anything from your project for 7 days on free tier, the project gets paused (Supabase will email you about it.). Just open up your supabase dashboard and click resume if this happens. 
 
 
 ## Support
