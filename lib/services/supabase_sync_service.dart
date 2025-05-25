@@ -35,7 +35,7 @@ class SupabaseSyncService {
     try {
       final localHistory = await _localDb.getAllWatchHistory();
       
-      // Get ALL remote data with pagination
+      // Get ALL remote data with full details for comparison
       final allRemoteData = <Map<String, dynamic>>[];
       int offset = 0;
       const batchSize = 1000;
@@ -43,7 +43,7 @@ class SupabaseSyncService {
       while (true) {
         final remoteResponse = await _client!
             .from(_tableName)
-            .select('tmdb_id,type,season_number,episode_number')
+            .select()
             .range(offset, offset + batchSize - 1);
         
         final List<dynamic> batch = remoteResponse as List<dynamic>;
@@ -57,60 +57,116 @@ class SupabaseSyncService {
       
       debugPrint('Retrieved ${allRemoteData.length} remote items for comparison');
       
-      // Create a set of local items for efficient lookup
-      final localItemKeys = localHistory.map((item) {
-        return '${item.tmdbId}_${item.type}_${item.seasonNumber ?? 'null'}_${item.episodeNumber ?? 'null'}';
-      }).toSet();
+      // Create lookup maps for efficient comparison
+      final localItemMap = <String, WatchHistoryItem>{};
+      final remoteItemMap = <String, Map<String, dynamic>>{};
       
-      // Find remote items that don't exist locally (i.e., were deleted locally)
-      final itemsToDelete = allRemoteData.where((remoteItem) {
-        final key = '${remoteItem['tmdb_id']}_${remoteItem['type']}_${remoteItem['season_number'] ?? 'null'}_${remoteItem['episode_number'] ?? 'null'}';
-        return !localItemKeys.contains(key);
-      }).toList();
-      
-      // Delete items from Supabase that were removed locally (in batches)
-      int deletedCount = 0;
-      for (final itemToDelete in itemsToDelete) {
-        await _client.from(_tableName).delete().match({
-          'tmdb_id': itemToDelete['tmdb_id'],
-          'type': itemToDelete['type'],
-          'season_number': itemToDelete['season_number'],
-          'episode_number': itemToDelete['episode_number'],
-        });
-        deletedCount++;
+      // Build local item map
+      for (final item in localHistory) {
+        final key = '${item.tmdbId}_${item.type}_${item.seasonNumber ?? 'null'}_${item.episodeNumber ?? 'null'}';
+        localItemMap[key] = item;
       }
       
-      debugPrint('Deleted $deletedCount items from Supabase that were removed locally');
+      // Build remote item map
+      for (final item in allRemoteData) {
+        final key = '${item['tmdb_id']}_${item['type']}_${item['season_number'] ?? 'null'}_${item['episode_number'] ?? 'null'}';
+        remoteItemMap[key] = item;
+      }
       
-      // Upload/update all local items in batches
-      int uploadedCount = 0;
-      const uploadBatchSize = 100; // Smaller batches for uploads to avoid timeouts
+      // Find items to delete (exist remotely but not locally)
+      final idsToDelete = <int>[];
+      for (final remoteKey in remoteItemMap.keys) {
+        if (!localItemMap.containsKey(remoteKey)) {
+          idsToDelete.add(remoteItemMap[remoteKey]!['id']);
+        }
+      }
       
-      for (int i = 0; i < localHistory.length; i += uploadBatchSize) {
-        final batch = localHistory.skip(i).take(uploadBatchSize).toList();
-        final batchData = batch.map((item) => {
-          'tmdb_id': item.tmdbId,
-          'title': item.title,
-          'type': item.type,
-          'poster_path': item.posterPath,
-          'watched_at': item.watchedAt.toIso8601String(),
-          'season_number': item.seasonNumber,
-          'episode_number': item.episodeNumber,
-          'episode_title': item.episodeTitle,
-          'user_rating': item.userRating,
-          'notes': item.notes,
-        }).toList();
-
-        await _client.from(_tableName).upsert(
-          batchData,
-          onConflict: 'tmdb_id,type,season_number,episode_number',
-        );
+      // Bulk delete items that were removed locally
+      if (idsToDelete.isNotEmpty) {
+        const deleteBatchSize = 100;
+        int deletedCount = 0;
         
-        uploadedCount += batch.length;
-        debugPrint('Uploaded batch: $uploadedCount/${localHistory.length} items');
+        for (int i = 0; i < idsToDelete.length; i += deleteBatchSize) {
+          final batch = idsToDelete.skip(i).take(deleteBatchSize).toList();
+          await _client!.from(_tableName).delete().inFilter('id', batch);
+          deletedCount += batch.length;
+        }
+        
+        debugPrint('Deleted $deletedCount items from Supabase that were removed locally');
+      }
+      
+      // Find items to insert or update
+      final itemsToInsert = <Map<String, dynamic>>[];
+      final itemsToUpdate = <Map<String, dynamic>>[];
+      
+      for (final localKey in localItemMap.keys) {
+        final localItem = localItemMap[localKey]!;
+        final data = {
+          'tmdb_id': localItem.tmdbId,
+          'title': localItem.title,
+          'type': localItem.type,
+          'poster_path': localItem.posterPath,
+          'watched_at': localItem.watchedAt.toIso8601String(),
+          'season_number': localItem.seasonNumber,
+          'episode_number': localItem.episodeNumber,
+          'episode_title': localItem.episodeTitle,
+          'user_rating': localItem.userRating,
+          'notes': localItem.notes,
+        };
+        
+        if (remoteItemMap.containsKey(localKey)) {
+          // Item exists remotely, check if we need to update it
+          final remoteItem = remoteItemMap[localKey]!;
+          final remoteWatchedAt = DateTime.parse(remoteItem['watched_at']);
+          
+          if (localItem.watchedAt.isAfter(remoteWatchedAt) ||
+              localItem.title != remoteItem['title'] ||
+              localItem.posterPath != remoteItem['poster_path'] ||
+              localItem.episodeTitle != remoteItem['episode_title'] ||
+              localItem.userRating != remoteItem['user_rating'] ||
+              localItem.notes != remoteItem['notes']) {
+            data['id'] = remoteItem['id']; // Include ID for update
+            itemsToUpdate.add(data);
+          }
+        } else {
+          // New item to insert
+          itemsToInsert.add(data);
+        }
+      }
+      
+      // Bulk insert new items
+      if (itemsToInsert.isNotEmpty) {
+        const insertBatchSize = 100;
+        int insertedCount = 0;
+        
+        for (int i = 0; i < itemsToInsert.length; i += insertBatchSize) {
+          final batch = itemsToInsert.skip(i).take(insertBatchSize).toList();
+          await _client!.from(_tableName).insert(batch);
+          insertedCount += batch.length;
+          
+          if (insertedCount % 500 == 0 || insertedCount == itemsToInsert.length) {
+            debugPrint('Inserted $insertedCount/${itemsToInsert.length} new items');
+          }
+        }
+      }
+      
+      // Update existing items (these need individual requests, but much fewer than before)
+      if (itemsToUpdate.isNotEmpty) {
+        int updatedCount = 0;
+        
+        for (final item in itemsToUpdate) {
+          final id = item.remove('id'); // Remove ID from data, use it for the where clause
+          await _client!.from(_tableName).update(item).eq('id', id);
+          updatedCount++;
+          
+          if (updatedCount % 100 == 0 || updatedCount == itemsToUpdate.length) {
+            debugPrint('Updated $updatedCount/${itemsToUpdate.length} existing items');
+          }
+        }
       }
 
-      debugPrint('Successfully uploaded $uploadedCount watch history items to Supabase');
+      final totalProcessed = itemsToInsert.length + itemsToUpdate.length;
+      debugPrint('Successfully processed $totalProcessed watch history items to Supabase');
       return true;
     } catch (e) {
       debugPrint('Error uploading watch history to Supabase: $e');
@@ -244,10 +300,10 @@ class SupabaseSyncService {
   
   Future<bool> addWatchHistoryItem(WatchHistoryItem item) async {
     try {
-      
+      // Add to local database first
       await _localDb.insertWatchHistoryItem(item);
       
-      
+      // Then add to Supabase if configured
       if (isConfigured) {
         final data = {
           'tmdb_id': item.tmdbId,
@@ -262,10 +318,42 @@ class SupabaseSyncService {
           'notes': item.notes,
         };
 
-        await _client!.from(_tableName).upsert(
-          data,
-          onConflict: 'tmdb_id,type,season_number,episode_number',
-        );
+        try {
+          // Try to insert first (most common case for new items)
+          await _client!.from(_tableName).insert(data);
+        } catch (e) {
+          // If insert fails due to conflict, try to update instead
+          if (e.toString().contains('duplicate key') || e.toString().contains('23505')) {
+            // Find the existing record and update it
+            var query = _client!.from(_tableName)
+                .select('id')
+                .eq('tmdb_id', item.tmdbId)
+                .eq('type', item.type);
+                
+            if (item.seasonNumber == null) {
+              query = query.isFilter('season_number', null);
+            } else {
+              query = query.eq('season_number', item.seasonNumber!);
+            }
+            
+            if (item.episodeNumber == null) {
+              query = query.isFilter('episode_number', null);
+            } else {
+              query = query.eq('episode_number', item.episodeNumber!);
+            }
+            
+            final existingResponse = await query;
+            final List<dynamic> existing = existingResponse as List<dynamic>;
+            
+            if (existing.isNotEmpty) {
+              final id = existing.first['id'];
+              await _client!.from(_tableName).update(data).eq('id', id);
+            }
+          } else {
+            // Re-throw if it's not a duplicate key error
+            rethrow;
+          }
+        }
       }
       
       return true;
@@ -283,8 +371,8 @@ class SupabaseSyncService {
     int? episodeNumber,
   }) async {
     try {
-      
-      
+      // Delete from local database first
+      // Find the matching item(s) in local database
       final existingItems = await _localDb.getWatchHistoryByTmdbId(tmdbId, type);
       
       for (final item in existingItems) {
@@ -295,22 +383,25 @@ class SupabaseSyncService {
         }
       }
       
-      
+      // Then delete from Supabase if configured
       if (isConfigured) {
-        final matchConditions = <String, Object>{
-          'tmdb_id': tmdbId,
-          'type': type,
-        };
-        
-        if (seasonNumber != null) {
-          matchConditions['season_number'] = seasonNumber;
+        var deleteQuery = _client!.from(_tableName).delete()
+            .eq('tmdb_id', tmdbId)
+            .eq('type', type);
+            
+        if (seasonNumber == null) {
+          deleteQuery = deleteQuery.isFilter('season_number', null);
+        } else {
+          deleteQuery = deleteQuery.eq('season_number', seasonNumber);
         }
         
-        if (episodeNumber != null) {
-          matchConditions['episode_number'] = episodeNumber;
+        if (episodeNumber == null) {
+          deleteQuery = deleteQuery.isFilter('episode_number', null);
+        } else {
+          deleteQuery = deleteQuery.eq('episode_number', episodeNumber);
         }
         
-        await _client!.from(_tableName).delete().match(matchConditions);
+        await deleteQuery;
       }
       
       debugPrint('Successfully deleted watch history item: tmdb_id=$tmdbId, type=$type, season=$seasonNumber, episode=$episodeNumber');
