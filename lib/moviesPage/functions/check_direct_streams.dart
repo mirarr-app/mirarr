@@ -1,7 +1,7 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-const String _xprimeEncodedBaseUrl = 'aHR0cHM6Ly94cHJpbWUudHYvcHJpbWVib3g/bmFtZT0=';
+const String _xprimeEncodedBaseUrl = 'aHR0cHM6Ly9iYWNrZW5kLnhwcmltZS50di9wcmltZWJveD9uYW1lPQ==';
 
 String get xprimeBaseStreamUrl => utf8.decode(base64.decode(_xprimeEncodedBaseUrl));
 
