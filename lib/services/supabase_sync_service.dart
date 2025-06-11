@@ -88,7 +88,7 @@ class SupabaseSyncService {
         
         for (int i = 0; i < idsToDelete.length; i += deleteBatchSize) {
           final batch = idsToDelete.skip(i).take(deleteBatchSize).toList();
-          await _client!.from(_tableName).delete().inFilter('id', batch);
+          await _client.from(_tableName).delete().inFilter('id', batch);
           deletedCount += batch.length;
         }
         
@@ -141,7 +141,7 @@ class SupabaseSyncService {
         
         for (int i = 0; i < itemsToInsert.length; i += insertBatchSize) {
           final batch = itemsToInsert.skip(i).take(insertBatchSize).toList();
-          await _client!.from(_tableName).insert(batch);
+          await _client.from(_tableName).insert(batch);
           insertedCount += batch.length;
           
           if (insertedCount % 500 == 0 || insertedCount == itemsToInsert.length) {
@@ -156,7 +156,7 @@ class SupabaseSyncService {
         
         for (final item in itemsToUpdate) {
           final id = item.remove('id'); // Remove ID from data, use it for the where clause
-          await _client!.from(_tableName).update(item).eq('id', id);
+          await _client.from(_tableName).update(item).eq('id', id);
           updatedCount++;
           
           if (updatedCount % 100 == 0 || updatedCount == itemsToUpdate.length) {
@@ -347,7 +347,7 @@ class SupabaseSyncService {
             
             if (existing.isNotEmpty) {
               final id = existing.first['id'];
-              await _client!.from(_tableName).update(data).eq('id', id);
+              await _client.from(_tableName).update(data).eq('id', id);
             }
           } else {
             // Re-throw if it's not a duplicate key error
