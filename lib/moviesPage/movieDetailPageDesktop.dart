@@ -7,11 +7,9 @@ import 'package:Mirarr/functions/fetchers/fetch_other_movies_by_director.dart';
 import 'package:Mirarr/functions/get_base_url.dart';
 import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/moviesPage/checkers/custom_tmdb_ids_effects.dart';
-import 'package:Mirarr/moviesPage/functions/check_direct_streams.dart';
 import 'package:Mirarr/moviesPage/functions/get_imdb_rating.dart';
 import 'package:Mirarr/moviesPage/functions/movie_tmdb_actions.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie_desktop.dart';
-import 'package:Mirarr/moviesPage/functions/to_video_player.dart';
 import 'package:Mirarr/moviesPage/functions/torrent_links.dart';
 import 'package:Mirarr/moviesPage/movieDetailPage.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -78,8 +76,6 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
   String? posterPath;
   String? imdbRating;
   String rottenTomatoesRating = 'N/A';
-  bool xprimeAvailable = false;
-  bool riveAvailable = false;
 
   @override
   void initState() {
@@ -92,16 +88,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
     fetchCredits(widget.movieId, region);
-    checkXprime(widget.movieId, widget.movieTitle).then((value) {
-      setState(() {
-        xprimeAvailable = value;
-      });
-    });
-       checkRive(widget.movieId, widget.movieTitle).then((value) {
-      setState(() {
-        riveAvailable = value;
-      });
-    });
+
   }
 
   void onTapMovie(String movieTitle, int movieId) {
@@ -868,25 +855,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                                               .movieId)),
                                                                 ),
                                                               ),
-                                                                 xprimeAvailable && !Platform.isIOS || riveAvailable && !Platform.isIOS
-                                                  ? const SizedBox(width: 6)
-                                                  : const SizedBox(),
-                                                              Visibility(
-                                                                visible: xprimeAvailable && !Platform.isIOS || riveAvailable && !Platform.isIOS,
-                                                                child: FloatingActionButton(
-                                                                  onPressed: () => showWatchOptionsDirect(
-                                                                      context,
-                                                                      widget
-                                                                          .movieId,
-                                                                      widget
-                                                                          .movieTitle),
-                                                                    child: Image.asset(
-                                                                        'assets/images/vlc.png',
-                                                                        width: 30,
-                                                                        height: 30,
-                                                                    ),
-                                                                ),
-                                                              )
+                                                             
                                                             ],
                                                           ))
                                                       : const SizedBox();
