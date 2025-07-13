@@ -2,7 +2,7 @@ name: Mirarr
 description: A new Flutter project.
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
-version: 2.1.0
+version: 2.2.0
 
 environment:
   sdk: ">=3.4.3 <4.0.0"
@@ -49,7 +49,6 @@ flutter:
     - .env
     - assets/images/person.png
     - assets/images/duckie.png
-    - assets/images/vlc.png
   fonts:
     - family: Poppins
       fonts:

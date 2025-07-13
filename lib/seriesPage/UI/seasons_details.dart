@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:Mirarr/functions/get_base_url.dart';
@@ -8,7 +7,6 @@ import 'package:Mirarr/moviesPage/UI/cast_crew_row.dart';
 import 'package:Mirarr/seriesPage/UI/tvchart_table.dart';
 import 'package:Mirarr/seriesPage/checkers/custom_tmdb_ids_effects_series.dart';
 import 'package:Mirarr/seriesPage/function/fetch_episode_cast_crew.dart';
-import 'package:Mirarr/seriesPage/function/to_video_player_series.dart';
 import 'package:Mirarr/seriesPage/function/torrent_links_series.dart';
 import 'package:Mirarr/seriesPage/function/watch_links_series.dart';
 import 'package:Mirarr/widgets/custom_divider.dart';
@@ -17,7 +15,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
-import 'package:Mirarr/moviesPage/functions/check_direct_streams.dart';
 import 'package:Mirarr/database/watch_history_database.dart';
 
 final apiKey = dotenv.env['TMDB_API_KEY'];
@@ -507,10 +504,8 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
             future: Future.wait([
               fetchEpisodesDetails(context, seasonNumber, episodeNumber, serieId),
               fetchImdbRating(imdbId, seasonNumber, episodeNumber),
-              checkXprimeSeries(serieId, seasonNumber, episodeNumber, serieName),
-              checkRiveSeries(serieId, seasonNumber, episodeNumber, serieName)
             ]).then((results) =>
-                {'episodeDetails': results[0], 'imdbRating': results[1], 'xprimeAvailable': results[2], 'riveAvailable': results[3]}),
+                {'episodeDetails': results[0], 'imdbRating': results[1]}),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
@@ -525,8 +520,6 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
                 final overview =
                     episodeDetails['overview'] ?? 'No overview available.';
                 final episodeName = episodeDetails['name'];
-                final xprimeAvailable = snapshot.data!['xprimeAvailable'];
-                final riveAvailable = snapshot.data!['riveAvailable'];
                 return SingleChildScrollView(
                   child: Container(
                     padding: const EdgeInsets.all(10),
@@ -591,26 +584,14 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
                                       child: FloatingActionButton(
                                         backgroundColor: getSeriesColor(context, serieId),
                                         onPressed: () => showWatchOptions(context,
-                                            serieId, seasonNumber, episodeNumber),
+                                            serieId, seasonNumber, episodeNumber, imdbId),
                                         child: Text(
                                           'Watch',
                                           style: getSeriesButtonTextStyle(serieId),
                                         ),
                                       ),
                                     ),
-                                   xprimeAvailable && !Platform.isIOS || riveAvailable && !Platform.isIOS
-                                        ? const SizedBox(width: 6)
-                                        : const SizedBox(),
-                                    Visibility(
-                                      visible: xprimeAvailable && !Platform.isIOS || riveAvailable && !Platform.isIOS,
-                                      child: FloatingActionButton(onPressed: () => showWatchOptionsDirectTV(context, serieId, seasonNumber, episodeNumber),
-                                        child: Image.asset(
-                                            'assets/images/vlc.png',
-                                            width: 30,
-                                            height: 30,
-                                          ),
-                                        ),
-                                    ),
+                              
                                   ],
                                 ),
                               ))

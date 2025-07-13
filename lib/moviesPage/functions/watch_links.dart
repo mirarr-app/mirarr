@@ -57,6 +57,7 @@ void showWatchOptions(BuildContext context, int movieId, String movieTitle,
       Color mainColor = getColor(context, movieId);
       final region = Provider.of<RegionProvider>(context).currentRegion;
       final year = releaseDate.split('-')[0];
+      final imdbIdWithoutTT = imdbId.startsWith('tt') ? imdbId.substring(2) : imdbId;
       return Column(
         children: [
           Padding(
@@ -81,7 +82,8 @@ void showWatchOptions(BuildContext context, int movieId, String movieTitle,
                         children: [
                           IconButton(
                             onPressed: () => _launchUrl(Uri.parse(
-                                'https://berlin.saymyname.website/Movies/$year/${movieId.toString()}')),
+                                'https://berlin.saymyname.website/Movies/$year/$imdbIdWithoutTT')
+                            ),
                             icon: Icon(Icons.download, color: mainColor),
                           ),
                           Text(
@@ -93,7 +95,21 @@ void showWatchOptions(BuildContext context, int movieId, String movieTitle,
                           ),
                           IconButton(
                             onPressed: () => _launchUrl(Uri.parse(
-                                'https://tokyo.saymyname.website/Movies/$year/${movieId.toString()}')),
+                                'https://tokyo.saymyname.website/Movies/$year/$imdbIdWithoutTT')
+                            ),
+                            icon: Icon(Icons.download, color: mainColor),
+                          ),
+                          Text(
+                            '🇮🇷',
+                            style: TextStyle(
+                              color: mainColor,
+                              fontSize: 10,
+                            ),
+                          ),
+                           IconButton(
+                            onPressed: () => _launchUrl(Uri.parse(
+                                'https://nairobi.saymyname.website/Movies/$year/$imdbIdWithoutTT')
+                            ),
                             icon: Icon(Icons.download, color: mainColor),
                           ),
                           Text(
