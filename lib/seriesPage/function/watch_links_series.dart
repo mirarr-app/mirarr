@@ -1,7 +1,9 @@
+import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/functions/show_error_dialog.dart';
 import 'package:Mirarr/seriesPage/checkers/custom_tmdb_ids_effects_series.dart';
 import 'package:Mirarr/widgets/custom_divider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -35,7 +37,7 @@ Color getColor(BuildContext context, int serieId) =>
     getSeriesColor(context, serieId);
 
 void showWatchOptions(BuildContext context, int serieId, int seasonNumber,
-    int episodeNumber) async {
+    int episodeNumber, String imdbId) async {
   Map<String, Map<String, dynamic>> optionUrls = await fetchTvSources();
 
   optionUrls = optionUrls.map((key, value) {
@@ -53,6 +55,8 @@ void showWatchOptions(BuildContext context, int serieId, int seasonNumber,
     context: context,
     builder: (BuildContext context) {
       Color mainColor = getColor(context, serieId);
+            final region = Provider.of<RegionProvider>(context).currentRegion;
+
       return Column(
         children: [
           Padding(
@@ -61,14 +65,62 @@ void showWatchOptions(BuildContext context, int serieId, int seasonNumber,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Watch from below sources or download the epsiode.',
+                  'Watch or Download',
                   style: TextStyle(color: mainColor, fontSize: 12),
                 ),
-                IconButton(
-                  onPressed: () => _launchUrl(Uri.parse(
-                      'https://dl.vidsrc.vip/tv/${serieId.toString()}/${seasonNumber.toString()}/${episodeNumber.toString()}')),
-                  icon: Icon(Icons.download, color: mainColor),
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed: () => _launchUrl(Uri.parse(
+                          'https://dl.vidsrc.vip/tv/${serieId.toString()}/${seasonNumber.toString()}/${episodeNumber.toString()}')),
+                      icon: Icon(Icons.download, color: mainColor),
+                    ),
+                      if (region == 'iran')
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            onPressed: () => _launchUrl(Uri.parse(
+                                'https://subtitle.saymyname.website/DL/filmgir/?i=$imdbId&f=1&q=1')
+                            ),
+                            icon: Icon(Icons.download, color: mainColor),
+                          ),
+                          Text(
+                            '🇮🇷',
+                            style: TextStyle(
+                              color: mainColor,
+                              fontSize: 10,
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () => _launchUrl(Uri.parse(
+                                'https://subtitle.saymyname.website/DL/filmgir/?i=$imdbId&f=1&q=2')
+                            ),
+                            icon: Icon(Icons.download, color: mainColor),
+                          ),
+                          Text(
+                            '🇮🇷',
+                            style: TextStyle(
+                              color: mainColor,
+                              fontSize: 10,
+                            ),
+                          ),
+                           IconButton(
+                            onPressed: () => _launchUrl(Uri.parse(
+                                'https://subtitle.saymyname.website/DL/filmgir/?i=$imdbId&f=1&q=3')
+                            ),
+                            icon: Icon(Icons.download, color: mainColor),
+                          ),
+                          Text(
+                            '🇮🇷',
+                            style: TextStyle(
+                              color: mainColor,
+                              fontSize: 10,
+                            ),
+                          ),],)
+                  ],
                 ),
+              
               ],
             ),
           ),

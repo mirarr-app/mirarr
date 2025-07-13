@@ -591,7 +591,7 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
                                       child: FloatingActionButton(
                                         backgroundColor: getSeriesColor(context, serieId),
                                         onPressed: () => showWatchOptions(context,
-                                            serieId, seasonNumber, episodeNumber),
+                                            serieId, seasonNumber, episodeNumber, imdbId),
                                         child: Text(
                                           'Watch',
                                           style: getSeriesButtonTextStyle(serieId),
