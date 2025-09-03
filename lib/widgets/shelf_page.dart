@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:Mirarr/moviesPage/checkers/custom_tmdb_ids_effects.dart';
@@ -23,6 +24,13 @@ class ShelfPage extends StatefulWidget {
 class _ShelfPageState extends State<ShelfPage> with TickerProviderStateMixin {
   late TabController _tabController;
   final WatchHistoryDatabase _database = WatchHistoryDatabase();
+  final TextEditingController _movieSearchController = TextEditingController();
+  final TextEditingController _showSearchController = TextEditingController();
+  final TextEditingController _diarySearchController = TextEditingController();
+  Timer? _searchDebounceTimer;
+  String _movieQuery = '';
+  String _showQuery = '';
+  String _diaryQuery = '';
   
   List<WatchHistoryItem> watchedMovies = [];
   List<WatchHistoryItem> watchedShows = [];
@@ -40,6 +48,10 @@ class _ShelfPageState extends State<ShelfPage> with TickerProviderStateMixin {
   @override
   void dispose() {
     _tabController.dispose();
+    _movieSearchController.dispose();
+    _showSearchController.dispose();
+    _diarySearchController.dispose();
+    _searchDebounceTimer?.cancel();
     super.dispose();
   }
 
@@ -98,136 +110,279 @@ class _ShelfPageState extends State<ShelfPage> with TickerProviderStateMixin {
                 _buildDiaryTab(region),
               ],
             ),
-      bottomNavigationBar: BottomBar(),
+      bottomNavigationBar: const BottomBar(),
     );
   }
 
-  Widget _buildMoviesTab(String region) {
-    if (watchedMovies.isEmpty) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.movie_outlined, size: 64, color: Colors.grey),
-            SizedBox(height: 16),
-            Text(
-              'No watched movies yet',
-              style: TextStyle(fontSize: 18, color: Colors.grey),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Start watching movies to see them here!',
-              style: TextStyle(color: Colors.grey),
-            ),
-          ],
-        ),
-      );
-    }
+  void _debouncedSetState(void Function() fn) {
+    _searchDebounceTimer?.cancel();
+    _searchDebounceTimer = Timer(const Duration(milliseconds: 150), () {
+      if (!mounted) return;
+      setState(fn);
+    });
+  }
 
-    return RefreshIndicator(
-      onRefresh: _loadWatchHistory,
-      child: ScrollConfiguration(
-        behavior: ScrollConfiguration.of(context).copyWith(
-          dragDevices: {
-            PointerDeviceKind.touch,
-            PointerDeviceKind.mouse,
-            PointerDeviceKind.trackpad,
-          },
-        ),
-        child: GridView.builder(
-          padding: const EdgeInsets.all(16),
-          gridDelegate:  SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: Platform.isWindows || Platform.isLinux || Platform.isMacOS ? 5 : 3,
-            childAspectRatio: 0.7,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
+  Widget _buildMoviesTab(String region) {
+    final String query = _movieQuery.trim().toLowerCase();
+    final List<WatchHistoryItem> baseList = watchedMovies;
+    final List<WatchHistoryItem> filtered = query.isEmpty
+        ? baseList
+        : baseList
+            .where((m) => m.title.toLowerCase().contains(query))
+            .toList();
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+          child: TextField(
+            style: TextStyle(color: Theme.of(context).primaryColor),
+            cursorColor: Theme.of(context).primaryColor,
+            controller: _movieSearchController,
+            onChanged: (value) => _debouncedSetState(() {
+              _movieQuery = value;
+            }),
+            decoration:  InputDecoration(
+              prefixIcon: Icon(Icons.search, color: Theme.of(context).primaryColor),
+              hintText: 'Search movies...',
+              hintStyle: TextStyle(color: Theme.of(context).primaryColor),
+              border: const OutlineInputBorder(),
+              isDense: true,
+            ),
+            textInputAction: TextInputAction.search,
           ),
-          itemCount: watchedMovies.length,
-          itemBuilder: (context, index) {
-            final movie = watchedMovies[index];
-            return _buildMovieCard(movie, region);
-          },
         ),
-      ),
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: _loadWatchHistory,
+            child: baseList.isEmpty && query.isEmpty
+                ? ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: const [
+                      SizedBox(height: 120),
+                      Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.movie_outlined, size: 64, color: Colors.grey),
+                            SizedBox(height: 16),
+                            Text(
+                              'No watched movies yet',
+                              style: TextStyle(fontSize: 18, color: Colors.grey),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              'Start watching movies to see them here!',
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  )
+                : (filtered.isEmpty
+                    ? ListView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        children: const [
+                          SizedBox(height: 120),
+                          Center(child: Text('No results')),
+                        ],
+                      )
+                    : ScrollConfiguration(
+                        behavior: ScrollConfiguration.of(context).copyWith(
+                          dragDevices: {
+                            PointerDeviceKind.touch,
+                            PointerDeviceKind.mouse,
+                            PointerDeviceKind.trackpad,
+                          },
+                        ),
+                        child: GridView.builder(
+                          padding: const EdgeInsets.all(16),
+                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: Platform.isWindows || Platform.isLinux || Platform.isMacOS ? 5 : 3,
+                            childAspectRatio: 0.7,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 12,
+                          ),
+                          itemCount: filtered.length,
+                          itemBuilder: (context, index) {
+                            final movie = filtered[index];
+                            return _buildMovieCard(movie, region);
+                          },
+                        ),
+                      )),
+          ),
+        ),
+      ],
     );
   }
 
   Widget _buildShowsTab(String region) {
-    if (watchedShows.isEmpty) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.tv_outlined, size: 64, color: Colors.grey),
-            SizedBox(height: 16),
-            Text(
-              'No watched shows yet',
-              style: TextStyle(fontSize: 18, color: Colors.grey),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Start watching shows to see them here!',
-              style: TextStyle(color: Colors.grey),
-            ),
-          ],
-        ),
-      );
-    }
+    final String query = _showQuery.trim().toLowerCase();
+    final List<WatchHistoryItem> baseList = watchedShows;
+    final List<WatchHistoryItem> filtered = query.isEmpty
+        ? baseList
+        : baseList
+            .where((s) => s.title.toLowerCase().contains(query))
+            .toList();
 
-    return RefreshIndicator(
-      onRefresh: _loadWatchHistory,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: watchedShows.length,
-        itemBuilder: (context, index) {
-          final show = watchedShows[index];
-          return _buildShowCard(show, region);
-        },
-      ),
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+          child: TextField(
+            style: TextStyle(color: Theme.of(context).primaryColor),
+            cursorColor: Theme.of(context).primaryColor,
+            controller: _showSearchController,
+            onChanged: (value) => _debouncedSetState(() {
+              _showQuery = value;
+            }),
+            decoration: InputDecoration(
+              prefixIcon: Icon(Icons.search, color: Theme.of(context).primaryColor),
+              hintStyle: TextStyle(color: Theme.of(context).primaryColor),
+              hintText: 'Search shows...',
+              border: const OutlineInputBorder(),
+              isDense: true,
+            ),
+            textInputAction: TextInputAction.search,
+          ),
+        ),
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: _loadWatchHistory,
+            child: baseList.isEmpty && query.isEmpty
+                ? ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: const [
+                      SizedBox(height: 120),
+                      Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.tv_outlined, size: 64, color: Colors.grey),
+                            SizedBox(height: 16),
+                            Text(
+                              'No watched shows yet',
+                              style: TextStyle(fontSize: 18, color: Colors.grey),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              'Start watching shows to see them here!',
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  )
+                : (filtered.isEmpty
+                    ? ListView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        children: const [
+                          SizedBox(height: 120),
+                          Center(child: Text('No results')),
+                        ],
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: filtered.length,
+                        itemBuilder: (context, index) {
+                          final show = filtered[index];
+                          return _buildShowCard(show, region);
+                        },
+                      )),
+          ),
+        ),
+      ],
     );
   }
 
   Widget _buildDiaryTab(String region) {
-    if (diaryItems.isEmpty) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.book_outlined, size: 64, color: Colors.grey),
-            SizedBox(height: 16),
-            Text(
-              'Your diary is empty',
-              style: TextStyle(fontSize: 18, color: Colors.grey),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Watch movies and shows to build your diary!',
-              style: TextStyle(color: Colors.grey),
-            ),
-          ],
-        ),
-      );
-    }
+    final String query = _diaryQuery.trim().toLowerCase();
+    final List<WatchHistoryItem> baseList = diaryItems;
+    final List<WatchHistoryItem> filtered = query.isEmpty
+        ? baseList
+        : baseList
+            .where((d) => d.title.toLowerCase().contains(query))
+            .toList();
 
-    return RefreshIndicator(
-      onRefresh: _loadWatchHistory,
-      child: ScrollConfiguration(
-        behavior: ScrollConfiguration.of(context).copyWith(
-          dragDevices: {
-            PointerDeviceKind.touch,
-            PointerDeviceKind.mouse,
-            PointerDeviceKind.trackpad,
-          },
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+          child: TextField(
+            style: TextStyle(color: Theme.of(context).primaryColor),
+            cursorColor: Theme.of(context).primaryColor,
+            controller: _diarySearchController,
+            onChanged: (value) => _debouncedSetState(() {
+              _diaryQuery = value;
+            }),
+            decoration:  InputDecoration(
+              prefixIcon: Icon(Icons.search, color: Theme.of(context).primaryColor),
+              hintText: 'Search diary...',
+              hintStyle: TextStyle(color: Theme.of(context).primaryColor),
+              border: const OutlineInputBorder(),
+              isDense: true,
+            ),
+            textInputAction: TextInputAction.search,
+          ),
         ),
-        child: ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: diaryItems.length,
-          itemBuilder: (context, index) {
-            final item = diaryItems[index];
-            return _buildDiaryCard(item, region);
-          },
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: _loadWatchHistory,
+            child: baseList.isEmpty && query.isEmpty
+                ? ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: const [
+                      SizedBox(height: 120),
+                      Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.book_outlined, size: 64, color: Colors.grey),
+                            SizedBox(height: 16),
+                            Text(
+                              'Your diary is empty',
+                              style: TextStyle(fontSize: 18, color: Colors.grey),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              'Watch movies and shows to build your diary!',
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  )
+                : (filtered.isEmpty
+                    ? ListView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        children: const [
+                          SizedBox(height: 120),
+                          Center(child: Text('No results')),
+                        ],
+                      )
+                    : ScrollConfiguration(
+                        behavior: ScrollConfiguration.of(context).copyWith(
+                          dragDevices: {
+                            PointerDeviceKind.touch,
+                            PointerDeviceKind.mouse,
+                            PointerDeviceKind.trackpad,
+                          },
+                        ),
+                        child: ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: filtered.length,
+                          itemBuilder: (context, index) {
+                            final item = filtered[index];
+                            return _buildDiaryCard(item, region);
+                          },
+                        ),
+                      )),
+          ),
         ),
-      ),
+      ],
     );
   }
 
