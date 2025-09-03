@@ -3,7 +3,9 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:Mirarr/moviesPage/checkers/custom_tmdb_ids_effects.dart';
+import 'package:Mirarr/moviesPage/movieDetailPage.dart';
 import 'package:Mirarr/seriesPage/checkers/custom_tmdb_ids_effects_series.dart';
+import 'package:Mirarr/seriesPage/serieDetailPage.dart';
 import 'package:flutter/material.dart';
 import 'package:Mirarr/widgets/bottom_bar.dart';
 import 'package:Mirarr/database/watch_history_database.dart';
@@ -387,103 +389,113 @@ class _ShelfPageState extends State<ShelfPage> with TickerProviderStateMixin {
   }
 
   Widget _buildMovieCard(WatchHistoryItem movie, String region) {
-    return Card(
-      elevation: 4,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
-                image: movie.posterPath != null
-                    ? DecorationImage(
-                        image: CachedNetworkImageProvider(
-                          '${getImageBaseUrl(region)}/t/p/w500${movie.posterPath}',
-                        ),
-                        fit: BoxFit.cover,
-                      )
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => MovieDetailPage(movieTitle: movie.title, movieId: movie.tmdbId)));
+      },
+      child: Card(
+        elevation: 4,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+                  image: movie.posterPath != null
+                      ? DecorationImage(
+                          image: CachedNetworkImageProvider(
+                            '${getImageBaseUrl(region)}/t/p/w500${movie.posterPath}',
+                          ),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
+                ),
+                child: movie.posterPath == null
+                    ? const Icon(Icons.movie, size: 50, color: Colors.grey)
                     : null,
               ),
-              child: movie.posterPath == null
-                  ? const Icon(Icons.movie, size: 50, color: Colors.grey)
-                  : null,
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  movie.title,
-                  style: getMovieTitleTextStyle(movie.tmdbId).copyWith(fontSize: 14),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  DateFormat('MMM dd, yyyy').format(movie.watchedAt),
-                  style: const TextStyle(
-                    color: Colors.grey,
-                    fontSize: 10,
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    movie.title,
+                    style: getMovieTitleTextStyle(movie.tmdbId).copyWith(fontSize: 14),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-              ],
+                  const SizedBox(height: 4),
+                  Text(
+                    DateFormat('MMM dd, yyyy').format(movie.watchedAt),
+                    style: const TextStyle(
+                      color: Colors.grey,
+                      fontSize: 10,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildShowCard(WatchHistoryItem show, String region) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: ScrollConfiguration(
-        behavior: ScrollConfiguration.of(context).copyWith(
-          dragDevices: {
-            PointerDeviceKind.touch,
-            PointerDeviceKind.mouse,
-            PointerDeviceKind.trackpad,
-          },
-        ),
-        child: ListTile(
-          leading: Container(
-            width: 60,
-            height: 90,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(4),
-              image: show.posterPath != null
-                  ? DecorationImage(
-                      image: CachedNetworkImageProvider(
-                        '${getImageBaseUrl(region)}/t/p/w200${show.posterPath}',
-                      ),
-                      fit: BoxFit.cover,
-                    )
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => SerieDetailPage(serieName: show.title, serieId: show.tmdbId)));
+      },
+      child: Card(
+        margin: const EdgeInsets.only(bottom: 12),
+        child: ScrollConfiguration(
+          behavior: ScrollConfiguration.of(context).copyWith(
+            dragDevices: {
+              PointerDeviceKind.touch,
+              PointerDeviceKind.mouse,
+              PointerDeviceKind.trackpad,
+            },
+          ),
+          child: ListTile(
+            leading: Container(
+              width: 60,
+              height: 90,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                image: show.posterPath != null
+                    ? DecorationImage(
+                        image: CachedNetworkImageProvider(
+                          '${getImageBaseUrl(region)}/t/p/w200${show.posterPath}',
+                        ),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
+              ),
+              child: show.posterPath == null
+                  ? const Icon(Icons.tv, color: Colors.grey)
                   : null,
             ),
-            child: show.posterPath == null
-                ? const Icon(Icons.tv, color: Colors.grey)
-                : null,
+            title: Text(
+              show.title,
+              style: getSeriesTitleTextStyle(show.tmdbId).copyWith(fontSize: 14),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (show.seasonNumber != null && show.episodeNumber != null)
+                  Text('S${show.seasonNumber} E${show.episodeNumber}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                Text(
+                  'Watched on ${DateFormat('MMM dd, yyyy').format(show.watchedAt)}',
+                  style: const TextStyle(color: Colors.grey, fontSize: 12),
+                ),
+              ],
+            ),
+            isThreeLine: show.seasonNumber != null && show.episodeNumber != null,
           ),
-          title: Text(
-            show.title,
-            style: getSeriesTitleTextStyle(show.tmdbId).copyWith(fontSize: 14),
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (show.seasonNumber != null && show.episodeNumber != null)
-                Text('S${show.seasonNumber} E${show.episodeNumber}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
-              Text(
-                'Watched on ${DateFormat('MMM dd, yyyy').format(show.watchedAt)}',
-                style: const TextStyle(color: Colors.grey, fontSize: 12),
-              ),
-            ],
-          ),
-          isThreeLine: show.seasonNumber != null && show.episodeNumber != null,
         ),
       ),
     );
