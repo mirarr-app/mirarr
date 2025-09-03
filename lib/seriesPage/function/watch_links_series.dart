@@ -81,7 +81,7 @@ void showWatchOptions(BuildContext context, int serieId, int seasonNumber,
                         children: [
                           IconButton(
                             onPressed: () => _launchUrl(Uri.parse(
-                                'https://subtitle.saymyname.website/DL/filmgir/?i=$imdbId&f=1&q=1')
+                                'https://subtitle.saymyname.website/DL/filmgir/?i=$imdbId&f=${seasonNumber.toString()}&q=1')
                             ),
                             icon: Icon(Icons.download, color: mainColor),
                           ),
@@ -94,7 +94,7 @@ void showWatchOptions(BuildContext context, int serieId, int seasonNumber,
                           ),
                           IconButton(
                             onPressed: () => _launchUrl(Uri.parse(
-                                'https://subtitle.saymyname.website/DL/filmgir/?i=$imdbId&f=1&q=2')
+                                'https://subtitle.saymyname.website/DL/filmgir/?i=$imdbId&f=${seasonNumber.toString()}&q=2')
                             ),
                             icon: Icon(Icons.download, color: mainColor),
                           ),
@@ -107,7 +107,7 @@ void showWatchOptions(BuildContext context, int serieId, int seasonNumber,
                           ),
                            IconButton(
                             onPressed: () => _launchUrl(Uri.parse(
-                                'https://subtitle.saymyname.website/DL/filmgir/?i=$imdbId&f=1&q=3')
+                                'https://subtitle.saymyname.website/DL/filmgir/?i=$imdbId&f=${seasonNumber.toString()}&q=3')
                             ),
                             icon: Icon(Icons.download, color: mainColor),
                           ),
