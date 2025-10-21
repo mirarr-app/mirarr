@@ -126,7 +126,7 @@ class ConnectivityWidget extends StatelessWidget {
             snapshot.data?.isEmpty == true ||
             snapshot.data
                     ?.every((result) => result == ConnectivityResult.none) ==
-                true) {
+                true && !Platform.isLinux || Platform.isMacOS || Platform.isWindows) {
           return const Padding(
             padding: EdgeInsets.all(20.0),
             child: Center(
