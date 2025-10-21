@@ -144,6 +144,14 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
   }
 
   Future<void> checkInternetAndFetchData() async {
+    // Skip connectivity check on Linux due to DBus issues
+    if (Platform.isLinux) {
+      _fetchTrendingSeries();
+      _fetchPopularSeries();
+      await _fetchGenresAndSeries();
+      return;
+    }
+
     var connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult == ConnectivityResult.none) {
       // No internet connection

@@ -218,6 +218,17 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> checkInternetAndFetchData() async {
+    // Skip connectivity check on Linux due to DBus issues
+    if (Platform.isLinux) {
+      fetchMovieWatchList(context);
+      fetchTvWatchList(context);
+      fetchFavoriteMovies(context);
+      fetchRatedMovies(context);
+      fetchFavoriteSeries(context);
+      fetchRatedTv(context);
+      return;
+    }
+
     var connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult == ConnectivityResult.none) {
       // No internet connection
