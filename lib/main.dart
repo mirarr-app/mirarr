@@ -119,6 +119,19 @@ class ConnectivityWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Skip connectivity check on Linux
+    if (Platform.isLinux) {
+      return Builder(
+        builder: (BuildContext context) {
+          // Check for updates
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            UpdateChecker.checkForUpdate(context);
+          });
+          return const MovieSearchScreen();
+        },
+      );
+    }
+
     return FutureBuilder<List<ConnectivityResult>>(
       future: Connectivity().checkConnectivity(),
       builder: (context, AsyncSnapshot<List<ConnectivityResult>> snapshot) {
@@ -126,7 +139,7 @@ class ConnectivityWidget extends StatelessWidget {
             snapshot.data?.isEmpty == true ||
             snapshot.data
                     ?.every((result) => result == ConnectivityResult.none) ==
-                true && !Platform.isLinux || Platform.isMacOS || Platform.isWindows) {
+                true) {
           return const Padding(
             padding: EdgeInsets.all(20.0),
             child: Center(

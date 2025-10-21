@@ -148,6 +148,14 @@ class _MovieSearchScreenState extends State<MovieSearchScreen> {
   }
 
   Future<void> checkInternetAndFetchData() async {
+    // Skip connectivity check on Linux due to DBus issues
+    if (Platform.isLinux) {
+      _fetchTrendingMovies();
+      _fetchPopularMovies();
+      await _fetchGenresAndMovies();
+      return;
+    }
+
     var connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult == ConnectivityResult.none) {
       // No internet connection
