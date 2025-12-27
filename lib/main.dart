@@ -35,6 +35,7 @@ void main() async {
 
   final supabaseProvider = SupabaseProvider();
   await supabaseProvider.loadSupabaseConfig();
+  supabaseProvider.prefetchRemoteData();
 
   runApp(
     MultiProvider(
