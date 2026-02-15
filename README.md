@@ -70,5 +70,3 @@ No you don't have to. But the login process enables extra features like watchlis
 
 #### Support
 Consider starring the project.
-
-[Consider donating](https://github.com/mirarr-app/mirarr/blob/main/DONATION.md)
