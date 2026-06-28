@@ -17,6 +17,7 @@ class BottomBar extends StatelessWidget {
       currentIndex: navProvider.currentIndex,
       onTap: (int index) {
         navProvider.setIndex(index);
+        Navigator.popUntil(context, (route) => route.isFirst);
       },
       items: const [
         BottomNavigationBarItem(
