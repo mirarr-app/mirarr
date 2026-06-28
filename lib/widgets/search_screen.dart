@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 import 'package:Mirarr/functions/get_base_url.dart';
@@ -37,6 +38,7 @@ class _SearchScreenState extends State<SearchScreen>
 
   final apiKey = dotenv.env['TMDB_API_KEY'];
   final TextEditingController _searchController = TextEditingController();
+  Timer? _debounce;
 
   @override
   void initState() {
@@ -46,18 +48,23 @@ class _SearchScreenState extends State<SearchScreen>
   }
 
   void _onSearchChanged() {
-    String query = _searchController.text.trim();
-    if (query.isNotEmpty) {
-      searchMovies(query, context);
-      searchSeries(query, context);
-      searchPerson(query, context);
-    } else {
-      setState(() {
-        movieResults.clear();
-        tvResults.clear();
-        personResults.clear();
-      });
-    }
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      String query = _searchController.text.trim();
+      if (query.isNotEmpty) {
+        if (mounted) {
+          searchMovies(query, context);
+          searchSeries(query, context);
+          searchPerson(query, context);
+        }
+      } else {
+        setState(() {
+          movieResults.clear();
+          tvResults.clear();
+          personResults.clear();
+        });
+      }
+    });
   }
 
   Future<void> searchMovies(String query, BuildContext context) async {
@@ -443,6 +450,7 @@ class _SearchScreenState extends State<SearchScreen>
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _tabController.dispose();
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
