@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:Mirarr/moviesPage/mainPage.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:app_links/app_links.dart';
 import 'dart:io';
@@ -108,63 +107,31 @@ class _MyAppState extends State<MyApp> {
         title: 'Mirarr',
         theme: themeProvider.currentTheme,
         home: const Scaffold(
-          body: ConnectivityWidget(),
+          body: AppInitWidget(),
         ),
       );
     });
   }
 }
 
-class ConnectivityWidget extends StatelessWidget {
-  const ConnectivityWidget({Key? key}) : super(key: key);
+class AppInitWidget extends StatefulWidget {
+  const AppInitWidget({Key? key}) : super(key: key);
+
+  @override
+  State<AppInitWidget> createState() => _AppInitWidgetState();
+}
+
+class _AppInitWidgetState extends State<AppInitWidget> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      UpdateChecker.checkForUpdate(context);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Skip connectivity check on Linux
-    if (Platform.isLinux) {
-      return Builder(
-        builder: (BuildContext context) {
-          // Check for updates
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            UpdateChecker.checkForUpdate(context);
-          });
-          return const MovieSearchScreen();
-        },
-      );
-    }
-
-    return FutureBuilder<List<ConnectivityResult>>(
-      future: Connectivity().checkConnectivity(),
-      builder: (context, AsyncSnapshot<List<ConnectivityResult>> snapshot) {
-        if (!snapshot.hasData ||
-            snapshot.data?.isEmpty == true ||
-            snapshot.data
-                    ?.every((result) => result == ConnectivityResult.none) ==
-                true) {
-          return const Padding(
-            padding: EdgeInsets.all(20.0),
-            child: Center(
-              child: Text(
-                'No internet connection detected.\n Please check your connection.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    color: Colors.orange,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold),
-              ),
-            ),
-          );
-        }
-        return Builder(
-          builder: (BuildContext context) {
-            // Check for updates
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              UpdateChecker.checkForUpdate(context);
-            });
-            return const MovieSearchScreen();
-          },
-        );
-      },
-    );
+    return const MovieSearchScreen();
   }
 }
