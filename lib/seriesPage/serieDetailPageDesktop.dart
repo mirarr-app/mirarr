@@ -46,6 +46,7 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
   Map<String, dynamic>? serieInfo;
   bool? isSerieWatchlist;
   bool? isSerieFavorite;
+  Future<dynamic>? _creditsFuture;
   bool isUserLoggedIn = false;
   dynamic isSerieRated;
   double? userRating;
@@ -79,7 +80,7 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
     _fetchSerieDetails();
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
-    fetchCredits(widget.serieId, region);
+    _creditsFuture = fetchCredits(widget.serieId, region);
     fetchExternalId();
   }
 
@@ -874,7 +875,7 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                       ),
                     ),
                     FutureBuilder(
-                      future: fetchCredits(widget.serieId, region),
+                      future: _creditsFuture,
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {

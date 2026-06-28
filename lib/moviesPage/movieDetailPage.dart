@@ -44,6 +44,9 @@ class MovieDetailPage extends StatefulWidget {
 class _MovieDetailPageState extends State<MovieDetailPage> {
   late Future<List<String>> _castImagesFuture;
   bool? isMovieWatchlist;
+  Future<dynamic>? _creditsFuture;
+  Future<dynamic>? _availabilityFuture;
+  Future<dynamic>? _directorMoviesFuture;
   bool? isMovieFavorite;
   bool isUserLoggedIn = false;
   dynamic isMovieRated;
@@ -88,9 +91,21 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
     checkAccountState();
     _loadMovieImages();
     _checkWatchedStatus();
-    final region =
-        Provider.of<RegionProvider>(context, listen: false).currentRegion;
-    fetchCredits(widget.movieId, region);
+    _availabilityFuture = checkAvailability(widget.movieId, region);
+    _creditsFuture = fetchCredits(widget.movieId, region).then((data) {
+      final List<dynamic> crewList = data['crew'] ?? [];
+      for (var crewMember in crewList) {
+        if (crewMember['job'] == 'Director') {
+          if (mounted) {
+            setState(() {
+              _directorMoviesFuture = fetchOtherMoviesByDirector(crewMember['id'], region);
+            });
+          }
+          break;
+        }
+      }
+      return data;
+    });
   }
 
   void _loadMovieImages() {
@@ -956,7 +971,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                       children: [
                         Center(
                           child: FutureBuilder(
-                              future: checkAvailability(widget.movieId, region),
+                              future: _availabilityFuture,
                               builder: (context, snapshot) {
                                 if (snapshot.connectionState ==
                                     ConnectionState.waiting) {
@@ -1033,7 +1048,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                     ),
                   ),
                   FutureBuilder(
-                    future: fetchCredits(widget.movieId, region),
+                    future: _creditsFuture,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());
@@ -1090,7 +1105,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                   ),
                   const CustomDivider(),
                   FutureBuilder(
-                    future: fetchCredits(widget.movieId, region),
+                    future: _creditsFuture,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());
@@ -1129,9 +1144,10 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                   ),
                                 ),
                               ),
-                              FutureBuilder(
-                                future: fetchOtherMoviesByDirector(
-                                    director['id'], region),
+                              _directorMoviesFuture == null
+                                  ? const Center(child: CircularProgressIndicator())
+                                  : FutureBuilder(
+                                      future: _directorMoviesFuture,
                                 builder: (context, snapshot) {
                                   if (snapshot.connectionState ==
                                       ConnectionState.waiting) {

@@ -44,6 +44,9 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
   late Future<List<String>> _castImagesFuture;
   bool? isMovieWatchlist;
   bool? isMovieFavorite;
+  Future<dynamic>? _creditsFuture;
+  Future<dynamic>? _availabilityFuture;
+  Future<dynamic>? _directorMoviesFuture;
   bool isUserLoggedIn = false;
   dynamic isMovieRated;
   double? userRating;
@@ -87,7 +90,21 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
     _checkWatchedStatus();
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
-    fetchCredits(widget.movieId, region);
+    _availabilityFuture = checkAvailability(widget.movieId, region);
+    _creditsFuture = fetchCredits(widget.movieId, region).then((data) {
+      final List<dynamic> crewList = data['crew'] ?? [];
+      for (var crewMember in crewList) {
+        if (crewMember['job'] == 'Director') {
+          if (mounted) {
+            setState(() {
+              _directorMoviesFuture = fetchOtherMoviesByDirector(crewMember['id'], region);
+            });
+          }
+          break;
+        }
+      }
+      return data;
+    });
 
   }
 
@@ -803,8 +820,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                       children: [
                                         Center(
                                           child: FutureBuilder(
-                                              future: checkAvailability(
-                                                  widget.movieId, region),
+                                              future: _availabilityFuture,
                                               builder: (context, snapshot) {
                                                 if (snapshot.connectionState ==
                                                     ConnectionState.waiting) {
@@ -1051,7 +1067,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                       ),
                     ),
                     FutureBuilder(
-                      future: fetchCredits(widget.movieId, region),
+                      future: _creditsFuture,
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
@@ -1110,7 +1126,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                     ),
                     const CustomDivider(),
                     FutureBuilder(
-                      future: fetchCredits(widget.movieId, region),
+                      future: _creditsFuture,
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
@@ -1149,9 +1165,10 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                             widget.movieId)),
                                   ),
                                 ),
-                                FutureBuilder(
-                                  future: fetchOtherMoviesByDirector(
-                                      director['id'], region),
+                              _directorMoviesFuture == null
+                                  ? const Center(child: CircularProgressIndicator())
+                                  : FutureBuilder(
+                                      future: _directorMoviesFuture,
                                   builder: (context, snapshot) {
                                     if (snapshot.connectionState ==
                                         ConnectionState.waiting) {
