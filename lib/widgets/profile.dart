@@ -13,7 +13,6 @@ import 'package:Mirarr/seriesPage/function/on_tap_serie.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_serie_desktop.dart';
 import 'package:Mirarr/widgets/rss_screen.dart';
 import 'package:Mirarr/widgets/settings_screen.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive/hive.dart';
@@ -218,30 +217,12 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> checkInternetAndFetchData() async {
-    // Skip connectivity check on Linux due to DBus issues
-    if (Platform.isLinux) {
-      fetchMovieWatchList(context);
-      fetchTvWatchList(context);
-      fetchFavoriteMovies(context);
-      fetchRatedMovies(context);
-      fetchFavoriteSeries(context);
-      fetchRatedTv(context);
-      return;
-    }
-
-    var connectivityResult = await Connectivity().checkConnectivity();
-    if (connectivityResult == ConnectivityResult.none) {
-      // No internet connection
-      handleNetworkError(ClientException('No internet connection'));
-    } else {
-      // Internet connection available, fetch data
-      fetchMovieWatchList(context);
-      fetchTvWatchList(context);
-      fetchFavoriteMovies(context);
-      fetchRatedMovies(context);
-      fetchFavoriteSeries(context);
-      fetchRatedTv(context);
-    }
+    fetchMovieWatchList(context);
+    fetchTvWatchList(context);
+    fetchFavoriteMovies(context);
+    fetchRatedMovies(context);
+    fetchFavoriteSeries(context);
+    fetchRatedTv(context);
   }
 
   Future<void> fetchTvWatchList(BuildContext context) async {
