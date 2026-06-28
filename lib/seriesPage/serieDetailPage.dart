@@ -541,15 +541,13 @@ String? posterPath;
                                           ),
                                           onRatingUpdate: (rating) async {
                                             final movieId = widget.serieId;
-                                            final openbox = await Hive.openBox(
-                                                'sessionBox');
-
-                                            final String sessionData =
+                                             final openbox = Hive.box('sessionBox');
+                                             final String sessionData =
                                                 openbox.get('sessionData');
                                             addRating(sessionData, movieId,
                                                 rating, context);
                                             setState(() {
-                                              isSerieRated != false;
+                                              isSerieRated = {'value': rating};
                                               userRating = rating;
                                             });
                                           },
@@ -642,9 +640,7 @@ String? posterPath;
                                               ),
                                               onRatingUpdate: (rating) async {
                                                 final movieId = widget.serieId;
-                                                final openbox =
-                                                    await Hive.openBox(
-                                                        'sessionBox');
+                                                final openbox = Hive.box('sessionBox');
 
                                                 final String sessionData =
                                                     openbox.get('sessionData');

@@ -412,8 +412,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                               return;
                                             }
                                             final movieId = widget.movieId;
-                                            final openbox = await Hive.openBox(
-                                                'sessionBox');
+                                            final openbox = Hive.box('sessionBox');
                                             final String accountId =
                                                 openbox.get('accountId');
                                             final String sessionData =
@@ -463,8 +462,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                               }
                                               final movieId = widget.movieId;
                                               final openbox =
-                                                  await Hive.openBox(
-                                                      'sessionBox');
+                                                  Hive.box('sessionBox');
                                               final String accountId =
                                                   openbox.get('accountId');
                                               final String sessionData =
@@ -554,8 +552,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                           final movieId =
                                                               widget.movieId;
                                                           final openbox =
-                                                              await Hive.openBox(
-                                                                  'sessionBox');
+                                                              Hive.box('sessionBox');
 
                                                           final String
                                                               sessionData =
@@ -567,8 +564,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                               rating,
                                                               context);
                                                           setState(() {
-                                                            isMovieRated !=
-                                                                false;
+                                                            isMovieRated = {'value': rating};
                                                             userRating = rating;
                                                           });
                                                         },
@@ -581,8 +577,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                     GestureDetector(
                                                       onTap: () async {
                                                         final openbox =
-                                                            await Hive.openBox(
-                                                                'sessionBox');
+                                                            Hive.box('sessionBox');
 
                                                         final String
                                                             sessionData =
@@ -668,8 +663,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                           final movieId =
                                                               widget.movieId;
                                                           final openbox =
-                                                              await Hive.openBox(
-                                                                  'sessionBox');
+                                                              Hive.box('sessionBox');
 
                                                           final String
                                                               sessionData =

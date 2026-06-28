@@ -304,8 +304,7 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                               return;
                                             }
                                             final serieId = widget.serieId;
-                                            final openbox = await Hive.openBox(
-                                                'sessionBox');
+                                            final openbox = Hive.box('sessionBox');
                                             final String accountId =
                                                 openbox.get('accountId');
                                             final String sessionData =
@@ -351,8 +350,7 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                               return;
                                             }
                                             final serieId = widget.serieId;
-                                            final openbox = await Hive.openBox(
-                                                'sessionBox');
+                                            final openbox = Hive.box('sessionBox');
                                             final String accountId =
                                                 openbox.get('accountId');
                                             final String sessionData =
@@ -441,8 +439,7 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                                           final serieId =
                                                               widget.serieId;
                                                           final openbox =
-                                                              await Hive.openBox(
-                                                                  'sessionBox');
+                                                              Hive.box('sessionBox');
 
                                                           final String
                                                               sessionData =
@@ -454,8 +451,7 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                                               rating,
                                                               context);
                                                           setState(() {
-                                                            isSerieRated !=
-                                                                false;
+                                                            isSerieRated = {'value': rating};
                                                             userRating = rating;
                                                           });
                                                         },
@@ -468,8 +464,7 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                                     GestureDetector(
                                                       onTap: () async {
                                                         final openbox =
-                                                            await Hive.openBox(
-                                                                'sessionBox');
+                                                            Hive.box('sessionBox');
 
                                                         final String
                                                             sessionData =
