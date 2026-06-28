@@ -91,6 +91,8 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
     checkAccountState();
     _loadMovieImages();
     _checkWatchedStatus();
+    final region =
+        Provider.of<RegionProvider>(context, listen: false).currentRegion;
     _availabilityFuture = checkAvailability(widget.movieId, region);
     _creditsFuture = fetchCredits(widget.movieId, region).then((data) {
       final List<dynamic> crewList = data['crew'] ?? [];
