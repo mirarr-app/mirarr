@@ -8,7 +8,6 @@ import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_gridview_serie.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_serie.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_serie_desktop.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart';
@@ -144,24 +143,9 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
   }
 
   Future<void> checkInternetAndFetchData() async {
-    // Skip connectivity check on Linux due to DBus issues
-    if (Platform.isLinux) {
-      _fetchTrendingSeries();
-      _fetchPopularSeries();
-      await _fetchGenresAndSeries();
-      return;
-    }
-
-    var connectivityResult = await Connectivity().checkConnectivity();
-    if (connectivityResult == ConnectivityResult.none) {
-      // No internet connection
-      handleNetworkError(ClientException('No internet connection'));
-    } else {
-      // Internet connection available, fetch data
-      _fetchTrendingSeries();
-      _fetchPopularSeries();
-      await _fetchGenresAndSeries();
-    }
+    _fetchTrendingSeries();
+    _fetchPopularSeries();
+    await _fetchGenresAndSeries();
   }
 
   @override
