@@ -6,11 +6,7 @@ import 'package:Mirarr/functions/fetchers/fetch_serie_details.dart';
 import 'package:Mirarr/functions/get_base_url.dart';
 import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_gridview_movie.dart';
-import 'package:Mirarr/moviesPage/functions/on_tap_movie.dart';
-import 'package:Mirarr/moviesPage/functions/on_tap_movie_desktop.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_gridview_serie.dart';
-import 'package:Mirarr/seriesPage/function/on_tap_serie.dart';
-import 'package:Mirarr/seriesPage/function/on_tap_serie_desktop.dart';
 import 'package:Mirarr/widgets/rss_screen.dart';
 import 'package:Mirarr/widgets/settings_screen.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +19,11 @@ import 'package:Mirarr/seriesPage/models/serie.dart';
 import 'package:http/http.dart' as http;
 import 'package:Mirarr/moviesPage/models/movie.dart';
 import 'package:provider/provider.dart';
+import 'package:Mirarr/moviesPage/movieDetailPage.dart';
+import 'package:Mirarr/moviesPage/movieDetailPageDesktop.dart';
+import 'package:Mirarr/seriesPage/serieDetailPage.dart';
+import 'package:Mirarr/seriesPage/serieDetailPageDesktop.dart';
+import 'package:Mirarr/functions/navigation_provider.dart';
 
 class ProfilePage extends StatefulWidget {
   ProfilePage({Key? key}) : super(key: key);
@@ -41,6 +42,45 @@ List<Serie> recentEpisodes = [];
 
 class _ProfilePageState extends State<ProfilePage> {
   final apiKey = dotenv.env['TMDB_API_KEY'];
+  int _lastIndex = -1;
+
+  Future<void> _navigateToMovie(String title, int id) async {
+    if (Platform.isAndroid || Platform.isIOS) {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MovieDetailPage(movieTitle: title, movieId: id),
+        ),
+      );
+    } else {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MovieDetailPageDesktop(movieTitle: title, movieId: id),
+        ),
+      );
+    }
+    checkInternetAndFetchData();
+  }
+
+  Future<void> _navigateToSerie(String title, int id) async {
+    if (Platform.isAndroid || Platform.isIOS) {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SerieDetailPage(serieName: title, serieId: id),
+        ),
+      );
+    } else {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SerieDetailPageDesktop(serieName: title, serieId: id),
+        ),
+      );
+    }
+    checkInternetAndFetchData();
+  }
 
   void _logout(BuildContext context) async {
     final box = Hive.box('sessionBox');
@@ -368,6 +408,15 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final navProvider = Provider.of<NavigationProvider>(context);
+    if (navProvider.currentIndex == 4 && _lastIndex != 4) {
+      _lastIndex = 4;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        checkInternetAndFetchData();
+      });
+    } else if (navProvider.currentIndex != 4) {
+      _lastIndex = navProvider.currentIndex;
+    }
 
     return Scaffold(
         appBar: AppBar(
@@ -497,12 +546,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               itemBuilder: (context, index) {
                                 final movie = moviesWatchList[index];
                                 return GestureDetector(
-                                  onTap: () =>
-                                      Platform.isAndroid || Platform.isIOS
-                                          ? onTapMovie(
-                                              movie.title, movie.id, context)
-                                          : onTapMovieDesktop(
-                                              movie.title, movie.id, context),
+                                  onTap: () => _navigateToMovie(movie.title, movie.id),
                                   child: CustomMovieWidget(
                                     movie: movie,
                                   ),
@@ -578,12 +622,7 @@ class _ProfilePageState extends State<ProfilePage> {
   
                                 final serie = recentEpisodes[index];
                                 return GestureDetector(
-                                  onTap: () =>
-                                      Platform.isAndroid || Platform.isIOS
-                                          ? onTapSerie(
-                                              serie.name, serie.id, context)
-                                          : onTapSerieDesktop(
-                                              serie.name, serie.id, context),
+                                  onTap: () => _navigateToSerie(serie.name, serie.id),
                                   child: Stack(
                                     children: [
                                       CustomSeriesWidget(
@@ -704,12 +743,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               itemBuilder: (context, index) {
                                 final serie = tvWatchList[index];
                                 return GestureDetector(
-                                  onTap: () =>
-                                      Platform.isAndroid || Platform.isIOS
-                                          ? onTapSerie(
-                                              serie.name, serie.id, context)
-                                          : onTapSerieDesktop(
-                                              serie.name, serie.id, context),
+                                  onTap: () => _navigateToSerie(serie.name, serie.id),
                                   child: CustomSeriesWidget(
                                     serie: serie,
                                   ),
@@ -783,12 +817,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               itemBuilder: (context, index) {
                                 final movie = movieFavorites[index];
                                 return GestureDetector(
-                                  onTap: () =>
-                                      Platform.isAndroid || Platform.isIOS
-                                          ? onTapMovie(
-                                              movie.title, movie.id, context)
-                                          : onTapMovieDesktop(
-                                              movie.title, movie.id, context),
+                                  onTap: () => _navigateToMovie(movie.title, movie.id),
                                   child: CustomMovieWidget(
                                     movie: movie,
                                   ),
@@ -864,12 +893,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               itemBuilder: (context, index) {
                                 final serie = tvFavorites[index];
                                 return GestureDetector(
-                                  onTap: () =>
-                                      Platform.isAndroid || Platform.isIOS
-                                          ? onTapSerie(
-                                              serie.name, serie.id, context)
-                                          : onTapSerieDesktop(
-                                              serie.name, serie.id, context),
+                                  onTap: () => _navigateToSerie(serie.name, serie.id),
                                   child: CustomSeriesWidget(
                                     serie: serie,
                                   ),
@@ -945,12 +969,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               itemBuilder: (context, index) {
                                 final movie = movieRated[index];
                                 return GestureDetector(
-                                  onTap: () =>
-                                      Platform.isAndroid || Platform.isIOS
-                                          ? onTapMovie(
-                                              movie.title, movie.id, context)
-                                          : onTapMovieDesktop(
-                                              movie.title, movie.id, context),
+                                  onTap: () => _navigateToMovie(movie.title, movie.id),
                                   child: CustomMovieWidget(
                                     movie: movie,
                                   ),
@@ -1026,12 +1045,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               itemBuilder: (context, index) {
                                 final serie = tvRated[index];
                                 return GestureDetector(
-                                  onTap: () =>
-                                      Platform.isAndroid || Platform.isIOS
-                                          ? onTapSerie(
-                                              serie.name, serie.id, context)
-                                          : onTapSerieDesktop(
-                                              serie.name, serie.id, context),
+                                  onTap: () => _navigateToSerie(serie.name, serie.id),
                                   child: CustomSeriesWidget(
                                     serie: serie,
                                   ),
