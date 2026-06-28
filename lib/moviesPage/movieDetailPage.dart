@@ -107,7 +107,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
   }
 
   Future<void> checkUserLogin() async {
-    final openbox = await Hive.openBox('sessionBox');
+    final openbox = Hive.box('sessionBox');
     final sessionData = openbox.get('sessionData');
     if (sessionData != null) {
       setState(() {
@@ -117,7 +117,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
   }
 
   Future<void> checkAccountState() async {
-    final openbox = await Hive.openBox('sessionBox');
+    final openbox = Hive.box('sessionBox');
     final sessionId = openbox.get('sessionData');
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
@@ -520,7 +520,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                 }
                                 final movieId = widget.movieId;
                                 final openbox =
-                                    await Hive.openBox('sessionBox');
+                                    Hive.box('sessionBox');
                                 final String accountId =
                                     openbox.get('accountId');
                                 final String sessionData =
@@ -565,7 +565,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                 }
                                 final movieId = widget.movieId;
                                 final openbox =
-                                    await Hive.openBox('sessionBox');
+                                    Hive.box('sessionBox');
                                 final String accountId =
                                     openbox.get('accountId');
                                 final String sessionData =

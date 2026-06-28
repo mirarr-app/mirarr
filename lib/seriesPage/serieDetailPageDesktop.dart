@@ -84,7 +84,7 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
   }
 
   Future<void> checkUserLogin() async {
-    final openbox = await Hive.openBox('sessionBox');
+    final openbox = Hive.box('sessionBox');
     final sessionData = openbox.get('sessionData');
     if (sessionData != null) {
       setState(() {
@@ -94,7 +94,7 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
   }
 
   Future<void> checkAccountState() async {
-    final openbox = await Hive.openBox('sessionBox');
+    final openbox = Hive.box('sessionBox');
     final sessionId = openbox.get('sessionData');
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;

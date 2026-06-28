@@ -82,7 +82,7 @@ String? posterPath;
   }
 
   Future<void> checkUserLogin() async {
-    final openbox = await Hive.openBox('sessionBox');
+    final openbox = Hive.box('sessionBox');
     final sessionData = openbox.get('sessionData');
     if (sessionData != null) {
       setState(() {
@@ -92,7 +92,7 @@ String? posterPath;
   }
 
   Future<void> checkAccountState() async {
-    final openbox = await Hive.openBox('sessionBox');
+    final openbox = Hive.box('sessionBox');
     final sessionId = openbox.get('sessionData');
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
@@ -423,7 +423,7 @@ String? posterPath;
                                 return;
                               }
                               final movieId = widget.serieId;
-                              final openbox = await Hive.openBox('sessionBox');
+                              final openbox = Hive.box('sessionBox');
                               final String accountId = openbox.get('accountId');
                               final String sessionData =
                                   openbox.get('sessionData');
@@ -466,7 +466,7 @@ String? posterPath;
                                 return;
                               }
                               final movieId = widget.serieId;
-                              final openbox = await Hive.openBox('sessionBox');
+                              final openbox = Hive.box('sessionBox');
                               final String accountId = openbox.get('accountId');
                               final String sessionData =
                                   openbox.get('sessionData');
@@ -561,7 +561,7 @@ String? posterPath;
                                       GestureDetector(
                                         onTap: () async {
                                           final openbox =
-                                              await Hive.openBox('sessionBox');
+                                              Hive.box('sessionBox');
 
                                           final String sessionData =
                                               openbox.get('sessionData');

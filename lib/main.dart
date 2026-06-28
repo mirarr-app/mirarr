@@ -19,8 +19,6 @@ void main() async {
   await dotenv.load(fileName: ".env");
   await Hive.initFlutter();
   await Hive.openBox('sessionBox');
-  await Hive.box('sessionBox').close();
-  await Hive.close();
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     await windowManager.ensureInitialized();
     WindowManager.instance.setMinimumSize(const Size(1600, 900));

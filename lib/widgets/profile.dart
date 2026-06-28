@@ -46,7 +46,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   void _logout(BuildContext context) async {
     final navigator = Navigator.of(context);
-    final box = await Hive.openBox('sessionBox');
+    final box = Hive.box('sessionBox');
     await box.delete('sessionData');
     navigator.pushReplacement(
       MaterialPageRoute(builder: (_) => LoginPage()),
@@ -60,7 +60,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> fetchMovieWatchList(BuildContext context) async {
-    final openbox = await Hive.openBox('sessionBox');
+    final openbox = Hive.box('sessionBox');
     final String accountId = openbox.get('accountId');
     final String sessionData = openbox.get('sessionData');
     final region =
@@ -96,7 +96,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> fetchFavoriteMovies(BuildContext context) async {
-    final openbox = await Hive.openBox('sessionBox');
+    final openbox = Hive.box('sessionBox');
     final String accountId = openbox.get('accountId');
     final String sessionData = openbox.get('sessionData');
     final region =
@@ -132,7 +132,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> fetchRatedMovies(BuildContext context) async {
-    final openbox = await Hive.openBox('sessionBox');
+    final openbox = Hive.box('sessionBox');
     final String accountId = openbox.get('accountId');
     final String sessionData = openbox.get('sessionData');
     final region =
@@ -226,7 +226,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> fetchTvWatchList(BuildContext context) async {
-    final openbox = await Hive.openBox('sessionBox');
+    final openbox = Hive.box('sessionBox');
     final String accountId = openbox.get('accountId');
     final String sessionData = openbox.get('sessionData');
     final region =
@@ -303,7 +303,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> fetchFavoriteSeries(BuildContext context) async {
-    final openbox = await Hive.openBox('sessionBox');
+    final openbox = Hive.box('sessionBox');
     final String accountId = openbox.get('accountId');
     final String sessionData = openbox.get('sessionData');
     final region =
@@ -338,7 +338,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> fetchRatedTv(BuildContext context) async {
-    final openbox = await Hive.openBox('sessionBox');
+    final openbox = Hive.box('sessionBox');
     final String accountId = openbox.get('accountId');
     final String sessionData = openbox.get('sessionData');
     final region =

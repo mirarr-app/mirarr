@@ -111,7 +111,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _toProfile(String sessionData, String accountId) async {
-    final box = await Hive.openBox('sessionBox');
+    final box = Hive.box('sessionBox');
     await box.put('sessionData', sessionData);
     await box.put('accountId', accountId);
 

@@ -58,7 +58,7 @@ class _BottomBarState extends State<BottomBar> {
   }
 
   void toAccount() async {
-    final box = await Hive.openBox('sessionBox');
+    final box = Hive.box('sessionBox');
     final sessionData = box.get('sessionData');
     setState(() {
       _selectedIndex = 4;

@@ -115,7 +115,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
   }
 
   Future<void> checkUserLogin() async {
-    final openbox = await Hive.openBox('sessionBox');
+    final openbox = Hive.box('sessionBox');
     final sessionData = openbox.get('sessionData');
     if (sessionData != null) {
       setState(() {
@@ -125,7 +125,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
   }
 
   Future<void> checkAccountState() async {
-    final openbox = await Hive.openBox('sessionBox');
+    final openbox = Hive.box('sessionBox');
     final sessionId = openbox.get('sessionData');
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
