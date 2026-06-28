@@ -13,7 +13,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart';
 import 'package:Mirarr/moviesPage/UI/customMovieWidget.dart';
 import 'package:Mirarr/moviesPage/models/movie.dart';
-import 'package:Mirarr/widgets/bottom_bar.dart';
 import 'dart:async';
 import 'package:provider/provider.dart';
 
@@ -349,7 +348,6 @@ class _MovieSearchScreenState extends State<MovieSearchScreen> {
                   )),
             )
           ],
-        ),
-        bottomNavigationBar: const BottomBar());
+        ));
   }
 }

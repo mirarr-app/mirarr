@@ -2,6 +2,8 @@ import 'package:Mirarr/functions/themeprovider_class.dart';
 import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/functions/supabase_provider.dart';
 import 'package:Mirarr/functions/url_parser.dart';
+import 'package:Mirarr/functions/navigation_provider.dart';
+import 'package:Mirarr/widgets/main_shell.dart';
 import 'package:Mirarr/widgets/check_updates.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -40,6 +42,7 @@ void main() async {
         ChangeNotifierProvider.value(value: themeProvider),
         ChangeNotifierProvider.value(value: regionProvider),
         ChangeNotifierProvider.value(value: supabaseProvider),
+        ChangeNotifierProvider(create: (_) => NavigationProvider()),
       ],
       child: const MyApp(),
     ),
@@ -130,6 +133,6 @@ class _AppInitWidgetState extends State<AppInitWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return const MovieSearchScreen();
+    return const MainShellPage();
   }
 }

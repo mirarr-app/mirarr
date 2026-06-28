@@ -20,8 +20,6 @@ import 'package:http/http.dart';
 import 'package:Mirarr/moviesPage/UI/customMovieWidget.dart';
 import 'package:Mirarr/seriesPage/UI/customSeriesWidget.dart';
 import 'package:Mirarr/seriesPage/models/serie.dart';
-import 'package:Mirarr/widgets/bottom_bar.dart';
-import 'package:Mirarr/widgets/login.dart';
 import 'package:http/http.dart' as http;
 import 'package:Mirarr/moviesPage/models/movie.dart';
 import 'package:provider/provider.dart';
@@ -45,12 +43,8 @@ class _ProfilePageState extends State<ProfilePage> {
   final apiKey = dotenv.env['TMDB_API_KEY'];
 
   void _logout(BuildContext context) async {
-    final navigator = Navigator.of(context);
     final box = Hive.box('sessionBox');
     await box.delete('sessionData');
-    navigator.pushReplacement(
-      MaterialPageRoute(builder: (_) => LoginPage()),
-    );
   }
 
   @override
@@ -1069,7 +1063,6 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ]),
           ),
-        ),
-        bottomNavigationBar: const BottomBar());
+        ));
   }
 }

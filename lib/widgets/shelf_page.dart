@@ -9,7 +9,6 @@ import 'package:Mirarr/seriesPage/checkers/custom_tmdb_ids_effects_series.dart';
 import 'package:Mirarr/seriesPage/serieDetailPage.dart';
 import 'package:Mirarr/seriesPage/serieDetailPageDesktop.dart';
 import 'package:flutter/material.dart';
-import 'package:Mirarr/widgets/bottom_bar.dart';
 import 'package:Mirarr/database/watch_history_database.dart';
 import 'package:Mirarr/models/watch_history_model.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -114,7 +113,6 @@ class _ShelfPageState extends State<ShelfPage> with TickerProviderStateMixin {
                 _buildDiaryTab(region),
               ],
             ),
-      bottomNavigationBar: const BottomBar(),
     );
   }
 

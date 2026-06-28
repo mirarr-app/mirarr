@@ -14,7 +14,6 @@ import 'package:http/http.dart';
 import 'package:Mirarr/seriesPage/models/serie.dart';
 import 'dart:async';
 import 'package:Mirarr/seriesPage/UI/customSeriesWidget.dart';
-import 'package:Mirarr/widgets/bottom_bar.dart';
 import 'package:provider/provider.dart';
 
 class SerieSearchScreen extends StatefulWidget {
@@ -331,7 +330,6 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
               ),
             )),
           ],
-        ),
-        bottomNavigationBar: const BottomBar());
+        ));
   }
 }

@@ -114,11 +114,6 @@ class _LoginPageState extends State<LoginPage> {
     final box = Hive.box('sessionBox');
     await box.put('sessionData', sessionData);
     await box.put('accountId', accountId);
-
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => ProfilePage()),
-    );
   }
 
   @override
@@ -322,7 +317,6 @@ class _LoginPageState extends State<LoginPage> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomBar(),
     );
   }
 }

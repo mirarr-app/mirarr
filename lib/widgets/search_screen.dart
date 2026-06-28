@@ -11,7 +11,6 @@ import 'package:Mirarr/moviesPage/functions/on_tap_movie_desktop.dart';
 import 'package:Mirarr/seriesPage/UI/serie_result.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_serie.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_serie_desktop.dart';
-import 'package:Mirarr/widgets/bottom_bar.dart';
 import 'package:Mirarr/widgets/discover/discover_with_filters.dart';
 import 'package:Mirarr/widgets/models/person.dart';
 import 'package:Mirarr/widgets/person_result.dart';
@@ -444,7 +443,6 @@ class _SearchScreenState extends State<SearchScreen>
           DiscoverMoviesPage(),
         ],
       ),
-      bottomNavigationBar: BottomBar(),
     );
   }
 
