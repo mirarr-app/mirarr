@@ -7,7 +7,6 @@ import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_gridview_movie.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie_desktop.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -148,24 +147,9 @@ class _MovieSearchScreenState extends State<MovieSearchScreen> {
   }
 
   Future<void> checkInternetAndFetchData() async {
-    // Skip connectivity check on Linux due to DBus issues
-    if (Platform.isLinux) {
-      _fetchTrendingMovies();
-      _fetchPopularMovies();
-      await _fetchGenresAndMovies();
-      return;
-    }
-
-    var connectivityResult = await Connectivity().checkConnectivity();
-    if (connectivityResult == ConnectivityResult.none) {
-      // No internet connection
-      handleNetworkError(ClientException('No internet connection'));
-    } else {
-      // Internet connection available, fetch data
-      _fetchTrendingMovies();
-      _fetchPopularMovies();
-      await _fetchGenresAndMovies();
-    }
+    _fetchTrendingMovies();
+    _fetchPopularMovies();
+    await _fetchGenresAndMovies();
   }
 
   @override
