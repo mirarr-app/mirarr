@@ -58,6 +58,12 @@ class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
     _fetchGenres(context);
   }
 
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    super.dispose();
+  }
+
   Future<void> _fetchGenres(BuildContext context) async {
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
@@ -289,8 +295,23 @@ class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
                               if (_debounce?.isActive ?? false) {
                                 _debounce!.cancel();
                               }
-                              return _searchActors(
-                                  textEditingValue.text, context);
+                              
+                              final completer = Completer<Iterable<Human>>();
+                              _debounce = Timer(const Duration(milliseconds: 500), () async {
+                                if (!mounted) {
+                                  completer.complete([]);
+                                  return;
+                                }
+                                try {
+                                  final results = await _searchActors(
+                                      textEditingValue.text, context);
+                                  completer.complete(results);
+                                } catch (e) {
+                                  completer.complete([]);
+                                }
+                              });
+                              
+                              return completer.future;
                             },
                             onSelected: _addPerson,
                             fieldViewBuilder: (BuildContext context,
