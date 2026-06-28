@@ -15,22 +15,20 @@ class SupabaseSyncService {
 
   
   Future<void> initializeSupabaseTable() async {
-    if (!isConfigured) return;
+    final client = _client;
+    if (client == null) return;
 
     try {
-      
-      await _client!.from(_tableName).select('id').limit(1);
+      await client.from(_tableName).select('id').limit(1);
     } catch (e) {
-      
-      
       debugPrint('Watch history table might not exist in Supabase.');
-  
     }
   }
 
   
   Future<bool> uploadWatchHistory() async {
-    if (!isConfigured) return false;
+    final client = _client;
+    if (client == null) return false;
 
     try {
       final localHistory = await _localDb.getAllWatchHistory();
@@ -41,7 +39,7 @@ class SupabaseSyncService {
       const batchSize = 1000;
       
       while (true) {
-        final remoteResponse = await _client!
+        final remoteResponse = await client
             .from(_tableName)
             .select()
             .range(offset, offset + batchSize - 1);
@@ -88,7 +86,7 @@ class SupabaseSyncService {
         
         for (int i = 0; i < idsToDelete.length; i += deleteBatchSize) {
           final batch = idsToDelete.skip(i).take(deleteBatchSize).toList();
-          await _client.from(_tableName).delete().inFilter('id', batch);
+          await client.from(_tableName).delete().inFilter('id', batch);
           deletedCount += batch.length;
         }
         
@@ -141,7 +139,7 @@ class SupabaseSyncService {
         
         for (int i = 0; i < itemsToInsert.length; i += insertBatchSize) {
           final batch = itemsToInsert.skip(i).take(insertBatchSize).toList();
-          await _client.from(_tableName).insert(batch);
+          await client.from(_tableName).insert(batch);
           insertedCount += batch.length;
           
           if (insertedCount % 500 == 0 || insertedCount == itemsToInsert.length) {
@@ -150,13 +148,13 @@ class SupabaseSyncService {
         }
       }
       
-      // Update existing items (these need individual requests, but much fewer than before)
+      // Update existing items
       if (itemsToUpdate.isNotEmpty) {
         int updatedCount = 0;
         
         for (final item in itemsToUpdate) {
           final id = item.remove('id'); // Remove ID from data, use it for the where clause
-          await _client.from(_tableName).update(item).eq('id', id);
+          await client.from(_tableName).update(item).eq('id', id);
           updatedCount++;
           
           if (updatedCount % 100 == 0 || updatedCount == itemsToUpdate.length) {
@@ -164,7 +162,7 @@ class SupabaseSyncService {
           }
         }
       }
-
+ 
       final totalProcessed = itemsToInsert.length + itemsToUpdate.length;
       debugPrint('Successfully processed $totalProcessed watch history items to Supabase');
       return true;
@@ -173,11 +171,11 @@ class SupabaseSyncService {
       return false;
     }
   }
-
-  
+ 
   Future<bool> downloadWatchHistory() async {
-    if (!isConfigured) return false;
-
+    final client = _client;
+    if (client == null) return false;
+ 
     try {
       // Get ALL remote data with pagination
       final allRemoteData = <Map<String, dynamic>>[];
@@ -185,12 +183,12 @@ class SupabaseSyncService {
       const batchSize = 1000;
       
       while (true) {
-        final response = await _client!
+        final response = await client
             .from(_tableName)
             .select()
             .order('watched_at', ascending: false)
             .range(offset, offset + batchSize - 1);
-
+ 
         final List<dynamic> batch = response as List<dynamic>;
         if (batch.isEmpty) break;
         
@@ -229,7 +227,7 @@ class SupabaseSyncService {
           userRating: item['user_rating']?.toDouble(),
           notes: item['notes'],
         );
-
+ 
         final key = '${watchHistoryItem.tmdbId}_${watchHistoryItem.type}_${watchHistoryItem.seasonNumber ?? 'null'}_${watchHistoryItem.episodeNumber ?? 'null'}';
         
         if (existingKeys.contains(key)) {
@@ -245,7 +243,7 @@ class SupabaseSyncService {
           newItemsCount++;
         }
       }
-
+ 
       debugPrint('Successfully downloaded $newItemsCount new items and updated $updatedItemsCount items from Supabase');
       return true;
     } catch (e) {
@@ -254,7 +252,7 @@ class SupabaseSyncService {
     }
   }
   
-  // Helper method to get existing local item
+  
   Future<WatchHistoryItem?> _getExistingLocalItem(WatchHistoryItem item) async {
     final existingItems = await _localDb.getWatchHistoryByTmdbId(item.tmdbId, item.type);
     
@@ -267,9 +265,9 @@ class SupabaseSyncService {
     return null;
   }
   
-  // Helper method to determine if an item should be updated
+  
   bool _shouldUpdateItem(WatchHistoryItem existing, WatchHistoryItem remote) {
-    // Update if remote item is newer or has different data
+    
     return remote.watchedAt.isAfter(existing.watchedAt) ||
            existing.title != remote.title ||
            existing.posterPath != remote.posterPath ||
@@ -277,11 +275,11 @@ class SupabaseSyncService {
            existing.userRating != remote.userRating ||
            existing.notes != remote.notes;
   }
-
+ 
   
   Future<bool> syncWatchHistory() async {
     if (!isConfigured) return false;
-
+ 
     try {
       
       await downloadWatchHistory();
@@ -296,7 +294,7 @@ class SupabaseSyncService {
       return false;
     }
   }
-
+ 
   
   Future<bool> addWatchHistoryItem(WatchHistoryItem item) async {
     try {
@@ -304,7 +302,8 @@ class SupabaseSyncService {
       await _localDb.insertWatchHistoryItem(item);
       
       // Then add to Supabase if configured
-      if (isConfigured) {
+      final client = _client;
+      if (client != null) {
         final data = {
           'tmdb_id': item.tmdbId,
           'title': item.title,
@@ -317,15 +316,15 @@ class SupabaseSyncService {
           'user_rating': item.userRating,
           'notes': item.notes,
         };
-
+ 
         try {
-          // Try to insert first (most common case for new items)
-          await _client!.from(_tableName).insert(data);
+          
+          await client.from(_tableName).insert(data);
         } catch (e) {
-          // If insert fails due to conflict, try to update instead
+          
           if (e.toString().contains('duplicate key') || e.toString().contains('23505')) {
             // Find the existing record and update it
-            var query = _client!.from(_tableName)
+            var query = client.from(_tableName)
                 .select('id')
                 .eq('tmdb_id', item.tmdbId)
                 .eq('type', item.type);
@@ -347,7 +346,7 @@ class SupabaseSyncService {
             
             if (existing.isNotEmpty) {
               final id = existing.first['id'];
-              await _client.from(_tableName).update(data).eq('id', id);
+              await client.from(_tableName).update(data).eq('id', id);
             }
           } else {
             // Re-throw if it's not a duplicate key error
@@ -362,7 +361,7 @@ class SupabaseSyncService {
       return false;
     }
   }
-
+ 
   
   Future<bool> deleteWatchHistoryItem({
     required int tmdbId,
@@ -371,8 +370,8 @@ class SupabaseSyncService {
     int? episodeNumber,
   }) async {
     try {
-      // Delete from local database first
-      // Find the matching item(s) in local database
+      
+      
       final existingItems = await _localDb.getWatchHistoryByTmdbId(tmdbId, type);
       
       for (final item in existingItems) {
@@ -384,8 +383,9 @@ class SupabaseSyncService {
       }
       
       // Then delete from Supabase if configured
-      if (isConfigured) {
-        var deleteQuery = _client!.from(_tableName).delete()
+      final client = _client;
+      if (client != null) {
+        var deleteQuery = client.from(_tableName).delete()
             .eq('tmdb_id', tmdbId)
             .eq('type', type);
             
@@ -411,21 +411,22 @@ class SupabaseSyncService {
       return false;
     }
   }
-
+ 
   
   Future<Map<String, dynamic>> getSyncStatus() async {
     try {
       final localCount = (await _localDb.getAllWatchHistory()).length;
       
       int remoteCount = 0;
-      if (isConfigured) {
+      final client = _client;
+      if (client != null) {
         try {
           // Count items by fetching all IDs in batches (most reliable method)
           int offset = 0;
           const batchSize = 1000;
           
           while (true) {
-            final response = await _client!
+            final response = await client
                 .from(_tableName)
                 .select('id')
                 .range(offset, offset + batchSize - 1);
@@ -442,7 +443,7 @@ class SupabaseSyncService {
           debugPrint('Error getting remote count: $e');
         }
       }
-
+ 
       return {
         'local_count': localCount,
         'remote_count': remoteCount,
@@ -459,4 +460,4 @@ class SupabaseSyncService {
       };
     }
   }
-} 
+}
