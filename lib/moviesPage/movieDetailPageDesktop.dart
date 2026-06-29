@@ -1,3 +1,4 @@
+import 'package:Mirarr/widgets/profile.dart';
 import 'dart:io';
 import 'dart:ui';
 
@@ -44,6 +45,9 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
   late Future<List<String>> _castImagesFuture;
   bool? isMovieWatchlist;
   bool? isMovieFavorite;
+  Future<dynamic>? _creditsFuture;
+  Future<dynamic>? _availabilityFuture;
+  Future<dynamic>? _directorMoviesFuture;
   bool isUserLoggedIn = false;
   dynamic isMovieRated;
   double? userRating;
@@ -87,7 +91,21 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
     _checkWatchedStatus();
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
-    fetchCredits(widget.movieId, region);
+    _availabilityFuture = checkAvailability(widget.movieId, region);
+    _creditsFuture = fetchCredits(widget.movieId, region).then((data) {
+      final List<dynamic> crewList = data['crew'] ?? [];
+      for (var crewMember in crewList) {
+        if (crewMember['job'] == 'Director') {
+          if (mounted) {
+            setState(() {
+              _directorMoviesFuture = fetchOtherMoviesByDirector(crewMember['id'], region);
+            });
+          }
+          break;
+        }
+      }
+      return data;
+    });
 
   }
 
@@ -115,7 +133,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
   }
 
   Future<void> checkUserLogin() async {
-    final openbox = await Hive.openBox('sessionBox');
+    final openbox = Hive.box('sessionBox');
     final sessionData = openbox.get('sessionData');
     if (sessionData != null) {
       setState(() {
@@ -125,7 +143,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
   }
 
   Future<void> checkAccountState() async {
-    final openbox = await Hive.openBox('sessionBox');
+    final openbox = Hive.box('sessionBox');
     final sessionId = openbox.get('sessionData');
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
@@ -395,32 +413,33 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                               return;
                                             }
                                             final movieId = widget.movieId;
-                                            final openbox = await Hive.openBox(
-                                                'sessionBox');
+                                            final openbox = Hive.box('sessionBox');
                                             final String accountId =
                                                 openbox.get('accountId');
                                             final String sessionData =
                                                 openbox.get('sessionData');
                                             if (isMovieWatchlist!) {
                                               // Remove from watchlist
-                                              removeFromWatchList(
-                                                  accountId,
-                                                  sessionData,
-                                                  movieId,
-                                                  context);
                                               setState(() {
                                                 isMovieWatchlist = false;
                                               });
-                                            } else {
-                                              // Add to watchlist
-                                              addWatchList(
+                                              await removeFromWatchList(
                                                   accountId,
                                                   sessionData,
                                                   movieId,
                                                   context);
+                                              profileRefreshNotifier.value++;
+                                            } else {
+                                              // Add to watchlist
                                               setState(() {
                                                 isMovieWatchlist = true;
                                               });
+                                              await addWatchList(
+                                                  accountId,
+                                                  sessionData,
+                                                  movieId,
+                                                  context);
+                                              profileRefreshNotifier.value++;
                                             }
                                           },
                                           child: Icon(
@@ -446,8 +465,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                               }
                                               final movieId = widget.movieId;
                                               final openbox =
-                                                  await Hive.openBox(
-                                                      'sessionBox');
+                                                  Hive.box('sessionBox');
                                               final String accountId =
                                                   openbox.get('accountId');
                                               final String sessionData =
@@ -460,7 +478,8 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                     context);
                                                 setState(() {
                                                   isMovieFavorite = false;
-                                                });
+                                                 profileRefreshNotifier.value++;
+                                               });
                                               } else {
                                                 addFavorite(
                                                     accountId,
@@ -469,7 +488,8 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                     context);
                                                 setState(() {
                                                   isMovieFavorite = true;
-                                                });
+                                                 profileRefreshNotifier.value++;
+                                               });
                                               }
                                             },
                                             child: Icon(
@@ -537,8 +557,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                           final movieId =
                                                               widget.movieId;
                                                           final openbox =
-                                                              await Hive.openBox(
-                                                                  'sessionBox');
+                                                              Hive.box('sessionBox');
 
                                                           final String
                                                               sessionData =
@@ -550,9 +569,9 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                               rating,
                                                               context);
                                                           setState(() {
-                                                            isMovieRated !=
-                                                                false;
+                                                            isMovieRated = {'value': rating};
                                                             userRating = rating;
+                                                            profileRefreshNotifier.value++;
                                                           });
                                                         },
                                                       ),
@@ -564,8 +583,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                     GestureDetector(
                                                       onTap: () async {
                                                         final openbox =
-                                                            await Hive.openBox(
-                                                                'sessionBox');
+                                                            Hive.box('sessionBox');
 
                                                         final String
                                                             sessionData =
@@ -579,8 +597,9 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                             .pop();
                                                         setState(() {
                                                           isMovieRated = false;
-                                                          userRating = null;
-                                                        });
+                                                             userRating = null;
+                                                             profileRefreshNotifier.value++;
+                                                           });
                                                       },
                                                       child: const Text(
                                                         ' 🗑️ Delete Rating',
@@ -651,8 +670,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                           final movieId =
                                                               widget.movieId;
                                                           final openbox =
-                                                              await Hive.openBox(
-                                                                  'sessionBox');
+                                                              Hive.box('sessionBox');
 
                                                           final String
                                                               sessionData =
@@ -664,9 +682,9 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                               rating,
                                                               context);
                                                           setState(() {
-                                                            isMovieRated =
-                                                                '"value":$rating';
+                                                            isMovieRated = '"value":$rating';
                                                             userRating = rating;
+                                                            profileRefreshNotifier.value++;
                                                           });
                                                         },
                                                       ),
@@ -803,8 +821,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                       children: [
                                         Center(
                                           child: FutureBuilder(
-                                              future: checkAvailability(
-                                                  widget.movieId, region),
+                                              future: _availabilityFuture,
                                               builder: (context, snapshot) {
                                                 if (snapshot.connectionState ==
                                                     ConnectionState.waiting) {
@@ -1051,7 +1068,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                       ),
                     ),
                     FutureBuilder(
-                      future: fetchCredits(widget.movieId, region),
+                      future: _creditsFuture,
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
@@ -1110,7 +1127,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                     ),
                     const CustomDivider(),
                     FutureBuilder(
-                      future: fetchCredits(widget.movieId, region),
+                      future: _creditsFuture,
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
@@ -1149,9 +1166,10 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                             widget.movieId)),
                                   ),
                                 ),
-                                FutureBuilder(
-                                  future: fetchOtherMoviesByDirector(
-                                      director['id'], region),
+                              _directorMoviesFuture == null
+                                  ? const Center(child: CircularProgressIndicator())
+                                  : FutureBuilder(
+                                      future: _directorMoviesFuture,
                                   builder: (context, snapshot) {
                                     if (snapshot.connectionState ==
                                         ConnectionState.waiting) {

@@ -9,13 +9,13 @@ import 'package:Mirarr/seriesPage/checkers/custom_tmdb_ids_effects_series.dart';
 import 'package:Mirarr/seriesPage/serieDetailPage.dart';
 import 'package:Mirarr/seriesPage/serieDetailPageDesktop.dart';
 import 'package:flutter/material.dart';
-import 'package:Mirarr/widgets/bottom_bar.dart';
 import 'package:Mirarr/database/watch_history_database.dart';
 import 'package:Mirarr/models/watch_history_model.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:Mirarr/functions/get_base_url.dart';
 import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:provider/provider.dart';
+import 'package:Mirarr/functions/navigation_provider.dart';
 import 'package:intl/intl.dart';
 
 class ShelfPage extends StatefulWidget {
@@ -26,6 +26,45 @@ class ShelfPage extends StatefulWidget {
 }
 
 class _ShelfPageState extends State<ShelfPage> with TickerProviderStateMixin {
+  int _lastIndex = -1;
+
+  Future<void> _navigateToMovie(String title, int id) async {
+    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MovieDetailPageDesktop(movieTitle: title, movieId: id),
+        ),
+      );
+    } else {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MovieDetailPage(movieTitle: title, movieId: id),
+        ),
+      );
+    }
+    _loadWatchHistory();
+  }
+
+  Future<void> _navigateToSerie(String title, int id) async {
+    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SerieDetailPageDesktop(serieName: title, serieId: id),
+        ),
+      );
+    } else {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SerieDetailPage(serieName: title, serieId: id),
+        ),
+      );
+    }
+    _loadWatchHistory();
+  }
   late TabController _tabController;
   final WatchHistoryDatabase _database = WatchHistoryDatabase();
   final TextEditingController _movieSearchController = TextEditingController();
@@ -85,6 +124,16 @@ class _ShelfPageState extends State<ShelfPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final navProvider = Provider.of<NavigationProvider>(context);
+    if (navProvider.currentIndex == 3 && _lastIndex != 3) {
+      _lastIndex = 3;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _loadWatchHistory();
+      });
+    } else if (navProvider.currentIndex != 3) {
+      _lastIndex = navProvider.currentIndex;
+    }
+
     final region = Provider.of<RegionProvider>(context, listen: false).currentRegion;
     
     return Scaffold(
@@ -114,7 +163,6 @@ class _ShelfPageState extends State<ShelfPage> with TickerProviderStateMixin {
                 _buildDiaryTab(region),
               ],
             ),
-      bottomNavigationBar: const BottomBar(),
     );
   }
 
@@ -392,14 +440,7 @@ class _ShelfPageState extends State<ShelfPage> with TickerProviderStateMixin {
 
   Widget _buildMovieCard(WatchHistoryItem movie, String region) {
     return GestureDetector(
-      onTap: () {
-        Platform.isWindows || Platform.isLinux || Platform.isMacOS ?{
-          Navigator.push(context, MaterialPageRoute(builder: (context) => MovieDetailPageDesktop(movieTitle: movie.title, movieId: movie.tmdbId)))
-        } :
-         {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => MovieDetailPage(movieTitle: movie.title, movieId: movie.tmdbId)))
-        };
-      },
+      onTap: () => _navigateToMovie(movie.title, movie.tmdbId),
       child: Card(
         elevation: 4,
         child: Column(
@@ -454,15 +495,7 @@ class _ShelfPageState extends State<ShelfPage> with TickerProviderStateMixin {
 
   Widget _buildShowCard(WatchHistoryItem show, String region) {
     return GestureDetector(
-      onTap: () {
-         Platform.isWindows || Platform.isLinux || Platform.isMacOS ?{
-          Navigator.push(context, MaterialPageRoute(builder: (context) => SerieDetailPageDesktop(serieName: show.title, serieId: show.tmdbId)))
-        } :
-         {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => SerieDetailPage(serieName: show.title, serieId: show.tmdbId)))
-        };
-       
-      },
+      onTap: () => _navigateToSerie(show.title, show.tmdbId),
       child: Card(
         margin: const EdgeInsets.only(bottom: 12),
         child: ScrollConfiguration(

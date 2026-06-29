@@ -7,22 +7,22 @@ import 'dart:convert';
 
 final apiKey = dotenv.env['TMDB_API_KEY'];
 
-List<Map<String, dynamic>> _parseCastInIsolate(String responseBody) {
+Map<String, List<Map<String, dynamic>>> _parseCreditsInIsolate(String responseBody) {
   final Map<String, dynamic> responseData = json.decode(responseBody);
-  final List<dynamic> castList = responseData['cast'];
-  final List<dynamic> crewList = responseData['crew'];
+  final List<dynamic> castList = responseData['cast'] ?? [];
+  final List<dynamic> crewList = responseData['crew'] ?? [];
 
-  return [
-    ...castList.cast<Map<String, dynamic>>(),
-    ...crewList.cast<Map<String, dynamic>>(),
-  ];
+  return {
+    'cast': castList.cast<Map<String, dynamic>>().toList(),
+    'crew': crewList.cast<Map<String, dynamic>>().toList(),
+  };
 }
 
 void _isolateFunction(Map<String, dynamic> message) {
   final SendPort sendPort = message['sendPort'];
   final String responseBody = message['responseBody'];
 
-  final parsedData = _parseCastInIsolate(responseBody);
+  final parsedData = _parseCreditsInIsolate(responseBody);
   sendPort.send(parsedData);
 }
 
@@ -39,23 +39,20 @@ Future<Map<String, List<Map<String, dynamic>>>> fetchCredits(
     if (response.statusCode == 200) {
       final receivePort = ReceivePort();
 
-      await Isolate.spawn(
-        _isolateFunction,
-        {
-          'sendPort': receivePort.sendPort,
-          'responseBody': response.body,
-        },
-      );
+      try {
+        await Isolate.spawn(
+          _isolateFunction,
+          {
+            'sendPort': receivePort.sendPort,
+            'responseBody': response.body,
+          },
+        );
 
-      // Separate cast and crew
-      final Map<String, dynamic> responseData = json.decode(response.body);
-      final List<dynamic> castList = responseData['cast'];
-      final List<dynamic> crewList = responseData['crew'];
-
-      return {
-        'cast': castList.cast<Map<String, dynamic>>().toList(),
-        'crew': crewList.cast<Map<String, dynamic>>().toList(),
-      };
+        final result = await receivePort.first;
+        return result as Map<String, List<Map<String, dynamic>>>;
+      } finally {
+        receivePort.close();
+      }
     } else {
       throw Exception('Failed to load cast and crew details');
     }
@@ -63,3 +60,4 @@ Future<Map<String, List<Map<String, dynamic>>>> fetchCredits(
     throw Exception('Failed to load cast and crew details');
   }
 }
+

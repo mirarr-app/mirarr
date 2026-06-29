@@ -8,14 +8,12 @@ import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_gridview_serie.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_serie.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_serie_desktop.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart';
 import 'package:Mirarr/seriesPage/models/serie.dart';
 import 'dart:async';
 import 'package:Mirarr/seriesPage/UI/customSeriesWidget.dart';
-import 'package:Mirarr/widgets/bottom_bar.dart';
 import 'package:provider/provider.dart';
 
 class SerieSearchScreen extends StatefulWidget {
@@ -34,16 +32,23 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
   List<Serie> popularSeries = [];
   List<Genre> genres = [];
   Map<int, List<Serie>> seriesByGenre = {};
+  late RegionProvider _regionProvider;
 
   Future<void> _fetchGenresAndSeries() async {
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
     try {
-      genres = await fetchGenres(region);
-      for (var genre in genres) {
+      final fetchedGenres = await fetchGenres(region);
+      final tasks = fetchedGenres.map((genre) async {
         final series = await fetchSeriesByGenre(genre.id, region);
+        return MapEntry(genre.id, series);
+      });
+      final results = await Future.wait(tasks);
+
+      if (mounted) {
         setState(() {
-          seriesByGenre[genre.id] = series;
+          genres = fetchedGenres;
+          seriesByGenre = Map.fromEntries(results);
         });
       }
     } catch (e) {
@@ -123,45 +128,31 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
     }
   }
 
+  void _onRegionChanged() {
+    checkInternetAndFetchData();
+  }
+
   @override
   void initState() {
     super.initState();
     checkInternetAndFetchData();
 
     // Add listener for region changes
-    Provider.of<RegionProvider>(context, listen: false).addListener(() {
-      checkInternetAndFetchData();
-    });
+    _regionProvider = Provider.of<RegionProvider>(context, listen: false);
+    _regionProvider.addListener(_onRegionChanged);
   }
 
   @override
   void dispose() {
     // Remove listener when disposing
-    Provider.of<RegionProvider>(context, listen: false).removeListener(() {
-      checkInternetAndFetchData();
-    });
+    _regionProvider.removeListener(_onRegionChanged);
     super.dispose();
   }
 
   Future<void> checkInternetAndFetchData() async {
-    // Skip connectivity check on Linux due to DBus issues
-    if (Platform.isLinux) {
-      _fetchTrendingSeries();
-      _fetchPopularSeries();
-      await _fetchGenresAndSeries();
-      return;
-    }
-
-    var connectivityResult = await Connectivity().checkConnectivity();
-    if (connectivityResult == ConnectivityResult.none) {
-      // No internet connection
-      handleNetworkError(ClientException('No internet connection'));
-    } else {
-      // Internet connection available, fetch data
-      _fetchTrendingSeries();
-      _fetchPopularSeries();
-      await _fetchGenresAndSeries();
-    }
+    _fetchTrendingSeries();
+    _fetchPopularSeries();
+    await _fetchGenresAndSeries();
   }
 
   @override
@@ -347,7 +338,6 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
               ),
             )),
           ],
-        ),
-        bottomNavigationBar: const BottomBar());
+        ));
   }
 }

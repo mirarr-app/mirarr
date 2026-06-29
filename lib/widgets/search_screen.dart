@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 import 'package:Mirarr/functions/get_base_url.dart';
@@ -10,7 +11,6 @@ import 'package:Mirarr/moviesPage/functions/on_tap_movie_desktop.dart';
 import 'package:Mirarr/seriesPage/UI/serie_result.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_serie.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_serie_desktop.dart';
-import 'package:Mirarr/widgets/bottom_bar.dart';
 import 'package:Mirarr/widgets/discover/discover_with_filters.dart';
 import 'package:Mirarr/widgets/models/person.dart';
 import 'package:Mirarr/widgets/person_result.dart';
@@ -37,6 +37,7 @@ class _SearchScreenState extends State<SearchScreen>
 
   final apiKey = dotenv.env['TMDB_API_KEY'];
   final TextEditingController _searchController = TextEditingController();
+  Timer? _debounce;
 
   @override
   void initState() {
@@ -46,18 +47,23 @@ class _SearchScreenState extends State<SearchScreen>
   }
 
   void _onSearchChanged() {
-    String query = _searchController.text.trim();
-    if (query.isNotEmpty) {
-      searchMovies(query, context);
-      searchSeries(query, context);
-      searchPerson(query, context);
-    } else {
-      setState(() {
-        movieResults.clear();
-        tvResults.clear();
-        personResults.clear();
-      });
-    }
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      String query = _searchController.text.trim();
+      if (query.isNotEmpty) {
+        if (mounted) {
+          searchMovies(query, context);
+          searchSeries(query, context);
+          searchPerson(query, context);
+        }
+      } else {
+        setState(() {
+          movieResults.clear();
+          tvResults.clear();
+          personResults.clear();
+        });
+      }
+    });
   }
 
   Future<void> searchMovies(String query, BuildContext context) async {
@@ -437,12 +443,12 @@ class _SearchScreenState extends State<SearchScreen>
           DiscoverMoviesPage(),
         ],
       ),
-      bottomNavigationBar: BottomBar(),
     );
   }
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _tabController.dispose();
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();

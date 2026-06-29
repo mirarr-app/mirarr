@@ -70,16 +70,20 @@ Future<List<Genre>> fetchGenres(String region) async {
   if (response.statusCode == 200) {
     final receivePort = ReceivePort();
 
-    await Isolate.spawn(
-      _genreIsolateFunction,
-      {
-        'sendPort': receivePort.sendPort,
-        'responseBody': response.body,
-      },
-    );
+    try {
+      await Isolate.spawn(
+        _genreIsolateFunction,
+        {
+          'sendPort': receivePort.sendPort,
+          'responseBody': response.body,
+        },
+      );
 
-    final genres = await receivePort.first as List<Genre>;
-    return genres;
+      final genres = await receivePort.first as List<Genre>;
+      return genres;
+    } finally {
+      receivePort.close();
+    }
   } else {
     throw Exception('Failed to load genres');
   }
@@ -97,16 +101,20 @@ Future<List<Movie>> fetchMoviesByGenre(int genreId, String region) async {
   if (response.statusCode == 200) {
     final receivePort = ReceivePort();
 
-    await Isolate.spawn(
-      _movieIsolateFunction,
-      {
-        'sendPort': receivePort.sendPort,
-        'responseBody': response.body,
-      },
-    );
+    try {
+      await Isolate.spawn(
+        _movieIsolateFunction,
+        {
+          'sendPort': receivePort.sendPort,
+          'responseBody': response.body,
+        },
+      );
 
-    final movies = await receivePort.first as List<Movie>;
-    return movies;
+      final movies = await receivePort.first as List<Movie>;
+      return movies;
+    } finally {
+      receivePort.close();
+    }
   } else {
     throw Exception('Failed to load movies by genre');
   }

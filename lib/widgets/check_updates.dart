@@ -9,6 +9,8 @@ class UpdateChecker {
     final currentVersion = await _getCurrentVersion();
     final latestVersion = await _getLatestVersion();
 
+    if (!context.mounted) return;
+
     if (latestVersion != null &&
         _isNewerVersion(currentVersion, latestVersion)) {
       _showUpdateDialog(context, latestVersion);
@@ -31,8 +33,17 @@ class UpdateChecker {
   }
 
   static bool _isNewerVersion(String currentVersion, String latestVersion) {
-    List<int> current = currentVersion.split('.').map(int.parse).toList();
-    List<int> latest = latestVersion.split('.').map(int.parse).toList();
+    List<int> parseVersion(String version) {
+      final clean = version.replaceAll(RegExp(r'^v'), '').split('-').first;
+      final parts = clean.split('.').map((p) => int.tryParse(p) ?? 0).toList();
+      while (parts.length < 3) {
+        parts.add(0);
+      }
+      return parts;
+    }
+
+    final current = parseVersion(currentVersion);
+    final latest = parseVersion(latestVersion);
 
     for (int i = 0; i < 3; i++) {
       if (latest[i] > current[i]) return true;

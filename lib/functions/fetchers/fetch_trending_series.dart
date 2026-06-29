@@ -41,16 +41,20 @@ Future<List<Serie>> fetchTrendingSeries(String region) async {
   if (response.statusCode == 200) {
     final receivePort = ReceivePort();
 
-    await Isolate.spawn(
-      _isolateFunction,
-      {
-        'sendPort': receivePort.sendPort,
-        'responseBody': response.body,
-      },
-    );
+    try {
+      await Isolate.spawn(
+        _isolateFunction,
+        {
+          'sendPort': receivePort.sendPort,
+          'responseBody': response.body,
+        },
+      );
 
-    final series = await receivePort.first as List<Serie>;
-    return series;
+      final series = await receivePort.first as List<Serie>;
+      return series;
+    } finally {
+      receivePort.close();
+    }
   } else {
     throw Exception('Failed to load trending series data');
   }

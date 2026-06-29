@@ -46,15 +46,19 @@ Future<List<dynamic>> fetchOtherMoviesByDirector(
   if (response.statusCode == 200) {
     final receivePort = ReceivePort();
 
-    await Isolate.spawn(
-      _isolateFunction,
-      {
-        'sendPort': receivePort.sendPort,
-        'responseBody': response.body,
-      },
-    );
-    final filteredMovies = await receivePort.first as List<dynamic>;
-    return filteredMovies;
+    try {
+      await Isolate.spawn(
+        _isolateFunction,
+        {
+          'sendPort': receivePort.sendPort,
+          'responseBody': response.body,
+        },
+      );
+      final filteredMovies = await receivePort.first as List<dynamic>;
+      return filteredMovies;
+    } finally {
+      receivePort.close();
+    }
   } else {
     throw Exception('Failed to load other movies');
   }

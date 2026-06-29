@@ -14,7 +14,7 @@ final apiKey = dotenv.env['TMDB_API_KEY'];
 
 Future<void> addWatchList(String accountId, String sessionId, int movieId,
     BuildContext context) async {
-  final openbox = await Hive.openBox('sessionBox');
+  final openbox = Hive.box('sessionBox');
   final String accountId = openbox.get('accountId');
   final String sessionData = openbox.get('sessionData');
     final region =
@@ -53,7 +53,7 @@ Future<void> addWatchList(String accountId, String sessionId, int movieId,
 
 Future<void> addRating(String sessionId, int movieId, double userScore,
     BuildContext context) async {
-  final openbox = await Hive.openBox('sessionBox');
+  final openbox = Hive.box('sessionBox');
   final String sessionData = openbox.get('sessionData');
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
@@ -89,7 +89,7 @@ Future<void> addRating(String sessionId, int movieId, double userScore,
 
 Future<void> removeRating(
     String sessionId, int movieId, BuildContext context) async {
-  final openbox = await Hive.openBox('sessionBox');
+  final openbox = Hive.box('sessionBox');
   final String sessionData = openbox.get('sessionData');
   final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
@@ -120,7 +120,7 @@ Future<void> removeRating(
 
 Future<void> addFavorite(String accountId, String sessionId, int movieId,
     BuildContext context) async {
-  final openbox = await Hive.openBox('sessionBox');
+  final openbox = Hive.box('sessionBox');
   final String accountId = openbox.get('accountId');
   final String sessionData = openbox.get('sessionData');
   final region =
@@ -159,7 +159,7 @@ Future<void> addFavorite(String accountId, String sessionId, int movieId,
 
 Future<void> removeFromWatchList(String accountId, String sessionId,
     int movieId, BuildContext context) async {
-  final openbox = await Hive.openBox('sessionBox');
+  final openbox = Hive.box('sessionBox');
   final String accountId = openbox.get('accountId');
   final String sessionData = openbox.get('sessionData');
   final region =
@@ -199,7 +199,7 @@ Future<void> removeFromWatchList(String accountId, String sessionId,
 
 Future<void> removeFromFavorite(String accountId, String sessionId, int movieId,
     BuildContext context) async {
-  final openbox = await Hive.openBox('sessionBox');
+  final openbox = Hive.box('sessionBox');
   final String accountId = openbox.get('accountId');
   final String sessionData = openbox.get('sessionData');
   final region =

@@ -7,14 +7,12 @@ import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_gridview_movie.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie_desktop.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart';
 import 'package:Mirarr/moviesPage/UI/customMovieWidget.dart';
 import 'package:Mirarr/moviesPage/models/movie.dart';
-import 'package:Mirarr/widgets/bottom_bar.dart';
 import 'dart:async';
 import 'package:provider/provider.dart';
 
@@ -34,7 +32,7 @@ class _MovieSearchScreenState extends State<MovieSearchScreen> {
   List<Movie> popularMovies = [];
   List<Genre> genres = [];
   Map<int, List<Movie>> moviesByGenre = {};
-  late RegionProvider regionProvider;
+  late RegionProvider _regionProvider;
 
   Future<void> _fetchTrendingMovies() async {
     try {
@@ -66,11 +64,17 @@ class _MovieSearchScreenState extends State<MovieSearchScreen> {
     try {
       final region =
           Provider.of<RegionProvider>(context, listen: false).currentRegion;
-      genres = await fetchGenres(region);
-      for (var genre in genres) {
+      final fetchedGenres = await fetchGenres(region);
+      final tasks = fetchedGenres.map((genre) async {
         final movies = await fetchMoviesByGenre(genre.id, region);
+        return MapEntry(genre.id, movies);
+      });
+      final results = await Future.wait(tasks);
+
+      if (mounted) {
         setState(() {
-          moviesByGenre[genre.id] = movies;
+          genres = fetchedGenres;
+          moviesByGenre = Map.fromEntries(results);
         });
       }
     } catch (e) {
@@ -127,45 +131,31 @@ class _MovieSearchScreenState extends State<MovieSearchScreen> {
     }
   }
 
+  void _onRegionChanged() {
+    checkInternetAndFetchData();
+  }
+
   @override
   void initState() {
     super.initState();
     checkInternetAndFetchData();
 
     // Add listener for region changes
-    Provider.of<RegionProvider>(context, listen: false).addListener(() {
-      checkInternetAndFetchData();
-    });
+    _regionProvider = Provider.of<RegionProvider>(context, listen: false);
+    _regionProvider.addListener(_onRegionChanged);
   }
 
   @override
   void dispose() {
     // Remove listener when disposing
-    Provider.of<RegionProvider>(context, listen: false).removeListener(() {
-      checkInternetAndFetchData();
-    });
+    _regionProvider.removeListener(_onRegionChanged);
     super.dispose();
   }
 
   Future<void> checkInternetAndFetchData() async {
-    // Skip connectivity check on Linux due to DBus issues
-    if (Platform.isLinux) {
-      _fetchTrendingMovies();
-      _fetchPopularMovies();
-      await _fetchGenresAndMovies();
-      return;
-    }
-
-    var connectivityResult = await Connectivity().checkConnectivity();
-    if (connectivityResult == ConnectivityResult.none) {
-      // No internet connection
-      handleNetworkError(ClientException('No internet connection'));
-    } else {
-      // Internet connection available, fetch data
-      _fetchTrendingMovies();
-      _fetchPopularMovies();
-      await _fetchGenresAndMovies();
-    }
+    _fetchTrendingMovies();
+    _fetchPopularMovies();
+    await _fetchGenresAndMovies();
   }
 
   @override
@@ -365,7 +355,6 @@ class _MovieSearchScreenState extends State<MovieSearchScreen> {
                   )),
             )
           ],
-        ),
-        bottomNavigationBar: const BottomBar());
+        ));
   }
 }

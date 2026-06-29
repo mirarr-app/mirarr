@@ -1,3 +1,4 @@
+import 'package:Mirarr/widgets/profile.dart';
 import 'dart:io';
 import 'dart:ui';
 
@@ -46,6 +47,7 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
   Map<String, dynamic>? serieInfo;
   bool? isSerieWatchlist;
   bool? isSerieFavorite;
+  Future<dynamic>? _creditsFuture;
   bool isUserLoggedIn = false;
   dynamic isSerieRated;
   double? userRating;
@@ -79,12 +81,12 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
     _fetchSerieDetails();
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
-    fetchCredits(widget.serieId, region);
+    _creditsFuture = fetchCredits(widget.serieId, region);
     fetchExternalId();
   }
 
   Future<void> checkUserLogin() async {
-    final openbox = await Hive.openBox('sessionBox');
+    final openbox = Hive.box('sessionBox');
     final sessionData = openbox.get('sessionData');
     if (sessionData != null) {
       setState(() {
@@ -94,7 +96,7 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
   }
 
   Future<void> checkAccountState() async {
-    final openbox = await Hive.openBox('sessionBox');
+    final openbox = Hive.box('sessionBox');
     final sessionId = openbox.get('sessionData');
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
@@ -303,32 +305,33 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                               return;
                                             }
                                             final serieId = widget.serieId;
-                                            final openbox = await Hive.openBox(
-                                                'sessionBox');
+                                            final openbox = Hive.box('sessionBox');
                                             final String accountId =
                                                 openbox.get('accountId');
                                             final String sessionData =
                                                 openbox.get('sessionData');
                                             if (isSerieWatchlist!) {
                                               // Remove from watchlist
-                                              removeFromWatchList(
-                                                  accountId,
-                                                  sessionData,
-                                                  serieId,
-                                                  context);
                                               setState(() {
                                                 isSerieWatchlist = false;
                                               });
-                                            } else {
-                                              // Add to watchlist
-                                              addWatchList(
+                                              await removeFromWatchList(
                                                   accountId,
                                                   sessionData,
                                                   serieId,
                                                   context);
+                                              profileRefreshNotifier.value++;
+                                            } else {
+                                              // Add to watchlist
                                               setState(() {
                                                 isSerieWatchlist = true;
                                               });
+                                              await addWatchList(
+                                                  accountId,
+                                                  sessionData,
+                                                  serieId,
+                                                  context);
+                                              profileRefreshNotifier.value++;
                                             }
                                           },
                                           child: Icon(
@@ -350,30 +353,31 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                               return;
                                             }
                                             final serieId = widget.serieId;
-                                            final openbox = await Hive.openBox(
-                                                'sessionBox');
+                                            final openbox = Hive.box('sessionBox');
                                             final String accountId =
                                                 openbox.get('accountId');
                                             final String sessionData =
                                                 openbox.get('sessionData');
                                             if (isSerieFavorite!) {
-                                              removeFromFavorite(
-                                                  accountId,
-                                                  sessionData,
-                                                  serieId,
-                                                  context);
                                               setState(() {
                                                 isSerieFavorite = false;
                                               });
-                                            } else {
-                                              addFavorite(
+                                              await removeFromFavorite(
                                                   accountId,
                                                   sessionData,
                                                   serieId,
                                                   context);
+                                              profileRefreshNotifier.value++;
+                                            } else {
                                               setState(() {
                                                 isSerieFavorite = true;
                                               });
+                                              await addFavorite(
+                                                  accountId,
+                                                  sessionData,
+                                                  serieId,
+                                                  context);
+                                              profileRefreshNotifier.value++;
                                             }
                                           },
                                           child: Icon(
@@ -440,8 +444,7 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                                           final serieId =
                                                               widget.serieId;
                                                           final openbox =
-                                                              await Hive.openBox(
-                                                                  'sessionBox');
+                                                              Hive.box('sessionBox');
 
                                                           final String
                                                               sessionData =
@@ -453,9 +456,9 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                                               rating,
                                                               context);
                                                           setState(() {
-                                                            isSerieRated !=
-                                                                false;
+                                                            isSerieRated = {'value': rating};
                                                             userRating = rating;
+                                                            profileRefreshNotifier.value++;
                                                           });
                                                         },
                                                       ),
@@ -467,8 +470,7 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                                     GestureDetector(
                                                       onTap: () async {
                                                         final openbox =
-                                                            await Hive.openBox(
-                                                                'sessionBox');
+                                                            Hive.box('sessionBox');
 
                                                         final String
                                                             sessionData =
@@ -874,7 +876,7 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                       ),
                     ),
                     FutureBuilder(
-                      future: fetchCredits(widget.serieId, region),
+                      future: _creditsFuture,
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {

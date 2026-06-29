@@ -1,3 +1,4 @@
+import 'package:Mirarr/widgets/profile.dart';
 import 'dart:io';
 
 import 'package:Mirarr/database/watch_history_database.dart';
@@ -44,6 +45,9 @@ class MovieDetailPage extends StatefulWidget {
 class _MovieDetailPageState extends State<MovieDetailPage> {
   late Future<List<String>> _castImagesFuture;
   bool? isMovieWatchlist;
+  Future<dynamic>? _creditsFuture;
+  Future<dynamic>? _availabilityFuture;
+  Future<dynamic>? _directorMoviesFuture;
   bool? isMovieFavorite;
   bool isUserLoggedIn = false;
   dynamic isMovieRated;
@@ -90,7 +94,21 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
     _checkWatchedStatus();
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
-    fetchCredits(widget.movieId, region);
+    _availabilityFuture = checkAvailability(widget.movieId, region);
+    _creditsFuture = fetchCredits(widget.movieId, region).then((data) {
+      final List<dynamic> crewList = data['crew'] ?? [];
+      for (var crewMember in crewList) {
+        if (crewMember['job'] == 'Director') {
+          if (mounted) {
+            setState(() {
+              _directorMoviesFuture = fetchOtherMoviesByDirector(crewMember['id'], region);
+            });
+          }
+          break;
+        }
+      }
+      return data;
+    });
   }
 
   void _loadMovieImages() {
@@ -107,7 +125,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
   }
 
   Future<void> checkUserLogin() async {
-    final openbox = await Hive.openBox('sessionBox');
+    final openbox = Hive.box('sessionBox');
     final sessionData = openbox.get('sessionData');
     if (sessionData != null) {
       setState(() {
@@ -117,7 +135,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
   }
 
   Future<void> checkAccountState() async {
-    final openbox = await Hive.openBox('sessionBox');
+    final openbox = Hive.box('sessionBox');
     final sessionId = openbox.get('sessionData');
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
@@ -520,25 +538,27 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                 }
                                 final movieId = widget.movieId;
                                 final openbox =
-                                    await Hive.openBox('sessionBox');
+                                    Hive.box('sessionBox');
                                 final String accountId =
                                     openbox.get('accountId');
                                 final String sessionData =
                                     openbox.get('sessionData');
                                 if (isMovieWatchlist!) {
                                   // Remove from watchlist
-                                  removeFromWatchList(
-                                      accountId, sessionData, movieId, context);
                                   setState(() {
                                     isMovieWatchlist = false;
                                   });
+                                  await removeFromWatchList(
+                                      accountId, sessionData, movieId, context);
+                                  profileRefreshNotifier.value++;
                                 } else {
                                   // Add to watchlist
-                                  addWatchList(
-                                      accountId, sessionData, movieId, context);
                                   setState(() {
                                     isMovieWatchlist = true;
                                   });
+                                  await addWatchList(
+                                      accountId, sessionData, movieId, context);
+                                  profileRefreshNotifier.value++;
                                 }
                               },
                               child: Icon(
@@ -565,23 +585,25 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                 }
                                 final movieId = widget.movieId;
                                 final openbox =
-                                    await Hive.openBox('sessionBox');
+                                    Hive.box('sessionBox');
                                 final String accountId =
                                     openbox.get('accountId');
                                 final String sessionData =
                                     openbox.get('sessionData');
                                 if (isMovieFavorite!) {
-                                  removeFromFavorite(
-                                      accountId, sessionData, movieId, context);
                                   setState(() {
                                     isMovieFavorite = false;
                                   });
-                                } else {
-                                  addFavorite(
+                                  await removeFromFavorite(
                                       accountId, sessionData, movieId, context);
+                                  profileRefreshNotifier.value++;
+                                } else {
                                   setState(() {
                                     isMovieFavorite = true;
                                   });
+                                  await addFavorite(
+                                      accountId, sessionData, movieId, context);
+                                  profileRefreshNotifier.value++;
                                 }
                               },
                               child: Icon(
@@ -641,17 +663,17 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                             onRatingUpdate: (rating) async {
                                               final movieId = widget.movieId;
                                               final openbox =
-                                                  await Hive.openBox(
-                                                      'sessionBox');
+                                                  Hive.box('sessionBox');
 
                                               final String sessionData =
                                                   openbox.get('sessionData');
                                               addRating(sessionData, movieId,
                                                   rating, context);
                                               setState(() {
-                                                isMovieRated != false;
-                                                userRating = rating;
-                                              });
+                                                isMovieRated = {'value': rating};
+                                                 userRating = rating;
+                                                 profileRefreshNotifier.value++;
+                                               });
                                             },
                                           ),
                                         ),
@@ -661,8 +683,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                         ),
                                         GestureDetector(
                                           onTap: () async {
-                                            final openbox = await Hive.openBox(
-                                                'sessionBox');
+                                            final openbox = Hive.box('sessionBox');
 
                                             final String sessionData =
                                                 openbox.get('sessionData');
@@ -671,8 +692,9 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                             Navigator.of(context).pop();
                                             setState(() {
                                               isMovieRated = false;
-                                              userRating = null;
-                                            });
+                                               userRating = null;
+                                               profileRefreshNotifier.value++;
+                                             });
                                           },
                                           child: const Text(
                                             ' 🗑️ Delete Rating',
@@ -773,8 +795,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                               final movieId =
                                                   widget.movieId;
                                               final openbox =
-                                                  await Hive.openBox(
-                                                      'sessionBox');
+                                                  Hive.box('sessionBox');
                             
                                               final String sessionData =
                                                   openbox
@@ -782,10 +803,10 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                               addRating(sessionData,
                                                   movieId, rating, context);
                                               setState(() {
-                                                isMovieRated =
-                                                    '"value":$rating';
-                                                userRating = rating;
-                                              });
+                                                isMovieRated = '"value":$rating';
+                                                 userRating = rating;
+                                                 profileRefreshNotifier.value++;
+                                               });
                                             },
                                           ),
                                           const SizedBox(
@@ -956,7 +977,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                       children: [
                         Center(
                           child: FutureBuilder(
-                              future: checkAvailability(widget.movieId, region),
+                              future: _availabilityFuture,
                               builder: (context, snapshot) {
                                 if (snapshot.connectionState ==
                                     ConnectionState.waiting) {
@@ -1033,7 +1054,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                     ),
                   ),
                   FutureBuilder(
-                    future: fetchCredits(widget.movieId, region),
+                    future: _creditsFuture,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());
@@ -1090,7 +1111,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                   ),
                   const CustomDivider(),
                   FutureBuilder(
-                    future: fetchCredits(widget.movieId, region),
+                    future: _creditsFuture,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());
@@ -1129,9 +1150,10 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                   ),
                                 ),
                               ),
-                              FutureBuilder(
-                                future: fetchOtherMoviesByDirector(
-                                    director['id'], region),
+                              _directorMoviesFuture == null
+                                  ? const Center(child: CircularProgressIndicator())
+                                  : FutureBuilder(
+                                      future: _directorMoviesFuture,
                                 builder: (context, snapshot) {
                                   if (snapshot.connectionState ==
                                       ConnectionState.waiting) {
