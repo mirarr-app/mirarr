@@ -1,3 +1,4 @@
+import 'package:Mirarr/widgets/profile.dart';
 import 'dart:io';
 import 'dart:ui';
 
@@ -318,7 +319,8 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                                   context);
                                               setState(() {
                                                 isSerieWatchlist = false;
-                                              });
+                                                 profileRefreshNotifier.value++;
+                                               });
                                             } else {
                                               // Add to watchlist
                                               addWatchList(
@@ -328,7 +330,8 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                                   context);
                                               setState(() {
                                                 isSerieWatchlist = true;
-                                              });
+                                                 profileRefreshNotifier.value++;
+                                               });
                                             }
                                           },
                                           child: Icon(
@@ -363,7 +366,8 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                                   context);
                                               setState(() {
                                                 isSerieFavorite = false;
-                                              });
+                                                 profileRefreshNotifier.value++;
+                                               });
                                             } else {
                                               addFavorite(
                                                   accountId,
@@ -372,7 +376,8 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                                   context);
                                               setState(() {
                                                 isSerieFavorite = true;
-                                              });
+                                                 profileRefreshNotifier.value++;
+                                               });
                                             }
                                           },
                                           child: Icon(
@@ -453,6 +458,7 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                                           setState(() {
                                                             isSerieRated = {'value': rating};
                                                             userRating = rating;
+                                                            profileRefreshNotifier.value++;
                                                           });
                                                         },
                                                       ),

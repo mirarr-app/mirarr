@@ -1,3 +1,4 @@
+import 'package:Mirarr/widgets/profile.dart';
 import 'dart:io';
 import 'dart:ui';
 
@@ -426,7 +427,8 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                   context);
                                               setState(() {
                                                 isMovieWatchlist = false;
-                                              });
+                                                 profileRefreshNotifier.value++;
+                                               });
                                             } else {
                                               // Add to watchlist
                                               addWatchList(
@@ -436,7 +438,8 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                   context);
                                               setState(() {
                                                 isMovieWatchlist = true;
-                                              });
+                                                 profileRefreshNotifier.value++;
+                                               });
                                             }
                                           },
                                           child: Icon(
@@ -475,7 +478,8 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                     context);
                                                 setState(() {
                                                   isMovieFavorite = false;
-                                                });
+                                                 profileRefreshNotifier.value++;
+                                               });
                                               } else {
                                                 addFavorite(
                                                     accountId,
@@ -484,7 +488,8 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                     context);
                                                 setState(() {
                                                   isMovieFavorite = true;
-                                                });
+                                                 profileRefreshNotifier.value++;
+                                               });
                                               }
                                             },
                                             child: Icon(
@@ -566,6 +571,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                           setState(() {
                                                             isMovieRated = {'value': rating};
                                                             userRating = rating;
+                                                            profileRefreshNotifier.value++;
                                                           });
                                                         },
                                                       ),
@@ -591,8 +597,9 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                             .pop();
                                                         setState(() {
                                                           isMovieRated = false;
-                                                          userRating = null;
-                                                        });
+                                                             userRating = null;
+                                                             profileRefreshNotifier.value++;
+                                                           });
                                                       },
                                                       child: const Text(
                                                         ' 🗑️ Delete Rating',
@@ -675,9 +682,9 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                               rating,
                                                               context);
                                                           setState(() {
-                                                            isMovieRated =
-                                                                '"value":$rating';
+                                                            isMovieRated = '"value":$rating';
                                                             userRating = rating;
+                                                            profileRefreshNotifier.value++;
                                                           });
                                                         },
                                                       ),

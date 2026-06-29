@@ -40,6 +40,8 @@ List<Serie> tvRated = [];
 List<Movie> movieRated = [];
 List<Serie> recentEpisodes = [];
 
+final ValueNotifier<int> profileRefreshNotifier = ValueNotifier<int>(0);
+
 class _ProfilePageState extends State<ProfilePage> {
   final apiKey = dotenv.env['TMDB_API_KEY'];
   int _lastIndex = -1;
@@ -91,6 +93,19 @@ class _ProfilePageState extends State<ProfilePage> {
   void initState() {
     super.initState();
     checkInternetAndFetchData();
+    profileRefreshNotifier.addListener(_onProfileRefreshRequest);
+  }
+
+  @override
+  void dispose() {
+    profileRefreshNotifier.removeListener(_onProfileRefreshRequest);
+    super.dispose();
+  }
+
+  void _onProfileRefreshRequest() {
+    if (mounted) {
+      checkInternetAndFetchData();
+    }
   }
 
   Future<void> fetchMovieWatchList(BuildContext context) async {

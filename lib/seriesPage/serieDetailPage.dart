@@ -1,3 +1,4 @@
+import 'package:Mirarr/widgets/profile.dart';
 import 'dart:io';
 
 import 'package:Mirarr/database/watch_history_database.dart';
@@ -434,6 +435,7 @@ String? posterPath;
                                     accountId, sessionData, movieId, context);
                                 setState(() {
                                   isSerieWatchlist = false;
+                                  profileRefreshNotifier.value++;
                                 });
                               } else {
                                 // Add to watchlist
@@ -441,6 +443,7 @@ String? posterPath;
                                     accountId, sessionData, movieId, context);
                                 setState(() {
                                   isSerieWatchlist = true;
+                                  profileRefreshNotifier.value++;
                                 });
                               }
                             },
@@ -476,12 +479,14 @@ String? posterPath;
                                     accountId, sessionData, movieId, context);
                                 setState(() {
                                   isSerieFavorite = false;
+                                  profileRefreshNotifier.value++;
                                 });
                               } else {
                                 addFavorite(
                                     accountId, sessionData, movieId, context);
                                 setState(() {
                                   isSerieFavorite = true;
+                                  profileRefreshNotifier.value++;
                                 });
                               }
                             },
@@ -549,6 +554,7 @@ String? posterPath;
                                             setState(() {
                                               isSerieRated = {'value': rating};
                                               userRating = rating;
+                                              profileRefreshNotifier.value++;
                                             });
                                           },
                                         ),
@@ -647,10 +653,10 @@ String? posterPath;
                                                 addRating(sessionData, movieId,
                                                     rating, context);
                                                 setState(() {
-                                                  isSerieRated =
-                                                      '"value":$rating';
-                                                  userRating = rating;
-                                                });
+                                                  isSerieRated = '"value":$rating';
+                                                   userRating = rating;
+                                                   profileRefreshNotifier.value++;
+                                                 });
                                               },
                                             ),
                                             const SizedBox(

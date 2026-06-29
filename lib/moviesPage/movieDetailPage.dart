@@ -1,3 +1,4 @@
+import 'package:Mirarr/widgets/profile.dart';
 import 'dart:io';
 
 import 'package:Mirarr/database/watch_history_database.dart';
@@ -548,14 +549,16 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                       accountId, sessionData, movieId, context);
                                   setState(() {
                                     isMovieWatchlist = false;
-                                  });
+                                      profileRefreshNotifier.value++;
+                                    });
                                 } else {
                                   // Add to watchlist
                                   addWatchList(
                                       accountId, sessionData, movieId, context);
                                   setState(() {
                                     isMovieWatchlist = true;
-                                  });
+                                      profileRefreshNotifier.value++;
+                                    });
                                 }
                               },
                               child: Icon(
@@ -592,13 +595,15 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                       accountId, sessionData, movieId, context);
                                   setState(() {
                                     isMovieFavorite = false;
-                                  });
+                                      profileRefreshNotifier.value++;
+                                    });
                                 } else {
                                   addFavorite(
                                       accountId, sessionData, movieId, context);
                                   setState(() {
                                     isMovieFavorite = true;
-                                  });
+                                      profileRefreshNotifier.value++;
+                                    });
                                 }
                               },
                               child: Icon(
@@ -666,8 +671,9 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                                   rating, context);
                                               setState(() {
                                                 isMovieRated = {'value': rating};
-                                                userRating = rating;
-                                              });
+                                                 userRating = rating;
+                                                 profileRefreshNotifier.value++;
+                                               });
                                             },
                                           ),
                                         ),
@@ -686,8 +692,9 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                             Navigator.of(context).pop();
                                             setState(() {
                                               isMovieRated = false;
-                                              userRating = null;
-                                            });
+                                               userRating = null;
+                                               profileRefreshNotifier.value++;
+                                             });
                                           },
                                           child: const Text(
                                             ' 🗑️ Delete Rating',
@@ -796,10 +803,10 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                               addRating(sessionData,
                                                   movieId, rating, context);
                                               setState(() {
-                                                isMovieRated =
-                                                    '"value":$rating';
-                                                userRating = rating;
-                                              });
+                                                isMovieRated = '"value":$rating';
+                                                 userRating = rating;
+                                                 profileRefreshNotifier.value++;
+                                               });
                                             },
                                           ),
                                           const SizedBox(
