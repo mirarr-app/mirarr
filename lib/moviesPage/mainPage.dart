@@ -32,7 +32,7 @@ class _MovieSearchScreenState extends State<MovieSearchScreen> {
   List<Movie> popularMovies = [];
   List<Genre> genres = [];
   Map<int, List<Movie>> moviesByGenre = {};
-  late RegionProvider regionProvider;
+  late RegionProvider _regionProvider;
 
   Future<void> _fetchTrendingMovies() async {
     try {
@@ -125,23 +125,24 @@ class _MovieSearchScreenState extends State<MovieSearchScreen> {
     }
   }
 
+  void _onRegionChanged() {
+    checkInternetAndFetchData();
+  }
+
   @override
   void initState() {
     super.initState();
     checkInternetAndFetchData();
 
     // Add listener for region changes
-    Provider.of<RegionProvider>(context, listen: false).addListener(() {
-      checkInternetAndFetchData();
-    });
+    _regionProvider = Provider.of<RegionProvider>(context, listen: false);
+    _regionProvider.addListener(_onRegionChanged);
   }
 
   @override
   void dispose() {
     // Remove listener when disposing
-    Provider.of<RegionProvider>(context, listen: false).removeListener(() {
-      checkInternetAndFetchData();
-    });
+    _regionProvider.removeListener(_onRegionChanged);
     super.dispose();
   }
 
