@@ -565,20 +565,19 @@ String? posterPath;
                                       ),
                                       GestureDetector(
                                         onTap: () async {
-                                           final openbox =
-                                               Hive.box('sessionBox');
+                                          final openbox =
+                                              Hive.box('sessionBox');
 
-                                           final String sessionData =
-                                               openbox.get('sessionData');
-                                           setState(() {
-                                             isSerieRated = false;
-                                             userRating = null;
-                                           });
-                                           Navigator.of(context).pop();
-                                           await removeRating(sessionData,
-                                               widget.serieId, context);
-                                           profileRefreshNotifier.value++;
-                                         },
+                                          final String sessionData =
+                                              openbox.get('sessionData');
+                                          removeRating(sessionData,
+                                              widget.serieId, context);
+                                          Navigator.of(context).pop();
+                                          setState(() {
+                                            isSerieRated = false;
+                                            userRating = null;
+                                          });
+                                        },
                                         child: const Text(
                                           ' 🗑️ Delete Rating',
                                           style: TextStyle(

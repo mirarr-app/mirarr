@@ -476,17 +476,16 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                                             sessionData =
                                                             openbox.get(
                                                                 'sessionData');
+                                                        removeRating(
+                                                            sessionData,
+                                                            widget.serieId,
+                                                            context);
+                                                        Navigator.of(context)
+                                                            .pop();
                                                         setState(() {
                                                           isSerieRated = false;
                                                           userRating = null;
                                                         });
-                                                        Navigator.of(context)
-                                                            .pop();
-                                                        await removeRating(
-                                                            sessionData,
-                                                            widget.serieId,
-                                                            context);
-                                                        profileRefreshNotifier.value++;
                                                       },
                                                       child: const Text(
                                                         ' 🗑️ Delete Rating',
@@ -566,25 +565,25 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                                                   widget
                                                                       .serieId;
                                                               final openbox =
-                                                                  Hive.box(
-                                                                      'sessionBox');
+                                                                  await Hive
+                                                                      .openBox(
+                                                                          'sessionBox');
 
                                                               final String
                                                                   sessionData =
                                                                   openbox.get(
                                                                       'sessionData');
+                                                              addRating(
+                                                                  sessionData,
+                                                                  serieId,
+                                                                  rating,
+                                                                  context);
                                                               setState(() {
                                                                 isSerieRated =
                                                                     '"value":$rating';
                                                                 userRating =
                                                                     rating;
                                                               });
-                                                              await addRating(
-                                                                  sessionData,
-                                                                  serieId,
-                                                                  rating,
-                                                                  context);
-                                                              profileRefreshNotifier.value++;
                                                             },
                                                           ),
                                                           const SizedBox(
