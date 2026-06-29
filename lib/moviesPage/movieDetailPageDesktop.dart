@@ -420,26 +420,26 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                 openbox.get('sessionData');
                                             if (isMovieWatchlist!) {
                                               // Remove from watchlist
-                                              removeFromWatchList(
-                                                  accountId,
-                                                  sessionData,
-                                                  movieId,
-                                                  context);
                                               setState(() {
                                                 isMovieWatchlist = false;
-                                                 profileRefreshNotifier.value++;
-                                               });
-                                            } else {
-                                              // Add to watchlist
-                                              addWatchList(
+                                              });
+                                              await removeFromWatchList(
                                                   accountId,
                                                   sessionData,
                                                   movieId,
                                                   context);
+                                              profileRefreshNotifier.value++;
+                                            } else {
+                                              // Add to watchlist
                                               setState(() {
                                                 isMovieWatchlist = true;
-                                                 profileRefreshNotifier.value++;
-                                               });
+                                              });
+                                              await addWatchList(
+                                                  accountId,
+                                                  sessionData,
+                                                  movieId,
+                                                  context);
+                                              profileRefreshNotifier.value++;
                                             }
                                           },
                                           child: Icon(

@@ -321,24 +321,29 @@ class _ProfilePageState extends State<ProfilePage> {
         final serieDetails = allSerieDetails[i];
         
         final serieLatestAir = serieDetails['last_air_date'];
-        final serieLastEpisodeSeasonNumber = serieDetails['last_episode_to_air']['season_number'];
-        final serieLastEpisodeEpisodeNumber = serieDetails['last_episode_to_air']['episode_number'];
-        final serieLatestAirDate = DateTime.parse(serieLatestAir);
-        
-        //check if the serie is aired in the last 14 days
-        final difference = today.difference(serieLatestAirDate).inDays;
-        if (difference <= 14) {
-          final updatedSerie = Serie(
-            name: serie.name,
-            posterPath: serie.posterPath,
-            overView: serie.overView,
-            id: serie.id,
-            score: serie.score,
-            lastAirDate: serieLatestAir,
-            lastEpisodeSeasonNumber: serieLastEpisodeSeasonNumber,
-            lastEpisodeEpisodeNumber: serieLastEpisodeEpisodeNumber,
-          );
-          recentEpisodes.add(updatedSerie);
+        final lastEpisode = serieDetails['last_episode_to_air'];
+        final serieLastEpisodeSeasonNumber = lastEpisode != null ? lastEpisode['season_number'] : null;
+        final serieLastEpisodeEpisodeNumber = lastEpisode != null ? lastEpisode['episode_number'] : null;
+
+        if (serieLatestAir != null && serieLatestAir.toString().isNotEmpty) {
+          final serieLatestAirDate = DateTime.tryParse(serieLatestAir);
+          if (serieLatestAirDate != null) {
+            //check if the serie is aired in the last 14 days
+            final difference = today.difference(serieLatestAirDate).inDays;
+            if (difference <= 14) {
+              final updatedSerie = Serie(
+                name: serie.name,
+                posterPath: serie.posterPath,
+                overView: serie.overView,
+                id: serie.id,
+                score: serie.score,
+                lastAirDate: serieLatestAir,
+                lastEpisodeSeasonNumber: serieLastEpisodeSeasonNumber,
+                lastEpisodeEpisodeNumber: serieLastEpisodeEpisodeNumber,
+              );
+              recentEpisodes.add(updatedSerie);
+            }
+          }
         }
       }
       // Sort recentEpisodes by lastAirDate in descending order (newest first)

@@ -431,20 +431,20 @@ String? posterPath;
                                   openbox.get('sessionData');
                               if (isSerieWatchlist!) {
                                 // Remove from watchlist
-                                removeFromWatchList(
-                                    accountId, sessionData, movieId, context);
                                 setState(() {
                                   isSerieWatchlist = false;
-                                  profileRefreshNotifier.value++;
                                 });
+                                await removeFromWatchList(
+                                    accountId, sessionData, movieId, context);
+                                profileRefreshNotifier.value++;
                               } else {
                                 // Add to watchlist
-                                addWatchList(
-                                    accountId, sessionData, movieId, context);
                                 setState(() {
                                   isSerieWatchlist = true;
-                                  profileRefreshNotifier.value++;
                                 });
+                                await addWatchList(
+                                    accountId, sessionData, movieId, context);
+                                profileRefreshNotifier.value++;
                               }
                             },
                             child: Icon(
@@ -475,19 +475,19 @@ String? posterPath;
                               final String sessionData =
                                   openbox.get('sessionData');
                               if (isSerieFavorite!) {
-                                removeFromFavorite(
-                                    accountId, sessionData, movieId, context);
                                 setState(() {
                                   isSerieFavorite = false;
-                                  profileRefreshNotifier.value++;
                                 });
-                              } else {
-                                addFavorite(
+                                await removeFromFavorite(
                                     accountId, sessionData, movieId, context);
+                                profileRefreshNotifier.value++;
+                              } else {
                                 setState(() {
                                   isSerieFavorite = true;
-                                  profileRefreshNotifier.value++;
                                 });
+                                await addFavorite(
+                                    accountId, sessionData, movieId, context);
+                                profileRefreshNotifier.value++;
                               }
                             },
                             child: Icon(
@@ -565,19 +565,20 @@ String? posterPath;
                                       ),
                                       GestureDetector(
                                         onTap: () async {
-                                          final openbox =
-                                              Hive.box('sessionBox');
+                                           final openbox =
+                                               Hive.box('sessionBox');
 
-                                          final String sessionData =
-                                              openbox.get('sessionData');
-                                          removeRating(sessionData,
-                                              widget.serieId, context);
-                                          Navigator.of(context).pop();
-                                          setState(() {
-                                            isSerieRated = false;
-                                            userRating = null;
-                                          });
-                                        },
+                                           final String sessionData =
+                                               openbox.get('sessionData');
+                                           setState(() {
+                                             isSerieRated = false;
+                                             userRating = null;
+                                           });
+                                           Navigator.of(context).pop();
+                                           await removeRating(sessionData,
+                                               widget.serieId, context);
+                                           profileRefreshNotifier.value++;
+                                         },
                                         child: const Text(
                                           ' 🗑️ Delete Rating',
                                           style: TextStyle(
@@ -650,13 +651,13 @@ String? posterPath;
 
                                                 final String sessionData =
                                                     openbox.get('sessionData');
-                                                addRating(sessionData, movieId,
-                                                    rating, context);
                                                 setState(() {
                                                   isSerieRated = '"value":$rating';
                                                    userRating = rating;
-                                                   profileRefreshNotifier.value++;
                                                  });
+                                                await addRating(sessionData, movieId,
+                                                    rating, context);
+                                                profileRefreshNotifier.value++;
                                               },
                                             ),
                                             const SizedBox(

@@ -312,26 +312,26 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                                 openbox.get('sessionData');
                                             if (isSerieWatchlist!) {
                                               // Remove from watchlist
-                                              removeFromWatchList(
-                                                  accountId,
-                                                  sessionData,
-                                                  serieId,
-                                                  context);
                                               setState(() {
                                                 isSerieWatchlist = false;
-                                                 profileRefreshNotifier.value++;
-                                               });
-                                            } else {
-                                              // Add to watchlist
-                                              addWatchList(
+                                              });
+                                              await removeFromWatchList(
                                                   accountId,
                                                   sessionData,
                                                   serieId,
                                                   context);
+                                              profileRefreshNotifier.value++;
+                                            } else {
+                                              // Add to watchlist
                                               setState(() {
                                                 isSerieWatchlist = true;
-                                                 profileRefreshNotifier.value++;
-                                               });
+                                              });
+                                              await addWatchList(
+                                                  accountId,
+                                                  sessionData,
+                                                  serieId,
+                                                  context);
+                                              profileRefreshNotifier.value++;
                                             }
                                           },
                                           child: Icon(
@@ -359,25 +359,25 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                             final String sessionData =
                                                 openbox.get('sessionData');
                                             if (isSerieFavorite!) {
-                                              removeFromFavorite(
-                                                  accountId,
-                                                  sessionData,
-                                                  serieId,
-                                                  context);
                                               setState(() {
                                                 isSerieFavorite = false;
-                                                 profileRefreshNotifier.value++;
-                                               });
-                                            } else {
-                                              addFavorite(
+                                              });
+                                              await removeFromFavorite(
                                                   accountId,
                                                   sessionData,
                                                   serieId,
                                                   context);
+                                              profileRefreshNotifier.value++;
+                                            } else {
                                               setState(() {
                                                 isSerieFavorite = true;
-                                                 profileRefreshNotifier.value++;
-                                               });
+                                              });
+                                              await addFavorite(
+                                                  accountId,
+                                                  sessionData,
+                                                  serieId,
+                                                  context);
+                                              profileRefreshNotifier.value++;
                                             }
                                           },
                                           child: Icon(
@@ -476,16 +476,17 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                                             sessionData =
                                                             openbox.get(
                                                                 'sessionData');
-                                                        removeRating(
-                                                            sessionData,
-                                                            widget.serieId,
-                                                            context);
-                                                        Navigator.of(context)
-                                                            .pop();
                                                         setState(() {
                                                           isSerieRated = false;
                                                           userRating = null;
                                                         });
+                                                        Navigator.of(context)
+                                                            .pop();
+                                                        await removeRating(
+                                                            sessionData,
+                                                            widget.serieId,
+                                                            context);
+                                                        profileRefreshNotifier.value++;
                                                       },
                                                       child: const Text(
                                                         ' 🗑️ Delete Rating',
@@ -565,25 +566,25 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                                                   widget
                                                                       .serieId;
                                                               final openbox =
-                                                                  await Hive
-                                                                      .openBox(
-                                                                          'sessionBox');
+                                                                  Hive.box(
+                                                                      'sessionBox');
 
                                                               final String
                                                                   sessionData =
                                                                   openbox.get(
                                                                       'sessionData');
-                                                              addRating(
-                                                                  sessionData,
-                                                                  serieId,
-                                                                  rating,
-                                                                  context);
                                                               setState(() {
                                                                 isSerieRated =
                                                                     '"value":$rating';
                                                                 userRating =
                                                                     rating;
                                                               });
+                                                              await addRating(
+                                                                  sessionData,
+                                                                  serieId,
+                                                                  rating,
+                                                                  context);
+                                                              profileRefreshNotifier.value++;
                                                             },
                                                           ),
                                                           const SizedBox(
