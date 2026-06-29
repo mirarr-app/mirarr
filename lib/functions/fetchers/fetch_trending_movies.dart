@@ -45,16 +45,20 @@ Future<List<Movie>> fetchTrendingMovies(String region) async {
   if (response.statusCode == 200) {
     final receivePort = ReceivePort();
 
-    await Isolate.spawn(
-      _isolateFunction,
-      {
-        'sendPort': receivePort.sendPort,
-        'responseBody': response.body,
-      },
-    );
+    try {
+      await Isolate.spawn(
+        _isolateFunction,
+        {
+          'sendPort': receivePort.sendPort,
+          'responseBody': response.body,
+        },
+      );
 
-    final movies = await receivePort.first as List<Movie>;
-    return movies;
+      final movies = await receivePort.first as List<Movie>;
+      return movies;
+    } finally {
+      receivePort.close();
+    }
   } else {
     throw Exception('Failed to load trending movie data');
   }
