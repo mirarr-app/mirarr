@@ -46,6 +46,13 @@ class _ProfilePageState extends State<ProfilePage> {
   final apiKey = dotenv.env['TMDB_API_KEY'];
   int _lastIndex = -1;
 
+  int _movieWatchListFetchId = 0;
+  int _tvWatchListFetchId = 0;
+  int _movieFavoritesFetchId = 0;
+  int _tvFavoritesFetchId = 0;
+  int _movieRatedFetchId = 0;
+  int _tvRatedFetchId = 0;
+
   Future<void> _navigateToMovie(String title, int id) async {
     if (Platform.isAndroid || Platform.isIOS) {
       await Navigator.push(
@@ -115,15 +122,20 @@ class _ProfilePageState extends State<ProfilePage> {
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
     final baseUrl = getBaseUrl(region);
+    
+    final currentFetchId = ++_movieWatchListFetchId;
+    
     final response = await http.get(
       Uri.parse(
-        '${baseUrl}account/$accountId/watchlist/movies?api_key=$apiKey&session_id=$sessionData',
+        '${baseUrl}account/$accountId/watchlist/movies?api_key=$apiKey&session_id=$sessionData&page=1',
       ),
     );
 
     if (response.statusCode == 200) {
+      if (currentFetchId != _movieWatchListFetchId) return;
+      final Map<String, dynamic> decoded = json.decode(response.body);
       final List<Movie> movies = [];
-      final List<dynamic> results = json.decode(response.body)['results'];
+      final List<dynamic> results = decoded['results'] ?? [];
 
       for (var result in results) {
         final movie = Movie(
@@ -139,8 +151,47 @@ class _ProfilePageState extends State<ProfilePage> {
       setState(() {
         moviesWatchList = movies;
       });
+
+      final int totalPages = decoded['total_pages'] ?? 1;
+      if (totalPages > 1) {
+        _fetchRemainingMovieWatchList(currentFetchId, totalPages, baseUrl, accountId, sessionData);
+      }
     } else {
       throw Exception('Failed to load popular movie data');
+    }
+  }
+
+  void _fetchRemainingMovieWatchList(int fetchId, int totalPages, String baseUrl, String accountId, String sessionData) async {
+    for (int page = 2; page <= totalPages; page++) {
+      if (fetchId != _movieWatchListFetchId || !mounted) return;
+      
+      try {
+        final response = await http.get(
+          Uri.parse(
+            '${baseUrl}account/$accountId/watchlist/movies?api_key=$apiKey&session_id=$sessionData&page=$page',
+          ),
+        );
+        
+        if (response.statusCode == 200 && fetchId == _movieWatchListFetchId && mounted) {
+          final List<dynamic> results = json.decode(response.body)['results'] ?? [];
+          final List<Movie> pageMovies = [];
+          for (var result in results) {
+            final movie = Movie(
+                title: result['title'],
+                releaseDate: result['release_date'],
+                posterPath: result['poster_path'] ?? '',
+                overView: result['overview'] ?? '',
+                id: result['id'] ?? '',
+                score: result['vote_average'] ?? '');
+            pageMovies.add(movie);
+          }
+          setState(() {
+            moviesWatchList = [...moviesWatchList, ...pageMovies];
+          });
+        }
+      } catch (e) {
+        // Handle silently
+      }
     }
   }
 
@@ -151,15 +202,20 @@ class _ProfilePageState extends State<ProfilePage> {
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
     final baseUrl = getBaseUrl(region);
+    
+    final currentFetchId = ++_movieFavoritesFetchId;
+    
     final response = await http.get(
       Uri.parse(
-        '${baseUrl}account/$accountId/favorite/movies?api_key=$apiKey&session_id=$sessionData',
+        '${baseUrl}account/$accountId/favorite/movies?api_key=$apiKey&session_id=$sessionData&page=1',
       ),
     );
 
     if (response.statusCode == 200) {
+      if (currentFetchId != _movieFavoritesFetchId) return;
+      final Map<String, dynamic> decoded = json.decode(response.body);
       final List<Movie> movies = [];
-      final List<dynamic> results = json.decode(response.body)['results'];
+      final List<dynamic> results = decoded['results'] ?? [];
 
       for (var result in results) {
         final movie = Movie(
@@ -175,8 +231,45 @@ class _ProfilePageState extends State<ProfilePage> {
       setState(() {
         movieFavorites = movies;
       });
+
+      final int totalPages = decoded['total_pages'] ?? 1;
+      if (totalPages > 1) {
+        _fetchRemainingFavoriteMovies(currentFetchId, totalPages, baseUrl, accountId, sessionData);
+      }
     } else {
       throw Exception('Failed to load popular movie data');
+    }
+  }
+
+  void _fetchRemainingFavoriteMovies(int fetchId, int totalPages, String baseUrl, String accountId, String sessionData) async {
+    for (int page = 2; page <= totalPages; page++) {
+      if (fetchId != _movieFavoritesFetchId || !mounted) return;
+      try {
+        final response = await http.get(
+          Uri.parse(
+            '${baseUrl}account/$accountId/favorite/movies?api_key=$apiKey&session_id=$sessionData&page=$page',
+          ),
+        );
+        if (response.statusCode == 200 && fetchId == _movieFavoritesFetchId && mounted) {
+          final List<dynamic> results = json.decode(response.body)['results'] ?? [];
+          final List<Movie> pageMovies = [];
+          for (var result in results) {
+            final movie = Movie(
+                title: result['title'],
+                releaseDate: result['release_date'],
+                posterPath: result['poster_path'] ?? '',
+                overView: result['overview'] ?? '',
+                id: result['id'] ?? '',
+                score: result['vote_average'] ?? '');
+            pageMovies.add(movie);
+          }
+          setState(() {
+            movieFavorites = [...movieFavorites, ...pageMovies];
+          });
+        }
+      } catch (e) {
+        // Handle silently
+      }
     }
   }
 
@@ -187,15 +280,20 @@ class _ProfilePageState extends State<ProfilePage> {
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
     final baseUrl = getBaseUrl(region);
+    
+    final currentFetchId = ++_movieRatedFetchId;
+    
     final response = await http.get(
       Uri.parse(
-        '${baseUrl}account/$accountId/rated/movies?api_key=$apiKey&session_id=$sessionData',
+        '${baseUrl}account/$accountId/rated/movies?api_key=$apiKey&session_id=$sessionData&page=1',
       ),
     );
 
     if (response.statusCode == 200) {
+      if (currentFetchId != _movieRatedFetchId) return;
+      final Map<String, dynamic> decoded = json.decode(response.body);
       final List<Movie> movies = [];
-      final List<dynamic> results = json.decode(response.body)['results'];
+      final List<dynamic> results = decoded['results'] ?? [];
 
       for (var result in results) {
         final movie = Movie(
@@ -211,8 +309,45 @@ class _ProfilePageState extends State<ProfilePage> {
       setState(() {
         movieRated = movies;
       });
+
+      final int totalPages = decoded['total_pages'] ?? 1;
+      if (totalPages > 1) {
+        _fetchRemainingRatedMovies(currentFetchId, totalPages, baseUrl, accountId, sessionData);
+      }
     } else {
       throw Exception('Failed to load popular movie data');
+    }
+  }
+
+  void _fetchRemainingRatedMovies(int fetchId, int totalPages, String baseUrl, String accountId, String sessionData) async {
+    for (int page = 2; page <= totalPages; page++) {
+      if (fetchId != _movieRatedFetchId || !mounted) return;
+      try {
+        final response = await http.get(
+          Uri.parse(
+            '${baseUrl}account/$accountId/rated/movies?api_key=$apiKey&session_id=$sessionData&page=$page',
+          ),
+        );
+        if (response.statusCode == 200 && fetchId == _movieRatedFetchId && mounted) {
+          final List<dynamic> results = json.decode(response.body)['results'] ?? [];
+          final List<Movie> pageMovies = [];
+          for (var result in results) {
+            final movie = Movie(
+                title: result['title'],
+                releaseDate: result['release_date'],
+                posterPath: result['poster_path'] ?? '',
+                overView: result['overview'] ?? '',
+                id: result['id'] ?? '',
+                score: result['vote_average'] ?? '');
+            pageMovies.add(movie);
+          }
+          setState(() {
+            movieRated = [...movieRated, ...pageMovies];
+          });
+        }
+      } catch (e) {
+        // Handle silently
+      }
     }
   }
 
@@ -281,16 +416,22 @@ class _ProfilePageState extends State<ProfilePage> {
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
     final baseUrl = getBaseUrl(region);
+    
+    final currentFetchId = ++_tvWatchListFetchId;
+    
     final response = await http.get(
       Uri.parse(
-        '${baseUrl}account/$accountId/watchlist/tv?api_key=$apiKey&session_id=$sessionData',
+        '${baseUrl}account/$accountId/watchlist/tv?api_key=$apiKey&session_id=$sessionData&page=1',
       ),
     );
 
     if (response.statusCode == 200) {
+      if (currentFetchId != _tvWatchListFetchId) return;
+      final Map<String, dynamic> decoded = json.decode(response.body);
       final List<Serie> series = [];
-      final List<dynamic> results = json.decode(response.body)['results'];
+      final List<dynamic> results = decoded['results'] ?? [];
       recentEpisodes.clear();
+      
       for (var result in results) {
         final serie = Serie(
             name: result['name'],
@@ -315,20 +456,103 @@ class _ProfilePageState extends State<ProfilePage> {
       // Wait for all requests to complete in parallel
       final List<Map<String, dynamic>> allSerieDetails = await Future.wait(detailFutures);
 
+      if (currentFetchId != _tvWatchListFetchId) return;
+
+      final List<Serie> pageRecentEpisodes = [];
       // Process the results
       for (var i = 0; i < series.length; i++) {
         final serie = series[i];
         final serieDetails = allSerieDetails[i];
         
         final serieLatestAir = serieDetails['last_air_date'];
-        final lastEpisode = serieDetails['last_episode_to_air'];
-        final serieLastEpisodeSeasonNumber = lastEpisode != null ? lastEpisode['season_number'] : null;
-        final serieLastEpisodeEpisodeNumber = lastEpisode != null ? lastEpisode['episode_number'] : null;
+        if (serieLatestAir == null) continue;
+        
+        final serieLastEpisodeSeasonNumber = serieDetails['last_episode_to_air']?['season_number'];
+        final serieLastEpisodeEpisodeNumber = serieDetails['last_episode_to_air']?['episode_number'];
+        final serieLatestAirDate = DateTime.parse(serieLatestAir);
+        
+        //check if the serie is aired in the last 14 days
+        final difference = today.difference(serieLatestAirDate).inDays;
+        if (difference <= 14) {
+          final updatedSerie = Serie(
+            name: serie.name,
+            posterPath: serie.posterPath,
+            overView: serie.overView,
+            id: serie.id,
+            score: serie.score,
+            lastAirDate: serieLatestAir,
+            lastEpisodeSeasonNumber: serieLastEpisodeSeasonNumber,
+            lastEpisodeEpisodeNumber: serieLastEpisodeEpisodeNumber,
+          );
+          pageRecentEpisodes.add(updatedSerie);
+        }
+      }
+      
+      // Sort recentEpisodes by lastAirDate in descending order (newest first)
+      pageRecentEpisodes.sort((a, b) => DateTime.parse(b.lastAirDate!).compareTo(DateTime.parse(a.lastAirDate!)));
+      setState(() {
+        recentEpisodes = pageRecentEpisodes;
+      });
 
-        if (serieLatestAir != null && serieLatestAir.toString().isNotEmpty) {
-          final serieLatestAirDate = DateTime.tryParse(serieLatestAir);
-          if (serieLatestAirDate != null) {
-            //check if the serie is aired in the last 14 days
+      final int totalPages = decoded['total_pages'] ?? 1;
+      if (totalPages > 1) {
+        _fetchRemainingTvWatchList(currentFetchId, totalPages, baseUrl, accountId, sessionData, region);
+      }
+    } else {
+      throw Exception('Failed to load trending series data');
+    }
+  }
+
+  void _fetchRemainingTvWatchList(int fetchId, int totalPages, String baseUrl, String accountId, String sessionData, String region) async {
+    final today = DateTime.now();
+    for (int page = 2; page <= totalPages; page++) {
+      if (fetchId != _tvWatchListFetchId || !mounted) return;
+      
+      try {
+        final response = await http.get(
+          Uri.parse(
+            '${baseUrl}account/$accountId/watchlist/tv?api_key=$apiKey&session_id=$sessionData&page=$page',
+          ),
+        );
+        
+        if (response.statusCode == 200 && fetchId == _tvWatchListFetchId && mounted) {
+          final List<dynamic> results = json.decode(response.body)['results'] ?? [];
+          final List<Serie> pageSeries = [];
+          for (var result in results) {
+            final serie = Serie(
+                name: result['name'],
+                posterPath: result['poster_path'] ?? '',
+                overView: result['overview'] ?? '',
+                id: result['id'],
+                score: result['vote_average'] ?? '');
+            pageSeries.add(serie);
+          }
+          
+          setState(() {
+            tvWatchList = [...tvWatchList, ...pageSeries];
+          });
+          
+          // Fetch details for this page's series
+          final List<Future<Map<String, dynamic>>> detailFutures = pageSeries.map((serie) => 
+            fetchSerieDetails(serie.id, region)
+          ).toList();
+
+          final List<Map<String, dynamic>> allSerieDetails = await Future.wait(detailFutures);
+          
+          if (fetchId != _tvWatchListFetchId || !mounted) return;
+          
+          final List<Serie> newRecentEpisodes = [];
+          for (var i = 0; i < pageSeries.length; i++) {
+            final serie = pageSeries[i];
+            final serieDetails = allSerieDetails[i];
+            
+            final serieLatestAir = serieDetails['last_air_date'];
+            if (serieLatestAir == null) continue;
+            
+            final serieLastEpisodeSeasonNumber = serieDetails['last_episode_to_air']?['season_number'];
+            final serieLastEpisodeEpisodeNumber = serieDetails['last_episode_to_air']?['episode_number'];
+            final serieLatestAirDate = DateTime.parse(serieLatestAir);
+            
             final difference = today.difference(serieLatestAirDate).inDays;
             if (difference <= 14) {
               final updatedSerie = Serie(
@@ -341,18 +565,21 @@ class _ProfilePageState extends State<ProfilePage> {
                 lastEpisodeSeasonNumber: serieLastEpisodeSeasonNumber,
                 lastEpisodeEpisodeNumber: serieLastEpisodeEpisodeNumber,
               );
-              recentEpisodes.add(updatedSerie);
+              newRecentEpisodes.add(updatedSerie);
             }
           }
+          
+          if (newRecentEpisodes.isNotEmpty) {
+            final List<Serie> updatedRecentEpisodes = [...recentEpisodes, ...newRecentEpisodes];
+            updatedRecentEpisodes.sort((a, b) => DateTime.parse(b.lastAirDate!).compareTo(DateTime.parse(a.lastAirDate!)));
+            setState(() {
+              recentEpisodes = updatedRecentEpisodes;
+            });
+          }
         }
+      } catch (e) {
+        // Handle silently
       }
-      // Sort recentEpisodes by lastAirDate in descending order (newest first)
-      recentEpisodes.sort((a, b) => DateTime.parse(b.lastAirDate!).compareTo(DateTime.parse(a.lastAirDate!)));
-      setState(() {
-        recentEpisodes = recentEpisodes;
-      });
-    } else {
-      throw Exception('Failed to load trending series data');
     }
   }
 
@@ -363,15 +590,20 @@ class _ProfilePageState extends State<ProfilePage> {
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
     final baseUrl = getBaseUrl(region);
+    
+    final currentFetchId = ++_tvFavoritesFetchId;
+    
     final response = await http.get(
       Uri.parse(
-        '${baseUrl}account/$accountId/favorite/tv?api_key=$apiKey&session_id=$sessionData',
+        '${baseUrl}account/$accountId/favorite/tv?api_key=$apiKey&session_id=$sessionData&page=1',
       ),
     );
 
     if (response.statusCode == 200) {
+      if (currentFetchId != _tvFavoritesFetchId) return;
+      final Map<String, dynamic> decoded = json.decode(response.body);
       final List<Serie> series = [];
-      final List<dynamic> results = json.decode(response.body)['results'];
+      final List<dynamic> results = decoded['results'] ?? [];
 
       for (var result in results) {
         final serie = Serie(
@@ -386,8 +618,44 @@ class _ProfilePageState extends State<ProfilePage> {
       setState(() {
         tvFavorites = series;
       });
+
+      final int totalPages = decoded['total_pages'] ?? 1;
+      if (totalPages > 1) {
+        _fetchRemainingFavoriteSeries(currentFetchId, totalPages, baseUrl, accountId, sessionData);
+      }
     } else {
       throw Exception('Failed to load trending series data');
+    }
+  }
+
+  void _fetchRemainingFavoriteSeries(int fetchId, int totalPages, String baseUrl, String accountId, String sessionData) async {
+    for (int page = 2; page <= totalPages; page++) {
+      if (fetchId != _tvFavoritesFetchId || !mounted) return;
+      try {
+        final response = await http.get(
+          Uri.parse(
+            '${baseUrl}account/$accountId/favorite/tv?api_key=$apiKey&session_id=$sessionData&page=$page',
+          ),
+        );
+        if (response.statusCode == 200 && fetchId == _tvFavoritesFetchId && mounted) {
+          final List<dynamic> results = json.decode(response.body)['results'] ?? [];
+          final List<Serie> pageSeries = [];
+          for (var result in results) {
+            final serie = Serie(
+                name: result['name'],
+                posterPath: result['poster_path'] ?? '',
+                overView: result['overview'] ?? '',
+                id: result['id'],
+                score: result['vote_average'] ?? '');
+            pageSeries.add(serie);
+          }
+          setState(() {
+            tvFavorites = [...tvFavorites, ...pageSeries];
+          });
+        }
+      } catch (e) {
+        // Handle silently
+      }
     }
   }
 
@@ -398,15 +666,20 @@ class _ProfilePageState extends State<ProfilePage> {
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
     final baseUrl = getBaseUrl(region);
+    
+    final currentFetchId = ++_tvRatedFetchId;
+    
     final response = await http.get(
       Uri.parse(
-        '${baseUrl}account/$accountId/rated/tv?api_key=$apiKey&session_id=$sessionData',
+        '${baseUrl}account/$accountId/rated/tv?api_key=$apiKey&session_id=$sessionData&page=1',
       ),
     );
 
     if (response.statusCode == 200) {
+      if (currentFetchId != _tvRatedFetchId) return;
+      final Map<String, dynamic> decoded = json.decode(response.body);
       final List<Serie> series = [];
-      final List<dynamic> results = json.decode(response.body)['results'];
+      final List<dynamic> results = decoded['results'] ?? [];
 
       for (var result in results) {
         final serie = Serie(
@@ -421,8 +694,44 @@ class _ProfilePageState extends State<ProfilePage> {
       setState(() {
         tvRated = series;
       });
+
+      final int totalPages = decoded['total_pages'] ?? 1;
+      if (totalPages > 1) {
+        _fetchRemainingRatedTv(currentFetchId, totalPages, baseUrl, accountId, sessionData);
+      }
     } else {
       throw Exception('Failed to load trending series data');
+    }
+  }
+
+  void _fetchRemainingRatedTv(int fetchId, int totalPages, String baseUrl, String accountId, String sessionData) async {
+    for (int page = 2; page <= totalPages; page++) {
+      if (fetchId != _tvRatedFetchId || !mounted) return;
+      try {
+        final response = await http.get(
+          Uri.parse(
+            '${baseUrl}account/$accountId/rated/tv?api_key=$apiKey&session_id=$sessionData&page=$page',
+          ),
+        );
+        if (response.statusCode == 200 && fetchId == _tvRatedFetchId && mounted) {
+          final List<dynamic> results = json.decode(response.body)['results'] ?? [];
+          final List<Serie> pageSeries = [];
+          for (var result in results) {
+            final serie = Serie(
+                name: result['name'],
+                posterPath: result['poster_path'] ?? '',
+                overView: result['overview'] ?? '',
+                id: result['id'],
+                score: result['vote_average'] ?? '');
+            pageSeries.add(serie);
+          }
+          setState(() {
+            tvRated = [...tvRated, ...pageSeries];
+          });
+        }
+      } catch (e) {
+        // Handle silently
+      }
     }
   }
 
