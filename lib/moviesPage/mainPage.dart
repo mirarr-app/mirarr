@@ -64,11 +64,17 @@ class _MovieSearchScreenState extends State<MovieSearchScreen> {
     try {
       final region =
           Provider.of<RegionProvider>(context, listen: false).currentRegion;
-      genres = await fetchGenres(region);
-      for (var genre in genres) {
+      final fetchedGenres = await fetchGenres(region);
+      final tasks = fetchedGenres.map((genre) async {
         final movies = await fetchMoviesByGenre(genre.id, region);
+        return MapEntry(genre.id, movies);
+      });
+      final results = await Future.wait(tasks);
+
+      if (mounted) {
         setState(() {
-          moviesByGenre[genre.id] = movies;
+          genres = fetchedGenres;
+          moviesByGenre = Map.fromEntries(results);
         });
       }
     } catch (e) {

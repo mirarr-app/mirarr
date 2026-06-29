@@ -38,11 +38,17 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
     try {
-      genres = await fetchGenres(region);
-      for (var genre in genres) {
+      final fetchedGenres = await fetchGenres(region);
+      final tasks = fetchedGenres.map((genre) async {
         final series = await fetchSeriesByGenre(genre.id, region);
+        return MapEntry(genre.id, series);
+      });
+      final results = await Future.wait(tasks);
+
+      if (mounted) {
         setState(() {
-          seriesByGenre[genre.id] = series;
+          genres = fetchedGenres;
+          seriesByGenre = Map.fromEntries(results);
         });
       }
     } catch (e) {
