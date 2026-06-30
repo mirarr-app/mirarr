@@ -1,6 +1,8 @@
 # Mirarr
 
 ## Watch movies and Arr.
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/mirarr-app/mirarr/total)
+
 
 ### Available on Android, Windows, Linux and IOS.
 
