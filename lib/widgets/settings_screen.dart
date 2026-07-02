@@ -6,6 +6,17 @@ import 'package:Mirarr/widgets/custom_divider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'dart:convert';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
+import 'package:Mirarr/database/watch_history_database.dart';
+import 'package:Mirarr/models/watch_history_model.dart';
+import 'package:Mirarr/functions/get_base_url.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -448,7 +459,302 @@ class _SettingsPageState extends State<SettingsPage> {
                       ),
                     ),
                     
- 
+            // Import Data Section
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 8, 8),
+              child: Text(
+                'Import Data',
+                style: TextStyle(
+                    color: Theme.of(context).primaryColor, fontSize: 20),
+              ),
+            ),
+            const CustomDivider(),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+              child: Card(
+                color: Colors.grey[900],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.import_contacts, color: Theme.of(context).primaryColor, size: 28),
+                          const SizedBox(width: 12),
+                          const Text(
+                            'Import from Letterboxd',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        '1. Go to letterboxd.com/settings/data/\n2. Export your data and unzip the downloaded file.\n3. Tap below and select the "watched.csv" file.',
+                        style: TextStyle(color: Colors.grey[400], height: 1.5, fontSize: 14),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: _openLetterboxdSettings,
+                            icon: const Icon(Icons.open_in_new, size: 18),
+                            label: const Text('Open Letterboxd'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.grey[800],
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: ElevatedButton.icon(
+                              onPressed: _importLetterboxdCsv,
+                              icon: const Icon(Icons.file_upload),
+                              label: const Text('Select watched.csv'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Theme.of(context).primaryColor,
+                                foregroundColor: Colors.black,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+              child: Card(
+                color: Colors.grey[900],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.tv, color: Theme.of(context).primaryColor, size: 28),
+                          const SizedBox(width: 12),
+                          const Text(
+                            'Import from TV Time',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        '1. Use the "TV Time Out by Refract" extension to export either of your movies or series JSON files.\n2. Tap below to select and import the JSON file.',
+                        style: TextStyle(color: Colors.grey[400], height: 1.5, fontSize: 14),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton.icon(
+                        onPressed: _importTvTimeJson,
+                        icon: const Icon(Icons.file_upload),
+                        label: const Text('Select JSON File'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).primaryColor,
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+              child: Card(
+                color: Colors.grey[900],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.restore, color: Theme.of(context).primaryColor, size: 28),
+                          const SizedBox(width: 12),
+                          const Text(
+                            'Restore Backup',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Import your exported watched history JSON files (will be merged into existing history) or replace the entire database with a .db backup file.',
+                        style: TextStyle(color: Colors.grey[400], height: 1.5, fontSize: 14),
+                      ),
+                      const SizedBox(height: 16),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: _importMoviesJson,
+                            icon: const Icon(Icons.movie, size: 18),
+                            label: const Text('Movies (JSON)'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.grey[800],
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20)),
+                            ),
+                          ),
+                          ElevatedButton.icon(
+                            onPressed: _importShowsJson,
+                            icon: const Icon(Icons.tv, size: 18),
+                            label: const Text('TV Shows (JSON)'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.grey[800],
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20)),
+                            ),
+                          ),
+                          ElevatedButton.icon(
+                            onPressed: _importDbFile,
+                            icon: const Icon(Icons.settings_backup_restore, size: 18),
+                            label: const Text('Database (.db)'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(context).primaryColor,
+                              foregroundColor: Colors.black,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            
+            // Export Data Section
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 8, 8),
+              child: Text(
+                'Export Data',
+                style: TextStyle(
+                    color: Theme.of(context).primaryColor, fontSize: 20),
+              ),
+            ),
+            const CustomDivider(),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+              child: Card(
+                color: Colors.grey[900],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.download, color: Theme.of(context).primaryColor, size: 28),
+                          const SizedBox(width: 12),
+                          const Text(
+                            'Export Shelf Database',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Export your local shelf database as JSON files (separate for movies and TV shows) or as the SQLite .db file itself.',
+                        style: TextStyle(color: Colors.grey[400], height: 1.5, fontSize: 14),
+                      ),
+                      const SizedBox(height: 16),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: _exportMoviesJson,
+                            icon: const Icon(Icons.movie, size: 18),
+                            label: const Text('Movies (JSON)'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.grey[800],
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                          ),
+                          ElevatedButton.icon(
+                            onPressed: _exportShowsJson,
+                            icon: const Icon(Icons.tv, size: 18),
+                            label: const Text('TV Shows (JSON)'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.grey[800],
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                          ),
+                          ElevatedButton.icon(
+                            onPressed: _exportDbFile,
+                            icon: const Icon(Icons.save, size: 18),
+                            label: const Text('Database (.db)'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(context).primaryColor,
+                              foregroundColor: Colors.black,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            
             // Region Selection Section
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 8, 8),
@@ -613,6 +919,1275 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _openLetterboxdSettings() async {
+    final url = Uri.parse('https://letterboxd.com/settings/data/');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not launch Letterboxd settings URL')),
+        );
+      }
+    }
+  }
+
+  List<List<String>> _parseCsv(String content) {
+    final List<List<String>> rows = [];
+    List<String> currentRow = [];
+    StringBuffer currentField = StringBuffer();
+    bool inQuotes = false;
+
+    for (int i = 0; i < content.length; i++) {
+      final char = content[i];
+      if (inQuotes) {
+        if (char == '"') {
+          if (i + 1 < content.length && content[i + 1] == '"') {
+            currentField.write('"');
+            i++; // Skip next quote
+          } else {
+            inQuotes = false;
+          }
+        } else {
+          currentField.write(char);
+        }
+      } else {
+        if (char == '"') {
+          inQuotes = true;
+        } else if (char == ',') {
+          currentRow.add(currentField.toString().trim());
+          currentField.clear();
+        } else if (char == '\n' || char == '\r') {
+          currentRow.add(currentField.toString().trim());
+          currentField.clear();
+          if (currentRow.any((field) => field.isNotEmpty)) {
+            rows.add(currentRow);
+          }
+          currentRow = [];
+          if (char == '\r' && i + 1 < content.length && content[i + 1] == '\n') {
+            i++; // Skip \n
+          }
+        } else {
+          currentField.write(char);
+        }
+      }
+    }
+    if (currentField.isNotEmpty || currentRow.isNotEmpty) {
+      currentRow.add(currentField.toString().trim());
+      if (currentRow.any((field) => field.isNotEmpty)) {
+        rows.add(currentRow);
+      }
+    }
+    return rows;
+  }
+
+  void _importLetterboxdCsv() async {
+    try {
+      final result = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['csv'],
+      );
+      if (result == null || result.files.isEmpty) return;
+
+      final file = result.files.first;
+      String content = '';
+      if (file.bytes != null) {
+        content = utf8.decode(file.bytes!);
+      } else if (file.path != null) {
+        final ioFile = File(file.path!);
+        content = await ioFile.readAsString();
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to read file content')),
+          );
+        }
+        return;
+      }
+
+      final rows = _parseCsv(content);
+      if (rows.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Selected CSV file is empty')),
+          );
+        }
+        return;
+      }
+
+      final header = rows.first.map((e) => e.trim().toLowerCase()).toList();
+      final dateIdx = header.indexOf('date');
+      final nameIdx = header.indexOf('name');
+      final yearIdx = header.indexOf('year');
+
+      if (dateIdx == -1 || nameIdx == -1 || yearIdx == -1) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Invalid Letterboxd CSV. Missing columns: Date, Name, or Year.'),
+            ),
+          );
+        }
+        return;
+      }
+
+      final region = Provider.of<RegionProvider>(context, listen: false).currentRegion;
+      final baseUrl = getBaseUrl(region);
+      final apiKey = dotenv.env['TMDB_API_KEY'];
+
+      if (apiKey == null || apiKey.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('TMDB API Key is missing. Check setup.')),
+          );
+        }
+        return;
+      }
+
+      if (mounted) {
+        final importedCount = await showDialog<int>(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => ImportProgressDialog(
+            csvRows: rows,
+            dateIdx: dateIdx,
+            nameIdx: nameIdx,
+            yearIdx: yearIdx,
+            baseUrl: baseUrl,
+            apiKey: apiKey,
+          ),
+        );
+
+        if (importedCount != null && importedCount > 0 && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Successfully imported $importedCount watched movies!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error picking or parsing CSV file: $e')),
+        );
+      }
+    }
+  }
+
+  void _importTvTimeJson() async {
+    try {
+      final result = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+      if (result == null || result.files.isEmpty) return;
+
+      final file = result.files.first;
+      String content = '';
+      if (file.bytes != null) {
+        content = utf8.decode(file.bytes!);
+      } else if (file.path != null) {
+        final ioFile = File(file.path!);
+        content = await ioFile.readAsString();
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to read file content')),
+          );
+        }
+        return;
+      }
+
+      final dynamic decoded = json.decode(content);
+      if (decoded is! List) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Invalid JSON format. Expected a JSON array.')),
+          );
+        }
+        return;
+      }
+
+      if (!mounted) return;
+      final region = Provider.of<RegionProvider>(context, listen: false).currentRegion;
+      final baseUrl = getBaseUrl(region);
+      final apiKey = dotenv.env['TMDB_API_KEY'];
+
+      if (apiKey == null || apiKey.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('TMDB API Key is missing. Check setup.')),
+          );
+        }
+        return;
+      }
+
+      if (mounted) {
+        final importedCount = await showDialog<int>(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => TvTimeImportProgressDialog(
+            jsonList: decoded,
+            baseUrl: baseUrl,
+            apiKey: apiKey,
+          ),
+        );
+
+        if (importedCount != null && importedCount > 0 && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Successfully imported $importedCount items!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error picking or parsing JSON file: $e')),
+        );
+      }
+    }
+  }
+
+  void _exportMoviesJson() async {
+    try {
+      final db = WatchHistoryDatabase();
+      final movies = await db.getWatchedMovies();
+      if (movies.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No watched movies to export.')),
+          );
+        }
+        return;
+      }
+      
+      final listMap = movies.map((item) => item.toMap()).toList();
+      final jsonString = const JsonEncoder.withIndent('  ').convert(listMap);
+      
+      if (Platform.isLinux || Platform.isWindows) {
+        final outputFile = await FilePicker.saveFile(
+          dialogTitle: 'Save Watched Movies JSON',
+          fileName: 'watched_movies.json',
+          type: FileType.custom,
+          allowedExtensions: ['json'],
+        );
+        if (outputFile != null) {
+          final file = File(outputFile);
+          await file.writeAsString(jsonString);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Movies exported successfully to $outputFile'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        }
+      } else {
+        final directory = await getTemporaryDirectory();
+        final filePath = '${directory.path}/watched_movies.json';
+        final file = File(filePath);
+        await file.writeAsString(jsonString);
+        
+        await Share.shareXFiles(
+          [XFile(filePath)],
+          subject: 'Mirarr Watched Movies Export',
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error exporting movies: $e')),
+        );
+      }
+    }
+  }
+
+  void _exportShowsJson() async {
+    try {
+      final db = WatchHistoryDatabase();
+      final shows = await db.getWatchedShows();
+      if (shows.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No watched TV shows to export.')),
+          );
+        }
+        return;
+      }
+      
+      final listMap = shows.map((item) => item.toMap()).toList();
+      final jsonString = const JsonEncoder.withIndent('  ').convert(listMap);
+      
+      if (Platform.isLinux || Platform.isWindows) {
+        final outputFile = await FilePicker.saveFile(
+          dialogTitle: 'Save Watched TV Shows JSON',
+          fileName: 'watched_shows.json',
+          type: FileType.custom,
+          allowedExtensions: ['json'],
+        );
+        if (outputFile != null) {
+          final file = File(outputFile);
+          await file.writeAsString(jsonString);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('TV shows exported successfully to $outputFile'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        }
+      } else {
+        final directory = await getTemporaryDirectory();
+        final filePath = '${directory.path}/watched_shows.json';
+        final file = File(filePath);
+        await file.writeAsString(jsonString);
+        
+        await Share.shareXFiles(
+          [XFile(filePath)],
+          subject: 'Mirarr Watched TV Shows Export',
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error exporting TV shows: $e')),
+        );
+      }
+    }
+  }
+
+  void _exportDbFile() async {
+    try {
+      final documentsDirectory = await getApplicationDocumentsDirectory();
+      final dbPath = p.join(documentsDirectory.path, 'watch_history.db');
+      final dbFile = File(dbPath);
+      
+      if (!await dbFile.exists()) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Database file does not exist yet.')),
+          );
+        }
+        return;
+      }
+      
+      if (Platform.isLinux || Platform.isWindows) {
+        final outputFile = await FilePicker.saveFile(
+          dialogTitle: 'Save Database File',
+          fileName: 'watch_history.db',
+          type: FileType.custom,
+          allowedExtensions: ['db'],
+        );
+        if (outputFile != null) {
+          await dbFile.copy(outputFile);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Database exported successfully to $outputFile'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        }
+      } else {
+        final tempDirectory = await getTemporaryDirectory();
+        final tempDbPath = p.join(tempDirectory.path, 'watch_history.db');
+        await dbFile.copy(tempDbPath);
+        
+        await Share.shareXFiles(
+          [XFile(tempDbPath)],
+          subject: 'Mirarr Database Export',
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error exporting database file: $e')),
+        );
+      }
+    }
+  }
+
+  void _importMoviesJson() async {
+    try {
+      final result = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+      if (result == null || result.files.isEmpty) return;
+
+      final file = result.files.first;
+      String content = '';
+      if (file.bytes != null) {
+        content = utf8.decode(file.bytes!);
+      } else if (file.path != null) {
+        final ioFile = File(file.path!);
+        content = await ioFile.readAsString();
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to read file content')),
+          );
+        }
+        return;
+      }
+
+      final dynamic decoded = json.decode(content);
+      if (decoded is! List) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Invalid JSON format. Expected a JSON list.')),
+          );
+        }
+        return;
+      }
+
+      final db = WatchHistoryDatabase();
+      int count = 0;
+      for (var rawMap in decoded) {
+        if (rawMap is Map<String, dynamic>) {
+          final Map<String, dynamic> map = Map<String, dynamic>.from(rawMap);
+          if (map['user_rating'] is int) {
+            map['user_rating'] = (map['user_rating'] as int).toDouble();
+          }
+          final item = WatchHistoryItem.fromMap(map);
+          await db.insertWatchHistoryItem(item);
+          count++;
+        }
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Successfully imported $count watched movies!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error importing movies: $e')),
+        );
+      }
+    }
+  }
+
+  void _importShowsJson() async {
+    try {
+      final result = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+      if (result == null || result.files.isEmpty) return;
+
+      final file = result.files.first;
+      String content = '';
+      if (file.bytes != null) {
+        content = utf8.decode(file.bytes!);
+      } else if (file.path != null) {
+        final ioFile = File(file.path!);
+        content = await ioFile.readAsString();
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to read file content')),
+          );
+        }
+        return;
+      }
+
+      final dynamic decoded = json.decode(content);
+      if (decoded is! List) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Invalid JSON format. Expected a JSON list.')),
+          );
+        }
+        return;
+      }
+
+      final db = WatchHistoryDatabase();
+      int count = 0;
+      for (var rawMap in decoded) {
+        if (rawMap is Map<String, dynamic>) {
+          final Map<String, dynamic> map = Map<String, dynamic>.from(rawMap);
+          if (map['user_rating'] is int) {
+            map['user_rating'] = (map['user_rating'] as int).toDouble();
+          }
+          final item = WatchHistoryItem.fromMap(map);
+          await db.insertWatchHistoryItem(item);
+          count++;
+        }
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Successfully imported $count watched TV shows!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error importing TV shows: $e')),
+        );
+      }
+    }
+  }
+
+  void _importDbFile() async {
+    try {
+      final result = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['db'],
+      );
+      if (result == null || result.files.isEmpty) return;
+
+      final file = result.files.first;
+      final documentsDirectory = await getApplicationDocumentsDirectory();
+      final dbPath = p.join(documentsDirectory.path, 'watch_history.db');
+
+      final db = WatchHistoryDatabase();
+      await db.close();
+
+      if (file.bytes != null) {
+        final ioFile = File(dbPath);
+        await ioFile.writeAsBytes(file.bytes!);
+      } else if (file.path != null) {
+        final ioFile = File(file.path!);
+        await ioFile.copy(dbPath);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to read database file.')),
+          );
+        }
+        return;
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Database restored successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error restoring database: $e')),
+        );
+      }
+    }
+  }
+}
+
+class ImportProgressDialog extends StatefulWidget {
+  final List<List<String>> csvRows;
+  final int dateIdx;
+  final int nameIdx;
+  final int yearIdx;
+  final String baseUrl;
+  final String? apiKey;
+
+  const ImportProgressDialog({
+    Key? key,
+    required this.csvRows,
+    required this.dateIdx,
+    required this.nameIdx,
+    required this.yearIdx,
+    required this.baseUrl,
+    required this.apiKey,
+  }) : super(key: key);
+
+  @override
+  _ImportProgressDialogState createState() => _ImportProgressDialogState();
+}
+
+class _ImportProgressDialogState extends State<ImportProgressDialog> {
+  int _processedCount = 0;
+  int _successCount = 0;
+  int _failedCount = 0;
+  bool _isCancelled = false;
+  bool _isFinished = false;
+  String _currentMovieName = '';
+  final WatchHistoryDatabase _db = WatchHistoryDatabase();
+
+  @override
+  void initState() {
+    super.initState();
+    _startImport();
+  }
+
+  void _startImport() async {
+    for (int i = 1; i < widget.csvRows.length; i++) {
+      if (_isCancelled) break;
+
+      final row = widget.csvRows[i];
+      if (row.length <= widget.nameIdx || row.length <= widget.dateIdx || row.length <= widget.yearIdx) {
+        if (mounted) {
+          setState(() {
+            _processedCount++;
+            _failedCount++;
+          });
+        }
+        continue;
+      }
+
+      final dateStr = row[widget.dateIdx].trim();
+      final name = row[widget.nameIdx].trim();
+      final yearStr = row[widget.yearIdx].trim();
+
+      if (name.isEmpty) {
+        if (mounted) {
+          setState(() {
+            _processedCount++;
+            _failedCount++;
+          });
+        }
+        continue;
+      }
+
+      if (mounted) {
+        setState(() {
+          _currentMovieName = name;
+        });
+      }
+
+      final date = DateTime.tryParse(dateStr) ?? DateTime.now();
+
+      try {
+        int? tmdbId;
+        String? title;
+        String? posterPath;
+
+        String searchUrl = '${widget.baseUrl}search/movie?api_key=${widget.apiKey}&query=${Uri.encodeComponent(name)}';
+        if (yearStr.isNotEmpty) {
+          searchUrl += '&primary_release_year=$yearStr';
+        }
+
+        var response = await http.get(Uri.parse(searchUrl));
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          final List<dynamic> results = data['results'] ?? [];
+          if (results.isNotEmpty) {
+            final first = results.first;
+            tmdbId = first['id'];
+            title = first['title'];
+            posterPath = first['poster_path'];
+          }
+        }
+
+        if (tmdbId == null && yearStr.isNotEmpty) {
+          final fallbackUrl = '${widget.baseUrl}search/movie?api_key=${widget.apiKey}&query=${Uri.encodeComponent(name)}';
+          response = await http.get(Uri.parse(fallbackUrl));
+          if (response.statusCode == 200) {
+            final data = json.decode(response.body);
+            final List<dynamic> results = data['results'] ?? [];
+            if (results.isNotEmpty) {
+              final first = results.first;
+              tmdbId = first['id'];
+              title = first['title'];
+              posterPath = first['poster_path'];
+            }
+          }
+        }
+
+        if (tmdbId != null && title != null) {
+          await _db.addMovieToHistory(
+            tmdbId: tmdbId,
+            title: title,
+            posterPath: posterPath,
+            watchedAt: date,
+          );
+          _successCount++;
+        } else {
+          _failedCount++;
+        }
+      } catch (e) {
+        _failedCount++;
+      }
+
+      if (mounted) {
+        setState(() {
+          _processedCount++;
+        });
+      }
+
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
+
+    if (mounted) {
+      setState(() {
+        _isFinished = true;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final total = widget.csvRows.length - 1;
+    final progress = total > 0 ? _processedCount / total : 0.0;
+
+    return WillPopScope(
+      onWillPop: () async => _isFinished || _isCancelled,
+      child: AlertDialog(
+        backgroundColor: Colors.grey[900],
+        title: Text(
+          _isFinished
+              ? 'Import Completed'
+              : _isCancelled
+                  ? 'Import Cancelled'
+                  : 'Importing movies...',
+          style: const TextStyle(color: Colors.white),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (!_isFinished && !_isCancelled) ...[
+              Text(
+                'Processing: $_currentMovieName',
+                style: const TextStyle(color: Colors.grey, fontSize: 14),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 12),
+            ],
+            LinearProgressIndicator(
+              value: progress,
+              backgroundColor: Colors.grey[800],
+              valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Total processed: $_processedCount / $total',
+              style: const TextStyle(color: Colors.white),
+            ),
+            Text(
+              'Successful: $_successCount',
+              style: const TextStyle(color: Colors.green),
+            ),
+            Text(
+              'Failed / Unmatched: $_failedCount',
+              style: const TextStyle(color: Colors.red),
+            ),
+          ],
+        ),
+        actions: [
+          if (!_isFinished && !_isCancelled)
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  _isCancelled = true;
+                });
+              },
+              child: const Text('Cancel', style: TextStyle(color: Colors.red)),
+            ),
+          if (_isFinished || _isCancelled)
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(_successCount);
+              },
+              child: Text(
+                'Close',
+                style: TextStyle(color: Theme.of(context).primaryColor),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class TvTimeImportProgressDialog extends StatefulWidget {
+  final List<dynamic> jsonList;
+  final String baseUrl;
+  final String? apiKey;
+
+  const TvTimeImportProgressDialog({
+    Key? key,
+    required this.jsonList,
+    required this.baseUrl,
+    required this.apiKey,
+  }) : super(key: key);
+
+  @override
+  State<TvTimeImportProgressDialog> createState() => _TvTimeImportProgressDialogState();
+}
+
+class _TvTimeImportProgressDialogState extends State<TvTimeImportProgressDialog> {
+  int _processedCount = 0;
+  int _totalCount = 0;
+  int _successCount = 0;
+  int _failedCount = 0;
+  bool _isCancelled = false;
+  bool _isFinished = false;
+  bool _isSeries = false;
+  String _currentName = '';
+  final WatchHistoryDatabase _db = WatchHistoryDatabase();
+  
+  // Cache show/movie lookups to avoid redundant API queries
+  final Map<String, Map<String, dynamic>?> _tmdbCache = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _startImport();
+  }
+
+  Future<Map<String, dynamic>?> _findMovieTmdb({
+    required String title,
+    int? tvdbId,
+    String? imdbId,
+    int? year,
+    required String baseUrl,
+    required String apiKey,
+  }) async {
+    if (imdbId != null && imdbId.isNotEmpty) {
+      try {
+        final findUrl = '${baseUrl}find/$imdbId?api_key=$apiKey&external_source=imdb_id';
+        final response = await http.get(Uri.parse(findUrl));
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          final List<dynamic> results = data['movie_results'] ?? [];
+          if (results.isNotEmpty) {
+            return results.first;
+          }
+        }
+      } catch (_) {}
+    }
+    
+    if (tvdbId != null) {
+      try {
+        final findUrl = '${baseUrl}find/$tvdbId?api_key=$apiKey&external_source=tvdb_id';
+        final response = await http.get(Uri.parse(findUrl));
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          final List<dynamic> results = data['movie_results'] ?? [];
+          if (results.isNotEmpty) {
+            return results.first;
+          }
+        }
+      } catch (_) {}
+    }
+
+    // Fallback to search
+    try {
+      String searchUrl = '${baseUrl}search/movie?api_key=$apiKey&query=${Uri.encodeComponent(title)}';
+      if (year != null) {
+        searchUrl += '&primary_release_year=$year';
+      }
+      var response = await http.get(Uri.parse(searchUrl));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final List<dynamic> results = data['results'] ?? [];
+        if (results.isNotEmpty) {
+          return results.first;
+        }
+      }
+      
+      if (year != null) {
+        // Try search without year
+        final searchUrlNoYear = '${baseUrl}search/movie?api_key=$apiKey&query=${Uri.encodeComponent(title)}';
+        response = await http.get(Uri.parse(searchUrlNoYear));
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          final List<dynamic> results = data['results'] ?? [];
+          if (results.isNotEmpty) {
+            return results.first;
+          }
+        }
+      }
+    } catch (_) {}
+
+    return null;
+  }
+
+  Future<Map<String, dynamic>?> _findTvTmdb({
+    required String title,
+    int? tvdbId,
+    String? imdbId,
+    required String baseUrl,
+    required String apiKey,
+  }) async {
+    if (tvdbId != null) {
+      try {
+        final findUrl = '${baseUrl}find/$tvdbId?api_key=$apiKey&external_source=tvdb_id';
+        final response = await http.get(Uri.parse(findUrl));
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          final List<dynamic> results = data['tv_results'] ?? [];
+          if (results.isNotEmpty) {
+            return results.first;
+          }
+        }
+      } catch (_) {}
+    }
+
+    if (imdbId != null && imdbId.isNotEmpty) {
+      try {
+        final findUrl = '${baseUrl}find/$imdbId?api_key=$apiKey&external_source=imdb_id';
+        final response = await http.get(Uri.parse(findUrl));
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          final List<dynamic> results = data['tv_results'] ?? [];
+          if (results.isNotEmpty) {
+            return results.first;
+          }
+        }
+      } catch (_) {}
+    }
+
+    // Fallback to search
+    try {
+      final searchUrl = '${baseUrl}search/tv?api_key=$apiKey&query=${Uri.encodeComponent(title)}';
+      final response = await http.get(Uri.parse(searchUrl));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final List<dynamic> results = data['results'] ?? [];
+        if (results.isNotEmpty) {
+          return results.first;
+        }
+      }
+    } catch (_) {}
+
+    return null;
+  }
+
+  void _startImport() async {
+    // Determine if movies or series JSON
+    final isSeriesDetected = widget.jsonList.any((item) => item is Map && item.containsKey('seasons'));
+    
+    if (mounted) {
+      setState(() {
+        _isSeries = isSeriesDetected;
+      });
+    }
+
+    if (isSeriesDetected) {
+      // Parse series and flatten episodes
+      final List<Map<String, dynamic>> watchedEpisodes = [];
+      for (var seriesItem in widget.jsonList) {
+        if (seriesItem is Map<String, dynamic>) {
+          final seriesTitle = seriesItem['title'] as String? ?? 'Unknown Series';
+          final idMap = seriesItem['id'] as Map<String, dynamic>?;
+          final tvdbId = idMap?['tvdb'] as int?;
+          final imdbId = idMap?['imdb'] as String?;
+          final seriesCreatedAtStr = seriesItem['created_at'] as String?;
+          
+          final seasons = seriesItem['seasons'] as List<dynamic>?;
+          if (seasons != null) {
+            for (var season in seasons) {
+              if (season is Map<String, dynamic>) {
+                final seasonNumber = season['number'] as int? ?? 1;
+                final episodes = season['episodes'] as List<dynamic>?;
+                if (episodes != null) {
+                  for (var episode in episodes) {
+                    if (episode is Map<String, dynamic>) {
+                      final isWatched = episode['is_watched'];
+                      if (isWatched == true || isWatched == 'true') {
+                        final episodeNumber = episode['number'] as int? ?? 1;
+                        final episodeTitle = episode['name'] as String? ?? 'Episode $episodeNumber';
+                        final watchedAtStr = episode['watched_at'] as String?;
+                        
+                        watchedEpisodes.add({
+                          'seriesTitle': seriesTitle,
+                          'tvdbId': tvdbId,
+                          'imdbId': imdbId,
+                          'seasonNumber': seasonNumber,
+                          'episodeNumber': episodeNumber,
+                          'episodeTitle': episodeTitle,
+                          'watchedAt': watchedAtStr,
+                          'seriesCreatedAt': seriesCreatedAtStr,
+                        });
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      if (watchedEpisodes.isEmpty) {
+        if (mounted) {
+          setState(() {
+            _isFinished = true;
+          });
+        }
+        return;
+      }
+
+      if (mounted) {
+        setState(() {
+          _totalCount = watchedEpisodes.length;
+        });
+      }
+
+      for (int i = 0; i < watchedEpisodes.length; i++) {
+        if (_isCancelled) break;
+
+        final episode = watchedEpisodes[i];
+        final seriesTitle = episode['seriesTitle'] as String;
+        final tvdbId = episode['tvdbId'] as int?;
+        final imdbId = episode['imdbId'] as String?;
+        final seasonNumber = episode['seasonNumber'] as int;
+        final episodeNumber = episode['episodeNumber'] as int;
+        final episodeTitle = episode['episodeTitle'] as String;
+        final watchedAtStr = episode['watchedAt'] as String?;
+        final seriesCreatedAtStr = episode['seriesCreatedAt'] as String?;
+
+        if (mounted) {
+          setState(() {
+            _currentName = '$seriesTitle S${seasonNumber}E$episodeNumber';
+          });
+        }
+
+        final date = (watchedAtStr != null && watchedAtStr.isNotEmpty)
+            ? (DateTime.tryParse(watchedAtStr) ?? DateTime.now())
+            : (seriesCreatedAtStr != null && seriesCreatedAtStr.isNotEmpty
+                ? (DateTime.tryParse(seriesCreatedAtStr) ?? DateTime.now())
+                : DateTime.now());
+
+        try {
+          final cacheKey = tvdbId != null ? 'tvdb_$tvdbId' : (imdbId != null ? 'imdb_$imdbId' : 'title_$seriesTitle');
+          Map<String, dynamic>? tmdbData;
+
+          if (_tmdbCache.containsKey(cacheKey)) {
+            tmdbData = _tmdbCache[cacheKey];
+          } else {
+            tmdbData = await _findTvTmdb(
+              title: seriesTitle,
+              tvdbId: tvdbId,
+              imdbId: imdbId,
+              baseUrl: widget.baseUrl,
+              apiKey: widget.apiKey ?? '',
+            );
+            _tmdbCache[cacheKey] = tmdbData;
+          }
+
+          if (tmdbData != null) {
+            final tmdbId = tmdbData['id'] as int;
+            final resolvedTitle = tmdbData['name'] as String? ?? seriesTitle;
+            final posterPath = tmdbData['poster_path'] as String?;
+
+            await _db.addShowToHistory(
+              tmdbId: tmdbId,
+              title: resolvedTitle,
+              posterPath: posterPath,
+              watchedAt: date,
+              seasonNumber: seasonNumber,
+              episodeNumber: episodeNumber,
+              episodeTitle: episodeTitle,
+            );
+            _successCount++;
+          } else {
+            _failedCount++;
+          }
+        } catch (e) {
+          _failedCount++;
+        }
+
+        if (mounted) {
+          setState(() {
+            _processedCount++;
+          });
+        }
+
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+    } else {
+      // Parse movies
+      final List<Map<String, dynamic>> watchedMovies = [];
+      for (var item in widget.jsonList) {
+        if (item is Map<String, dynamic>) {
+          final isWatched = item['is_watched'];
+          if (isWatched == true || isWatched == 'true') {
+            watchedMovies.add(item);
+          }
+        }
+      }
+
+      if (watchedMovies.isEmpty) {
+        if (mounted) {
+          setState(() {
+            _isFinished = true;
+          });
+        }
+        return;
+      }
+
+      if (mounted) {
+        setState(() {
+          _totalCount = watchedMovies.length;
+        });
+      }
+
+      for (int i = 0; i < watchedMovies.length; i++) {
+        if (_isCancelled) break;
+
+        final movie = watchedMovies[i];
+        final title = movie['title'] as String? ?? 'Unknown Movie';
+        final idMap = movie['id'] as Map<String, dynamic>?;
+        final tvdbId = idMap?['tvdb'] as int?;
+        final imdbId = idMap?['imdb'] as String?;
+        final year = movie['year'] as int?;
+        final watchedAtStr = movie['watched_at'] as String?;
+        final createdAtStr = movie['created_at'] as String?;
+
+        if (mounted) {
+          setState(() {
+            _currentName = title;
+          });
+        }
+
+        final date = (watchedAtStr != null && watchedAtStr.isNotEmpty)
+            ? (DateTime.tryParse(watchedAtStr) ?? DateTime.now())
+            : (createdAtStr != null && createdAtStr.isNotEmpty
+                ? (DateTime.tryParse(createdAtStr) ?? DateTime.now())
+                : DateTime.now());
+
+        try {
+          final cacheKey = imdbId != null ? 'imdb_$imdbId' : (tvdbId != null ? 'tvdb_$tvdbId' : 'title_$title');
+          Map<String, dynamic>? tmdbData;
+
+          if (_tmdbCache.containsKey(cacheKey)) {
+            tmdbData = _tmdbCache[cacheKey];
+          } else {
+            tmdbData = await _findMovieTmdb(
+              title: title,
+              tvdbId: tvdbId,
+              imdbId: imdbId,
+              year: year,
+              baseUrl: widget.baseUrl,
+              apiKey: widget.apiKey ?? '',
+            );
+            _tmdbCache[cacheKey] = tmdbData;
+          }
+
+          if (tmdbData != null) {
+            final tmdbId = tmdbData['id'] as int;
+            final resolvedTitle = tmdbData['title'] as String? ?? title;
+            final posterPath = tmdbData['poster_path'] as String?;
+
+            await _db.addMovieToHistory(
+              tmdbId: tmdbId,
+              title: resolvedTitle,
+              posterPath: posterPath,
+              watchedAt: date,
+            );
+            _successCount++;
+          } else {
+            _failedCount++;
+          }
+        } catch (e) {
+          _failedCount++;
+        }
+
+        if (mounted) {
+          setState(() {
+            _processedCount++;
+          });
+        }
+
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        _isFinished = true;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = _totalCount > 0 ? _processedCount / _totalCount : 0.0;
+
+    return PopScope(
+      canPop: _isFinished || _isCancelled,
+      child: AlertDialog(
+        backgroundColor: Colors.grey[900],
+        title: Text(
+          _isFinished
+              ? 'Import Completed'
+              : _isCancelled
+                  ? 'Import Cancelled'
+                  : (_isSeries ? 'Importing TV Time series...' : 'Importing TV Time movies...'),
+          style: const TextStyle(color: Colors.white),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (!_isFinished && !_isCancelled) ...[
+              Text(
+                'Processing: $_currentName',
+                style: const TextStyle(color: Colors.grey, fontSize: 14),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 12),
+            ],
+            LinearProgressIndicator(
+              value: progress,
+              backgroundColor: Colors.grey[800],
+              valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Total processed: $_processedCount / $_totalCount',
+              style: const TextStyle(color: Colors.white),
+            ),
+            Text(
+              'Successful: $_successCount',
+              style: const TextStyle(color: Colors.green),
+            ),
+            Text(
+              'Failed / Unmatched: $_failedCount',
+              style: const TextStyle(color: Colors.red),
+            ),
+          ],
+        ),
+        actions: [
+          if (!_isFinished && !_isCancelled)
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  _isCancelled = true;
+                });
+              },
+              child: const Text('Cancel', style: TextStyle(color: Colors.red)),
+            ),
+          if (_isFinished || _isCancelled)
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(_successCount);
+              },
+              child: Text(
+                'Close',
+                style: TextStyle(color: Theme.of(context).primaryColor),
+              ),
+            ),
+        ],
       ),
     );
   }

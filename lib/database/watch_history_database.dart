@@ -59,6 +59,12 @@ class WatchHistoryDatabase {
     final db = await database;
     
     try {
+      final existing = await _getExistingItem(item);
+      if (existing != null) {
+        await updateWatchHistoryItem(item);
+        return existing.id ?? 0;
+      }
+
       final stmt = db.prepare('''
         INSERT INTO $_tableName (
           tmdb_id, title, type, poster_path, watched_at,
