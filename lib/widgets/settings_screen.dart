@@ -6,6 +6,13 @@ import 'package:Mirarr/widgets/custom_divider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'dart:convert';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
+import 'package:Mirarr/database/watch_history_database.dart';
+import 'package:Mirarr/functions/get_base_url.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart' as http;
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -448,7 +455,85 @@ class _SettingsPageState extends State<SettingsPage> {
                       ),
                     ),
                     
- 
+            // Import Data Section
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 8, 8),
+              child: Text(
+                'Import Data',
+                style: TextStyle(
+                    color: Theme.of(context).primaryColor, fontSize: 20),
+              ),
+            ),
+            const CustomDivider(),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+              child: Card(
+                color: Colors.grey[900],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.import_contacts, color: Theme.of(context).primaryColor, size: 28),
+                          const SizedBox(width: 12),
+                          const Text(
+                            'Import from Letterboxd',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        '1. Go to letterboxd.com/settings/data/\n2. Export your data and unzip the downloaded file.\n3. Tap below and select the "watched.csv" file.',
+                        style: TextStyle(color: Colors.grey[400], height: 1.5, fontSize: 14),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: _openLetterboxdSettings,
+                            icon: const Icon(Icons.open_in_new, size: 18),
+                            label: const Text('Open Letterboxd'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.grey[800],
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: ElevatedButton.icon(
+                              onPressed: _importLetterboxdCsv,
+                              icon: const Icon(Icons.file_upload),
+                              label: const Text('Select watched.csv'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Theme.of(context).primaryColor,
+                                foregroundColor: Colors.black,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            
             // Region Selection Section
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 8, 8),
@@ -613,6 +698,381 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _openLetterboxdSettings() async {
+    final url = Uri.parse('https://letterboxd.com/settings/data/');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not launch Letterboxd settings URL')),
+        );
+      }
+    }
+  }
+
+  List<List<String>> _parseCsv(String content) {
+    final List<List<String>> rows = [];
+    List<String> currentRow = [];
+    StringBuffer currentField = StringBuffer();
+    bool inQuotes = false;
+
+    for (int i = 0; i < content.length; i++) {
+      final char = content[i];
+      if (inQuotes) {
+        if (char == '"') {
+          if (i + 1 < content.length && content[i + 1] == '"') {
+            currentField.write('"');
+            i++; // Skip next quote
+          } else {
+            inQuotes = false;
+          }
+        } else {
+          currentField.write(char);
+        }
+      } else {
+        if (char == '"') {
+          inQuotes = true;
+        } else if (char == ',') {
+          currentRow.add(currentField.toString().trim());
+          currentField.clear();
+        } else if (char == '\n' || char == '\r') {
+          currentRow.add(currentField.toString().trim());
+          currentField.clear();
+          if (currentRow.any((field) => field.isNotEmpty)) {
+            rows.add(currentRow);
+          }
+          currentRow = [];
+          if (char == '\r' && i + 1 < content.length && content[i + 1] == '\n') {
+            i++; // Skip \n
+          }
+        } else {
+          currentField.write(char);
+        }
+      }
+    }
+    if (currentField.isNotEmpty || currentRow.isNotEmpty) {
+      currentRow.add(currentField.toString().trim());
+      if (currentRow.any((field) => field.isNotEmpty)) {
+        rows.add(currentRow);
+      }
+    }
+    return rows;
+  }
+
+  void _importLetterboxdCsv() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['csv'],
+      );
+      if (result == null || result.files.isEmpty) return;
+
+      final file = result.files.first;
+      String content = '';
+      if (file.bytes != null) {
+        content = utf8.decode(file.bytes!);
+      } else if (file.path != null) {
+        final ioFile = File(file.path!);
+        content = await ioFile.readAsString();
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to read file content')),
+          );
+        }
+        return;
+      }
+
+      final rows = _parseCsv(content);
+      if (rows.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Selected CSV file is empty')),
+          );
+        }
+        return;
+      }
+
+      final header = rows.first.map((e) => e.trim().toLowerCase()).toList();
+      final dateIdx = header.indexOf('date');
+      final nameIdx = header.indexOf('name');
+      final yearIdx = header.indexOf('year');
+
+      if (dateIdx == -1 || nameIdx == -1 || yearIdx == -1) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Invalid Letterboxd CSV. Missing columns: Date, Name, or Year.'),
+            ),
+          );
+        }
+        return;
+      }
+
+      final region = Provider.of<RegionProvider>(context, listen: false).currentRegion;
+      final baseUrl = getBaseUrl(region);
+      final apiKey = dotenv.env['TMDB_API_KEY'];
+
+      if (apiKey == null || apiKey.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('TMDB API Key is missing. Check setup.')),
+          );
+        }
+        return;
+      }
+
+      if (mounted) {
+        final importedCount = await showDialog<int>(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => ImportProgressDialog(
+            csvRows: rows,
+            dateIdx: dateIdx,
+            nameIdx: nameIdx,
+            yearIdx: yearIdx,
+            baseUrl: baseUrl,
+            apiKey: apiKey,
+          ),
+        );
+
+        if (importedCount != null && importedCount > 0 && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Successfully imported $importedCount watched movies!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error picking or parsing CSV file: $e')),
+        );
+      }
+    }
+  }
+}
+
+class ImportProgressDialog extends StatefulWidget {
+  final List<List<String>> csvRows;
+  final int dateIdx;
+  final int nameIdx;
+  final int yearIdx;
+  final String baseUrl;
+  final String? apiKey;
+
+  const ImportProgressDialog({
+    Key? key,
+    required this.csvRows,
+    required this.dateIdx,
+    required this.nameIdx,
+    required this.yearIdx,
+    required this.baseUrl,
+    required this.apiKey,
+  }) : super(key: key);
+
+  @override
+  _ImportProgressDialogState createState() => _ImportProgressDialogState();
+}
+
+class _ImportProgressDialogState extends State<ImportProgressDialog> {
+  int _processedCount = 0;
+  int _successCount = 0;
+  int _failedCount = 0;
+  bool _isCancelled = false;
+  bool _isFinished = false;
+  String _currentMovieName = '';
+  final WatchHistoryDatabase _db = WatchHistoryDatabase();
+
+  @override
+  void initState() {
+    super.initState();
+    _startImport();
+  }
+
+  void _startImport() async {
+    for (int i = 1; i < widget.csvRows.length; i++) {
+      if (_isCancelled) break;
+
+      final row = widget.csvRows[i];
+      if (row.length <= widget.nameIdx || row.length <= widget.dateIdx || row.length <= widget.yearIdx) {
+        if (mounted) {
+          setState(() {
+            _processedCount++;
+            _failedCount++;
+          });
+        }
+        continue;
+      }
+
+      final dateStr = row[widget.dateIdx].trim();
+      final name = row[widget.nameIdx].trim();
+      final yearStr = row[widget.yearIdx].trim();
+
+      if (name.isEmpty) {
+        if (mounted) {
+          setState(() {
+            _processedCount++;
+            _failedCount++;
+          });
+        }
+        continue;
+      }
+
+      if (mounted) {
+        setState(() {
+          _currentMovieName = name;
+        });
+      }
+
+      final date = DateTime.tryParse(dateStr) ?? DateTime.now();
+
+      try {
+        int? tmdbId;
+        String? title;
+        String? posterPath;
+
+        String searchUrl = '${widget.baseUrl}search/movie?api_key=${widget.apiKey}&query=${Uri.encodeComponent(name)}';
+        if (yearStr.isNotEmpty) {
+          searchUrl += '&primary_release_year=$yearStr';
+        }
+
+        var response = await http.get(Uri.parse(searchUrl));
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          final List<dynamic> results = data['results'] ?? [];
+          if (results.isNotEmpty) {
+            final first = results.first;
+            tmdbId = first['id'];
+            title = first['title'];
+            posterPath = first['poster_path'];
+          }
+        }
+
+        if (tmdbId == null && yearStr.isNotEmpty) {
+          final fallbackUrl = '${widget.baseUrl}search/movie?api_key=${widget.apiKey}&query=${Uri.encodeComponent(name)}';
+          response = await http.get(Uri.parse(fallbackUrl));
+          if (response.statusCode == 200) {
+            final data = json.decode(response.body);
+            final List<dynamic> results = data['results'] ?? [];
+            if (results.isNotEmpty) {
+              final first = results.first;
+              tmdbId = first['id'];
+              title = first['title'];
+              posterPath = first['poster_path'];
+            }
+          }
+        }
+
+        if (tmdbId != null && title != null) {
+          await _db.addMovieToHistory(
+            tmdbId: tmdbId,
+            title: title,
+            posterPath: posterPath,
+            watchedAt: date,
+          );
+          _successCount++;
+        } else {
+          _failedCount++;
+        }
+      } catch (e) {
+        _failedCount++;
+      }
+
+      if (mounted) {
+        setState(() {
+          _processedCount++;
+        });
+      }
+
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
+
+    if (mounted) {
+      setState(() {
+        _isFinished = true;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final total = widget.csvRows.length - 1;
+    final progress = total > 0 ? _processedCount / total : 0.0;
+
+    return WillPopScope(
+      onWillPop: () async => _isFinished || _isCancelled,
+      child: AlertDialog(
+        backgroundColor: Colors.grey[900],
+        title: Text(
+          _isFinished
+              ? 'Import Completed'
+              : _isCancelled
+                  ? 'Import Cancelled'
+                  : 'Importing movies...',
+          style: const TextStyle(color: Colors.white),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (!_isFinished && !_isCancelled) ...[
+              Text(
+                'Processing: $_currentMovieName',
+                style: const TextStyle(color: Colors.grey, fontSize: 14),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 12),
+            ],
+            LinearProgressIndicator(
+              value: progress,
+              backgroundColor: Colors.grey[800],
+              valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Total processed: $_processedCount / $total',
+              style: const TextStyle(color: Colors.white),
+            ),
+            Text(
+              'Successful: $_successCount',
+              style: const TextStyle(color: Colors.green),
+            ),
+            Text(
+              'Failed / Unmatched: $_failedCount',
+              style: const TextStyle(color: Colors.red),
+            ),
+          ],
+        ),
+        actions: [
+          if (!_isFinished && !_isCancelled)
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  _isCancelled = true;
+                });
+              },
+              child: const Text('Cancel', style: TextStyle(color: Colors.red)),
+            ),
+          if (_isFinished || _isCancelled)
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(_successCount);
+              },
+              child: Text(
+                'Close',
+                style: TextStyle(color: Theme.of(context).primaryColor),
+              ),
+            ),
+        ],
       ),
     );
   }
