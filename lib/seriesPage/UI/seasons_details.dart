@@ -582,6 +582,7 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
                                   children: [
                                     Expanded(
                                       child: FloatingActionButton(
+                                        heroTag: null,
                                         backgroundColor: getSeriesColor(context, serieId),
                                         onPressed: () => showWatchOptions(context,
                                             serieId, seasonNumber, episodeNumber, imdbId),
@@ -607,6 +608,7 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
                                   child: SizedBox(
                                 width: double.infinity,
                                 child: FloatingActionButton(
+                                  heroTag: null,
                                   backgroundColor: getSeriesColor(context, serieId),
                                   onPressed: () => showTorrentOptions(
                                       context,

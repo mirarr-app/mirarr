@@ -87,9 +87,11 @@ String? posterPath;
     final openbox = Hive.box('sessionBox');
     final sessionData = openbox.get('sessionData');
     if (sessionData != null) {
-      setState(() {
-        isUserLoggedIn = true;
-      });
+      if (mounted) {
+        setState(() {
+          isUserLoggedIn = true;
+        });
+      }
     }
   }
 
@@ -106,14 +108,16 @@ String? posterPath;
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> responseData = json.decode(response.body);
-      setState(() {
-        isSerieWatchlist = responseData['watchlist'];
-        isSerieFavorite = responseData['favorite'];
-        isSerieRated = responseData['rated'];
-        if (isSerieRated != false) {
-          userRating = responseData['rated']['value'];
-        }
-      });
+      if (mounted) {
+        setState(() {
+          isSerieWatchlist = responseData['watchlist'];
+          isSerieFavorite = responseData['favorite'];
+          isSerieRated = responseData['rated'];
+          if (isSerieRated != false) {
+            userRating = responseData['rated']['value'];
+          }
+        });
+      }
     }
   }
 
@@ -123,36 +127,42 @@ String? posterPath;
       final region =
           Provider.of<RegionProvider>(context, listen: false).currentRegion;
       final responseData = await fetchSerieDetails(widget.serieId, region);
-      setState(() {
-        serieDetails = responseData;
-        budget = responseData['budget'];
-        genres = responseData['genres'];
-        backdrops = responseData['backdrop_path'];
-        score = responseData['vote_average'];
-        about = responseData['overview'];
-        duration = responseData['runtime'];
-                posterPath = responseData['poster_path'];
-
-        releaseDate = responseData['release_date'];
-        language = responseData['original_language'];
-        seasons = responseData['number_of_seasons'];
-        episodes = responseData['number_of_episodes'];
-      });
+      if (mounted) {
+        setState(() {
+          serieDetails = responseData;
+          budget = responseData['budget'];
+          genres = responseData['genres'];
+          backdrops = responseData['backdrop_path'];
+          score = responseData['vote_average'];
+          about = responseData['overview'];
+          duration = responseData['runtime'];
+                  posterPath = responseData['poster_path'];
+  
+          releaseDate = responseData['release_date'];
+          language = responseData['original_language'];
+          seasons = responseData['number_of_seasons'];
+          episodes = responseData['number_of_episodes'];
+        });
+      }
     } catch (e) {
       throw Exception('Failed to load serie details');
     }
   }
 
   void updateImdbRating(String rating) {
-    setState(() {
-      imdbRating = rating;
-    });
+    if (mounted) {
+      setState(() {
+        imdbRating = rating;
+      });
+    }
   }
 
   void updateRottenTomatoesRating(String rating) {
-    setState(() {
-      rottenTomatoesRating = rating;
-    });
+    if (mounted) {
+      setState(() {
+        rottenTomatoesRating = rating;
+      });
+    }
   }
 
   Future<void> fetchExternalId() async {
@@ -168,10 +178,12 @@ String? posterPath;
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = json.decode(response.body);
-        setState(() {
-          externalIds = responseData;
-          imdbId = responseData['imdb_id'];
-        });
+        if (mounted) {
+          setState(() {
+            externalIds = responseData;
+            imdbId = responseData['imdb_id'];
+          });
+        }
         if (imdbId != null) {
           await getSerieRatings(
               imdbId, updateImdbRating, updateRottenTomatoesRating);
@@ -853,6 +865,7 @@ String? posterPath;
                             child: SizedBox(
                           width: double.maxFinite,
                           child: FloatingActionButton(
+                            heroTag: null,
                             backgroundColor:
                                 getSeriesColor(context, widget.serieId),
                             onPressed: () => seasonsAndEpisodes(context,
