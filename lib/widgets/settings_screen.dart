@@ -13,6 +13,9 @@ import 'package:Mirarr/database/watch_history_database.dart';
 import 'package:Mirarr/functions/get_base_url.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -584,6 +587,96 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ),
             
+            // Export Data Section
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 8, 8),
+              child: Text(
+                'Export Data',
+                style: TextStyle(
+                    color: Theme.of(context).primaryColor, fontSize: 20),
+              ),
+            ),
+            const CustomDivider(),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+              child: Card(
+                color: Colors.grey[900],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.download, color: Theme.of(context).primaryColor, size: 28),
+                          const SizedBox(width: 12),
+                          const Text(
+                            'Export Shelf Database',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Export your local shelf database as JSON files (separate for movies and TV shows) or as the SQLite .db file itself.',
+                        style: TextStyle(color: Colors.grey[400], height: 1.5, fontSize: 14),
+                      ),
+                      const SizedBox(height: 16),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: _exportMoviesJson,
+                            icon: const Icon(Icons.movie, size: 18),
+                            label: const Text('Movies (JSON)'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.grey[800],
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                          ),
+                          ElevatedButton.icon(
+                            onPressed: _exportShowsJson,
+                            icon: const Icon(Icons.tv, size: 18),
+                            label: const Text('TV Shows (JSON)'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.grey[800],
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                          ),
+                          ElevatedButton.icon(
+                            onPressed: _exportDbFile,
+                            icon: const Icon(Icons.save, size: 18),
+                            label: const Text('Database (.db)'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(context).primaryColor,
+                              foregroundColor: Colors.black,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            
             // Region Selection Section
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 8, 8),
@@ -981,6 +1074,168 @@ class _SettingsPageState extends State<SettingsPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error picking or parsing JSON file: $e')),
+        );
+      }
+    }
+  }
+
+  void _exportMoviesJson() async {
+    try {
+      final db = WatchHistoryDatabase();
+      final movies = await db.getWatchedMovies();
+      if (movies.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No watched movies to export.')),
+          );
+        }
+        return;
+      }
+      
+      final listMap = movies.map((item) => item.toMap()).toList();
+      final jsonString = const JsonEncoder.withIndent('  ').convert(listMap);
+      
+      if (Platform.isLinux || Platform.isWindows) {
+        final outputFile = await FilePicker.saveFile(
+          dialogTitle: 'Save Watched Movies JSON',
+          fileName: 'watched_movies.json',
+          type: FileType.custom,
+          allowedExtensions: ['json'],
+        );
+        if (outputFile != null) {
+          final file = File(outputFile);
+          await file.writeAsString(jsonString);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Movies exported successfully to $outputFile'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        }
+      } else {
+        final directory = await getTemporaryDirectory();
+        final filePath = '${directory.path}/watched_movies.json';
+        final file = File(filePath);
+        await file.writeAsString(jsonString);
+        
+        await Share.shareXFiles(
+          [XFile(filePath)],
+          subject: 'Mirarr Watched Movies Export',
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error exporting movies: $e')),
+        );
+      }
+    }
+  }
+
+  void _exportShowsJson() async {
+    try {
+      final db = WatchHistoryDatabase();
+      final shows = await db.getWatchedShows();
+      if (shows.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No watched TV shows to export.')),
+          );
+        }
+        return;
+      }
+      
+      final listMap = shows.map((item) => item.toMap()).toList();
+      final jsonString = const JsonEncoder.withIndent('  ').convert(listMap);
+      
+      if (Platform.isLinux || Platform.isWindows) {
+        final outputFile = await FilePicker.saveFile(
+          dialogTitle: 'Save Watched TV Shows JSON',
+          fileName: 'watched_shows.json',
+          type: FileType.custom,
+          allowedExtensions: ['json'],
+        );
+        if (outputFile != null) {
+          final file = File(outputFile);
+          await file.writeAsString(jsonString);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('TV shows exported successfully to $outputFile'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        }
+      } else {
+        final directory = await getTemporaryDirectory();
+        final filePath = '${directory.path}/watched_shows.json';
+        final file = File(filePath);
+        await file.writeAsString(jsonString);
+        
+        await Share.shareXFiles(
+          [XFile(filePath)],
+          subject: 'Mirarr Watched TV Shows Export',
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error exporting TV shows: $e')),
+        );
+      }
+    }
+  }
+
+  void _exportDbFile() async {
+    try {
+      final documentsDirectory = await getApplicationDocumentsDirectory();
+      final dbPath = p.join(documentsDirectory.path, 'watch_history.db');
+      final dbFile = File(dbPath);
+      
+      if (!await dbFile.exists()) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Database file does not exist yet.')),
+          );
+        }
+        return;
+      }
+      
+      if (Platform.isLinux || Platform.isWindows) {
+        final outputFile = await FilePicker.saveFile(
+          dialogTitle: 'Save Database File',
+          fileName: 'watch_history.db',
+          type: FileType.custom,
+          allowedExtensions: ['db'],
+        );
+        if (outputFile != null) {
+          await dbFile.copy(outputFile);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Database exported successfully to $outputFile'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        }
+      } else {
+        final tempDirectory = await getTemporaryDirectory();
+        final tempDbPath = p.join(tempDirectory.path, 'watch_history.db');
+        await dbFile.copy(tempDbPath);
+        
+        await Share.shareXFiles(
+          [XFile(tempDbPath)],
+          subject: 'Mirarr Database Export',
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error exporting database file: $e')),
         );
       }
     }
