@@ -128,9 +128,11 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
     final openbox = Hive.box('sessionBox');
     final sessionData = openbox.get('sessionData');
     if (sessionData != null) {
-      setState(() {
-        isUserLoggedIn = true;
-      });
+      if (mounted) {
+        setState(() {
+          isUserLoggedIn = true;
+        });
+      }
     }
   }
 
@@ -148,14 +150,16 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> responseData = json.decode(response.body);
-      setState(() {
-        isMovieWatchlist = responseData['watchlist'];
-        isMovieFavorite = responseData['favorite'];
-        isMovieRated = responseData['rated'];
-        if (isMovieRated != false) {
-          userRating = responseData['rated']['value'];
-        }
-      });
+      if (mounted) {
+        setState(() {
+          isMovieWatchlist = responseData['watchlist'];
+          isMovieFavorite = responseData['favorite'];
+          isMovieRated = responseData['rated'];
+          if (isMovieRated != false) {
+            userRating = responseData['rated']['value'];
+          }
+        });
+      }
     }
   }
 
@@ -175,15 +179,19 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
   }
 
   void updateImdbRating(String rating) {
-    setState(() {
-      imdbRating = rating;
-    });
+    if (mounted) {
+      setState(() {
+        imdbRating = rating;
+      });
+    }
   }
 
   void updateRottenTomatoesRating(String rating) {
-    setState(() {
-      rottenTomatoesRating = rating;
-    });
+    if (mounted) {
+      setState(() {
+        rottenTomatoesRating = rating;
+      });
+    }
   }
 
   Future<void> _fetchMovieDetails() async {
@@ -191,24 +199,26 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
       final region =
           Provider.of<RegionProvider>(context, listen: false).currentRegion;
       final responseData = await fetchMovieDetails(widget.movieId, region);
-      setState(() {
-        moviedetails = responseData;
-        budget = responseData['budget'];
-        revenue = responseData['revenue'];
-        genres = responseData['genres'];
-        backdrops = responseData['backdrop_path'];
-        score = responseData['vote_average'];
-        about = responseData['overview'];
-        duration = responseData['runtime'];
-        releaseDate = responseData['release_date'];
-        language = responseData['original_language'];
-                posterPath = responseData['poster_path'];
-
-        productionCountries = responseData['production_countries'];
-        productionCompanies = responseData['production_companies'];
-        spokenLanguages = responseData['spoken_languages'];
-        imdbId = responseData['imdb_id'];
-      });
+      if (mounted) {
+        setState(() {
+          moviedetails = responseData;
+          budget = responseData['budget'];
+          revenue = responseData['revenue'];
+          genres = responseData['genres'];
+          backdrops = responseData['backdrop_path'];
+          score = responseData['vote_average'];
+          about = responseData['overview'];
+          duration = responseData['runtime'];
+          releaseDate = responseData['release_date'];
+          language = responseData['original_language'];
+                  posterPath = responseData['poster_path'];
+  
+          productionCountries = responseData['production_countries'];
+          productionCompanies = responseData['production_companies'];
+          spokenLanguages = responseData['spoken_languages'];
+          imdbId = responseData['imdb_id'];
+        });
+      }
       if (imdbId != null) {
         await getMovieRatings(
             imdbId, updateImdbRating, updateRottenTomatoesRating);
@@ -220,9 +230,11 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
 
   Future<void> _checkWatchedStatus() async {
     final watched = await _watchHistoryDb.isWatched(widget.movieId, 'movie');
-    setState(() {
-      isWatched = watched;
-    });
+    if (mounted) {
+      setState(() {
+        isWatched = watched;
+      });
+    }
   }
 
   Future<void> _markAsWatched() async {
@@ -234,9 +246,11 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
         userRating: userRating,
       );
       
-      setState(() {
-        isWatched = true;
-      });
+      if (mounted) {
+        setState(() {
+          isWatched = true;
+        });
+      }
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -265,9 +279,11 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
       final watchHistory = await _watchHistoryDb.getWatchHistoryByTmdbId(widget.movieId, 'movie');
       if (watchHistory.isNotEmpty) {
         await _watchHistoryDb.deleteWatchHistoryItem(watchHistory.first.id!);
-        setState(() {
-          isWatched = false;
-        });
+        if (mounted) {
+          setState(() {
+            isWatched = false;
+          });
+        }
         
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -1001,6 +1017,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                             children: [
                                               Expanded(
                                                 child: FloatingActionButton(
+                                                  heroTag: null,
                                                   backgroundColor: getMovieColor(
                                                       context, widget.movieId),
                                                   onPressed: () => showWatchOptions(
@@ -1036,6 +1053,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                             child: SizedBox(
                                 width: double.maxFinite,
                                 child: FloatingActionButton(
+                                  heroTag: null,
                                   backgroundColor:
                                       getMovieColor(context, widget.movieId),
                                   onPressed: () => showTorrentOptions(
