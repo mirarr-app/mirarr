@@ -10,6 +10,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:Mirarr/database/watch_history_database.dart';
+import 'package:Mirarr/models/watch_history_model.dart';
 import 'package:Mirarr/functions/get_base_url.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
@@ -580,6 +581,83 @@ class _SettingsPageState extends State<SettingsPage> {
                             borderRadius: BorderRadius.circular(20),
                           ),
                         ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+              child: Card(
+                color: Colors.grey[900],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.restore, color: Theme.of(context).primaryColor, size: 28),
+                          const SizedBox(width: 12),
+                          const Text(
+                            'Restore Backup',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Import your exported watched history JSON files (will be merged into existing history) or replace the entire database with a .db backup file.',
+                        style: TextStyle(color: Colors.grey[400], height: 1.5, fontSize: 14),
+                      ),
+                      const SizedBox(height: 16),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: _importMoviesJson,
+                            icon: const Icon(Icons.movie, size: 18),
+                            label: const Text('Movies (JSON)'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.grey[800],
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20)),
+                            ),
+                          ),
+                          ElevatedButton.icon(
+                            onPressed: _importShowsJson,
+                            icon: const Icon(Icons.tv, size: 18),
+                            label: const Text('TV Shows (JSON)'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.grey[800],
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20)),
+                            ),
+                          ),
+                          ElevatedButton.icon(
+                            onPressed: _importDbFile,
+                            icon: const Icon(Icons.settings_backup_restore, size: 18),
+                            label: const Text('Database (.db)'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(context).primaryColor,
+                              foregroundColor: Colors.black,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20)),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -1236,6 +1314,183 @@ class _SettingsPageState extends State<SettingsPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error exporting database file: $e')),
+        );
+      }
+    }
+  }
+
+  void _importMoviesJson() async {
+    try {
+      final result = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+      if (result == null || result.files.isEmpty) return;
+
+      final file = result.files.first;
+      String content = '';
+      if (file.bytes != null) {
+        content = utf8.decode(file.bytes!);
+      } else if (file.path != null) {
+        final ioFile = File(file.path!);
+        content = await ioFile.readAsString();
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to read file content')),
+          );
+        }
+        return;
+      }
+
+      final dynamic decoded = json.decode(content);
+      if (decoded is! List) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Invalid JSON format. Expected a JSON list.')),
+          );
+        }
+        return;
+      }
+
+      final db = WatchHistoryDatabase();
+      int count = 0;
+      for (var rawMap in decoded) {
+        if (rawMap is Map<String, dynamic>) {
+          final Map<String, dynamic> map = Map<String, dynamic>.from(rawMap);
+          if (map['user_rating'] is int) {
+            map['user_rating'] = (map['user_rating'] as int).toDouble();
+          }
+          final item = WatchHistoryItem.fromMap(map);
+          await db.insertWatchHistoryItem(item);
+          count++;
+        }
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Successfully imported $count watched movies!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error importing movies: $e')),
+        );
+      }
+    }
+  }
+
+  void _importShowsJson() async {
+    try {
+      final result = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+      if (result == null || result.files.isEmpty) return;
+
+      final file = result.files.first;
+      String content = '';
+      if (file.bytes != null) {
+        content = utf8.decode(file.bytes!);
+      } else if (file.path != null) {
+        final ioFile = File(file.path!);
+        content = await ioFile.readAsString();
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to read file content')),
+          );
+        }
+        return;
+      }
+
+      final dynamic decoded = json.decode(content);
+      if (decoded is! List) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Invalid JSON format. Expected a JSON list.')),
+          );
+        }
+        return;
+      }
+
+      final db = WatchHistoryDatabase();
+      int count = 0;
+      for (var rawMap in decoded) {
+        if (rawMap is Map<String, dynamic>) {
+          final Map<String, dynamic> map = Map<String, dynamic>.from(rawMap);
+          if (map['user_rating'] is int) {
+            map['user_rating'] = (map['user_rating'] as int).toDouble();
+          }
+          final item = WatchHistoryItem.fromMap(map);
+          await db.insertWatchHistoryItem(item);
+          count++;
+        }
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Successfully imported $count watched TV shows!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error importing TV shows: $e')),
+        );
+      }
+    }
+  }
+
+  void _importDbFile() async {
+    try {
+      final result = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['db'],
+      );
+      if (result == null || result.files.isEmpty) return;
+
+      final file = result.files.first;
+      final documentsDirectory = await getApplicationDocumentsDirectory();
+      final dbPath = p.join(documentsDirectory.path, 'watch_history.db');
+
+      final db = WatchHistoryDatabase();
+      await db.close();
+
+      if (file.bytes != null) {
+        final ioFile = File(dbPath);
+        await ioFile.writeAsBytes(file.bytes!);
+      } else if (file.path != null) {
+        final ioFile = File(file.path!);
+        await ioFile.copy(dbPath);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to read database file.')),
+          );
+        }
+        return;
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Database restored successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error restoring database: $e')),
         );
       }
     }
