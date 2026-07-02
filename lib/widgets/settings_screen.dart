@@ -533,6 +533,56 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
               ),
             ),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+              child: Card(
+                color: Colors.grey[900],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.tv, color: Theme.of(context).primaryColor, size: 28),
+                          const SizedBox(width: 12),
+                          const Text(
+                            'Import from TV Time',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        '1. Use the "TV Time Out by Refract" extension to export either of your movies or series JSON files.\n2. Tap below to select and import the JSON file.',
+                        style: TextStyle(color: Colors.grey[400], height: 1.5, fontSize: 14),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton.icon(
+                        onPressed: _importTvTimeJson,
+                        icon: const Icon(Icons.file_upload),
+                        label: const Text('Select JSON File'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).primaryColor,
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
             
             // Region Selection Section
             Padding(
@@ -858,6 +908,83 @@ class _SettingsPageState extends State<SettingsPage> {
       }
     }
   }
+
+  void _importTvTimeJson() async {
+    try {
+      final result = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+      if (result == null || result.files.isEmpty) return;
+
+      final file = result.files.first;
+      String content = '';
+      if (file.bytes != null) {
+        content = utf8.decode(file.bytes!);
+      } else if (file.path != null) {
+        final ioFile = File(file.path!);
+        content = await ioFile.readAsString();
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to read file content')),
+          );
+        }
+        return;
+      }
+
+      final dynamic decoded = json.decode(content);
+      if (decoded is! List) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Invalid JSON format. Expected a JSON array.')),
+          );
+        }
+        return;
+      }
+
+      if (!mounted) return;
+      final region = Provider.of<RegionProvider>(context, listen: false).currentRegion;
+      final baseUrl = getBaseUrl(region);
+      final apiKey = dotenv.env['TMDB_API_KEY'];
+
+      if (apiKey == null || apiKey.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('TMDB API Key is missing. Check setup.')),
+          );
+        }
+        return;
+      }
+
+      if (mounted) {
+        final importedCount = await showDialog<int>(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => TvTimeImportProgressDialog(
+            jsonList: decoded,
+            baseUrl: baseUrl,
+            apiKey: apiKey,
+          ),
+        );
+
+        if (importedCount != null && importedCount > 0 && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Successfully imported $importedCount items!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error picking or parsing JSON file: $e')),
+        );
+      }
+    }
+  }
 }
 
 class ImportProgressDialog extends StatefulWidget {
@@ -1040,6 +1167,484 @@ class _ImportProgressDialogState extends State<ImportProgressDialog> {
             const SizedBox(height: 16),
             Text(
               'Total processed: $_processedCount / $total',
+              style: const TextStyle(color: Colors.white),
+            ),
+            Text(
+              'Successful: $_successCount',
+              style: const TextStyle(color: Colors.green),
+            ),
+            Text(
+              'Failed / Unmatched: $_failedCount',
+              style: const TextStyle(color: Colors.red),
+            ),
+          ],
+        ),
+        actions: [
+          if (!_isFinished && !_isCancelled)
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  _isCancelled = true;
+                });
+              },
+              child: const Text('Cancel', style: TextStyle(color: Colors.red)),
+            ),
+          if (_isFinished || _isCancelled)
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(_successCount);
+              },
+              child: Text(
+                'Close',
+                style: TextStyle(color: Theme.of(context).primaryColor),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class TvTimeImportProgressDialog extends StatefulWidget {
+  final List<dynamic> jsonList;
+  final String baseUrl;
+  final String? apiKey;
+
+  const TvTimeImportProgressDialog({
+    Key? key,
+    required this.jsonList,
+    required this.baseUrl,
+    required this.apiKey,
+  }) : super(key: key);
+
+  @override
+  State<TvTimeImportProgressDialog> createState() => _TvTimeImportProgressDialogState();
+}
+
+class _TvTimeImportProgressDialogState extends State<TvTimeImportProgressDialog> {
+  int _processedCount = 0;
+  int _totalCount = 0;
+  int _successCount = 0;
+  int _failedCount = 0;
+  bool _isCancelled = false;
+  bool _isFinished = false;
+  bool _isSeries = false;
+  String _currentName = '';
+  final WatchHistoryDatabase _db = WatchHistoryDatabase();
+  
+  // Cache show/movie lookups to avoid redundant API queries
+  final Map<String, Map<String, dynamic>?> _tmdbCache = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _startImport();
+  }
+
+  Future<Map<String, dynamic>?> _findMovieTmdb({
+    required String title,
+    int? tvdbId,
+    String? imdbId,
+    int? year,
+    required String baseUrl,
+    required String apiKey,
+  }) async {
+    if (imdbId != null && imdbId.isNotEmpty) {
+      try {
+        final findUrl = '${baseUrl}find/$imdbId?api_key=$apiKey&external_source=imdb_id';
+        final response = await http.get(Uri.parse(findUrl));
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          final List<dynamic> results = data['movie_results'] ?? [];
+          if (results.isNotEmpty) {
+            return results.first;
+          }
+        }
+      } catch (_) {}
+    }
+    
+    if (tvdbId != null) {
+      try {
+        final findUrl = '${baseUrl}find/$tvdbId?api_key=$apiKey&external_source=tvdb_id';
+        final response = await http.get(Uri.parse(findUrl));
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          final List<dynamic> results = data['movie_results'] ?? [];
+          if (results.isNotEmpty) {
+            return results.first;
+          }
+        }
+      } catch (_) {}
+    }
+
+    // Fallback to search
+    try {
+      String searchUrl = '${baseUrl}search/movie?api_key=$apiKey&query=${Uri.encodeComponent(title)}';
+      if (year != null) {
+        searchUrl += '&primary_release_year=$year';
+      }
+      var response = await http.get(Uri.parse(searchUrl));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final List<dynamic> results = data['results'] ?? [];
+        if (results.isNotEmpty) {
+          return results.first;
+        }
+      }
+      
+      if (year != null) {
+        // Try search without year
+        final searchUrlNoYear = '${baseUrl}search/movie?api_key=$apiKey&query=${Uri.encodeComponent(title)}';
+        response = await http.get(Uri.parse(searchUrlNoYear));
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          final List<dynamic> results = data['results'] ?? [];
+          if (results.isNotEmpty) {
+            return results.first;
+          }
+        }
+      }
+    } catch (_) {}
+
+    return null;
+  }
+
+  Future<Map<String, dynamic>?> _findTvTmdb({
+    required String title,
+    int? tvdbId,
+    String? imdbId,
+    required String baseUrl,
+    required String apiKey,
+  }) async {
+    if (tvdbId != null) {
+      try {
+        final findUrl = '${baseUrl}find/$tvdbId?api_key=$apiKey&external_source=tvdb_id';
+        final response = await http.get(Uri.parse(findUrl));
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          final List<dynamic> results = data['tv_results'] ?? [];
+          if (results.isNotEmpty) {
+            return results.first;
+          }
+        }
+      } catch (_) {}
+    }
+
+    if (imdbId != null && imdbId.isNotEmpty) {
+      try {
+        final findUrl = '${baseUrl}find/$imdbId?api_key=$apiKey&external_source=imdb_id';
+        final response = await http.get(Uri.parse(findUrl));
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          final List<dynamic> results = data['tv_results'] ?? [];
+          if (results.isNotEmpty) {
+            return results.first;
+          }
+        }
+      } catch (_) {}
+    }
+
+    // Fallback to search
+    try {
+      final searchUrl = '${baseUrl}search/tv?api_key=$apiKey&query=${Uri.encodeComponent(title)}';
+      final response = await http.get(Uri.parse(searchUrl));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final List<dynamic> results = data['results'] ?? [];
+        if (results.isNotEmpty) {
+          return results.first;
+        }
+      }
+    } catch (_) {}
+
+    return null;
+  }
+
+  void _startImport() async {
+    // Determine if movies or series JSON
+    final isSeriesDetected = widget.jsonList.any((item) => item is Map && item.containsKey('seasons'));
+    
+    if (mounted) {
+      setState(() {
+        _isSeries = isSeriesDetected;
+      });
+    }
+
+    if (isSeriesDetected) {
+      // Parse series and flatten episodes
+      final List<Map<String, dynamic>> watchedEpisodes = [];
+      for (var seriesItem in widget.jsonList) {
+        if (seriesItem is Map<String, dynamic>) {
+          final seriesTitle = seriesItem['title'] as String? ?? 'Unknown Series';
+          final idMap = seriesItem['id'] as Map<String, dynamic>?;
+          final tvdbId = idMap?['tvdb'] as int?;
+          final imdbId = idMap?['imdb'] as String?;
+          final seriesCreatedAtStr = seriesItem['created_at'] as String?;
+          
+          final seasons = seriesItem['seasons'] as List<dynamic>?;
+          if (seasons != null) {
+            for (var season in seasons) {
+              if (season is Map<String, dynamic>) {
+                final seasonNumber = season['number'] as int? ?? 1;
+                final episodes = season['episodes'] as List<dynamic>?;
+                if (episodes != null) {
+                  for (var episode in episodes) {
+                    if (episode is Map<String, dynamic>) {
+                      final isWatched = episode['is_watched'];
+                      if (isWatched == true || isWatched == 'true') {
+                        final episodeNumber = episode['number'] as int? ?? 1;
+                        final episodeTitle = episode['name'] as String? ?? 'Episode $episodeNumber';
+                        final watchedAtStr = episode['watched_at'] as String?;
+                        
+                        watchedEpisodes.add({
+                          'seriesTitle': seriesTitle,
+                          'tvdbId': tvdbId,
+                          'imdbId': imdbId,
+                          'seasonNumber': seasonNumber,
+                          'episodeNumber': episodeNumber,
+                          'episodeTitle': episodeTitle,
+                          'watchedAt': watchedAtStr,
+                          'seriesCreatedAt': seriesCreatedAtStr,
+                        });
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      if (watchedEpisodes.isEmpty) {
+        if (mounted) {
+          setState(() {
+            _isFinished = true;
+          });
+        }
+        return;
+      }
+
+      if (mounted) {
+        setState(() {
+          _totalCount = watchedEpisodes.length;
+        });
+      }
+
+      for (int i = 0; i < watchedEpisodes.length; i++) {
+        if (_isCancelled) break;
+
+        final episode = watchedEpisodes[i];
+        final seriesTitle = episode['seriesTitle'] as String;
+        final tvdbId = episode['tvdbId'] as int?;
+        final imdbId = episode['imdbId'] as String?;
+        final seasonNumber = episode['seasonNumber'] as int;
+        final episodeNumber = episode['episodeNumber'] as int;
+        final episodeTitle = episode['episodeTitle'] as String;
+        final watchedAtStr = episode['watchedAt'] as String?;
+        final seriesCreatedAtStr = episode['seriesCreatedAt'] as String?;
+
+        if (mounted) {
+          setState(() {
+            _currentName = '$seriesTitle S${seasonNumber}E$episodeNumber';
+          });
+        }
+
+        final date = (watchedAtStr != null && watchedAtStr.isNotEmpty)
+            ? (DateTime.tryParse(watchedAtStr) ?? DateTime.now())
+            : (seriesCreatedAtStr != null && seriesCreatedAtStr.isNotEmpty
+                ? (DateTime.tryParse(seriesCreatedAtStr) ?? DateTime.now())
+                : DateTime.now());
+
+        try {
+          final cacheKey = tvdbId != null ? 'tvdb_$tvdbId' : (imdbId != null ? 'imdb_$imdbId' : 'title_$seriesTitle');
+          Map<String, dynamic>? tmdbData;
+
+          if (_tmdbCache.containsKey(cacheKey)) {
+            tmdbData = _tmdbCache[cacheKey];
+          } else {
+            tmdbData = await _findTvTmdb(
+              title: seriesTitle,
+              tvdbId: tvdbId,
+              imdbId: imdbId,
+              baseUrl: widget.baseUrl,
+              apiKey: widget.apiKey ?? '',
+            );
+            _tmdbCache[cacheKey] = tmdbData;
+          }
+
+          if (tmdbData != null) {
+            final tmdbId = tmdbData['id'] as int;
+            final resolvedTitle = tmdbData['name'] as String? ?? seriesTitle;
+            final posterPath = tmdbData['poster_path'] as String?;
+
+            await _db.addShowToHistory(
+              tmdbId: tmdbId,
+              title: resolvedTitle,
+              posterPath: posterPath,
+              watchedAt: date,
+              seasonNumber: seasonNumber,
+              episodeNumber: episodeNumber,
+              episodeTitle: episodeTitle,
+            );
+            _successCount++;
+          } else {
+            _failedCount++;
+          }
+        } catch (e) {
+          _failedCount++;
+        }
+
+        if (mounted) {
+          setState(() {
+            _processedCount++;
+          });
+        }
+
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+    } else {
+      // Parse movies
+      final List<Map<String, dynamic>> watchedMovies = [];
+      for (var item in widget.jsonList) {
+        if (item is Map<String, dynamic>) {
+          final isWatched = item['is_watched'];
+          if (isWatched == true || isWatched == 'true') {
+            watchedMovies.add(item);
+          }
+        }
+      }
+
+      if (watchedMovies.isEmpty) {
+        if (mounted) {
+          setState(() {
+            _isFinished = true;
+          });
+        }
+        return;
+      }
+
+      if (mounted) {
+        setState(() {
+          _totalCount = watchedMovies.length;
+        });
+      }
+
+      for (int i = 0; i < watchedMovies.length; i++) {
+        if (_isCancelled) break;
+
+        final movie = watchedMovies[i];
+        final title = movie['title'] as String? ?? 'Unknown Movie';
+        final idMap = movie['id'] as Map<String, dynamic>?;
+        final tvdbId = idMap?['tvdb'] as int?;
+        final imdbId = idMap?['imdb'] as String?;
+        final year = movie['year'] as int?;
+        final watchedAtStr = movie['watched_at'] as String?;
+        final createdAtStr = movie['created_at'] as String?;
+
+        if (mounted) {
+          setState(() {
+            _currentName = title;
+          });
+        }
+
+        final date = (watchedAtStr != null && watchedAtStr.isNotEmpty)
+            ? (DateTime.tryParse(watchedAtStr) ?? DateTime.now())
+            : (createdAtStr != null && createdAtStr.isNotEmpty
+                ? (DateTime.tryParse(createdAtStr) ?? DateTime.now())
+                : DateTime.now());
+
+        try {
+          final cacheKey = imdbId != null ? 'imdb_$imdbId' : (tvdbId != null ? 'tvdb_$tvdbId' : 'title_$title');
+          Map<String, dynamic>? tmdbData;
+
+          if (_tmdbCache.containsKey(cacheKey)) {
+            tmdbData = _tmdbCache[cacheKey];
+          } else {
+            tmdbData = await _findMovieTmdb(
+              title: title,
+              tvdbId: tvdbId,
+              imdbId: imdbId,
+              year: year,
+              baseUrl: widget.baseUrl,
+              apiKey: widget.apiKey ?? '',
+            );
+            _tmdbCache[cacheKey] = tmdbData;
+          }
+
+          if (tmdbData != null) {
+            final tmdbId = tmdbData['id'] as int;
+            final resolvedTitle = tmdbData['title'] as String? ?? title;
+            final posterPath = tmdbData['poster_path'] as String?;
+
+            await _db.addMovieToHistory(
+              tmdbId: tmdbId,
+              title: resolvedTitle,
+              posterPath: posterPath,
+              watchedAt: date,
+            );
+            _successCount++;
+          } else {
+            _failedCount++;
+          }
+        } catch (e) {
+          _failedCount++;
+        }
+
+        if (mounted) {
+          setState(() {
+            _processedCount++;
+          });
+        }
+
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        _isFinished = true;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = _totalCount > 0 ? _processedCount / _totalCount : 0.0;
+
+    return PopScope(
+      canPop: _isFinished || _isCancelled,
+      child: AlertDialog(
+        backgroundColor: Colors.grey[900],
+        title: Text(
+          _isFinished
+              ? 'Import Completed'
+              : _isCancelled
+                  ? 'Import Cancelled'
+                  : (_isSeries ? 'Importing TV Time series...' : 'Importing TV Time movies...'),
+          style: const TextStyle(color: Colors.white),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (!_isFinished && !_isCancelled) ...[
+              Text(
+                'Processing: $_currentName',
+                style: const TextStyle(color: Colors.grey, fontSize: 14),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 12),
+            ],
+            LinearProgressIndicator(
+              value: progress,
+              backgroundColor: Colors.grey[800],
+              valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Total processed: $_processedCount / $_totalCount',
               style: const TextStyle(color: Colors.white),
             ),
             Text(
