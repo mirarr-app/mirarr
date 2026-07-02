@@ -1,6 +1,6 @@
 # Maintainer: mirarrapp <iknowarch@proton.me>
 pkgname=mirarr-bin
-pkgver=2.4.0
+pkgver=2.5.0
 pkgrel=1
 pkgdesc="A Flutter-based movie and TV show app"
 arch=('x86_64')
