@@ -1,215 +1,36 @@
-import 'package:Mirarr/widgets/profile.dart';
-import 'dart:io';
-import 'dart:ui';
+part of 'serieDetailPage.dart';
 
-import 'package:Mirarr/functions/fetchers/fetch_serie_details.dart';
-import 'package:Mirarr/functions/fetchers/fetch_series_credits.dart';
-import 'package:Mirarr/functions/get_base_url.dart';
-import 'package:Mirarr/functions/regionprovider_class.dart';
-import 'package:Mirarr/seriesPage/UI/seasons_details.dart';
-import 'package:Mirarr/seriesPage/checkers/custom_tmdb_ids_effects_series.dart';
-import 'package:Mirarr/seriesPage/function/get_imdb_rating_series.dart';
-import 'package:Mirarr/seriesPage/function/series_tmdb_actions.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:hive/hive.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:Mirarr/moviesPage/UI/cast_crew_row.dart';
-import 'package:Mirarr/widgets/bottom_bar.dart';
-import 'package:Mirarr/widgets/custom_divider.dart';
-import 'package:provider/provider.dart';
+class _SerieDetailPageDesktop extends StatelessWidget {
+  final _SerieDetailPageState state;
 
-// Import the ShowWatchToggle from the main series detail page
-import 'package:Mirarr/seriesPage/serieDetailPage.dart' show ShowWatchToggle;
-
-
-class SerieDetailPageDesktop extends StatefulWidget {
-  final String serieName;
-  final int serieId;
-
-  const SerieDetailPageDesktop(
-      {super.key, required this.serieName, required this.serieId});
-
-  @override
-  _SerieDetailPageDesktopState createState() => _SerieDetailPageDesktopState();
-}
-
-
-class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
-  final apiKey = dotenv.env['TMDB_API_KEY'];
-  Map<String, dynamic>? serieDetails;
-  Map<String, dynamic>? externalIds;
-
-  Map<String, dynamic>? serieInfo;
-  bool? isSerieWatchlist;
-  bool? isSerieFavorite;
-  Future<dynamic>? _creditsFuture;
-  bool isUserLoggedIn = false;
-  dynamic isSerieRated;
-  double? userRating;
-  double? userScore;
-  String? posterPath;
-  double? popularity;
-  int? budget;
-  List<dynamic>? genres;
-  String? backdrops;
-  double? score;
-  String? about;
-  int? duration;
-  String? releaseDate;
-  String? language;
-  int? seasons;
-  int? episodes;
-  String? imdbId;
-  String? imdbRating;
-
-  String rottenTomatoesRating = 'N/A';
-  
-  
-  // Counter to force refresh of ShowWatchToggle
-  int _showWatchToggleRefreshCounter = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    checkUserLogin();
-    checkAccountState();
-    _fetchSerieDetails();
-    final region =
-        Provider.of<RegionProvider>(context, listen: false).currentRegion;
-    _creditsFuture = fetchCredits(widget.serieId, region);
-    fetchExternalId();
-  }
-
-  Future<void> checkUserLogin() async {
-    final openbox = Hive.box('sessionBox');
-    final sessionData = openbox.get('sessionData');
-    if (sessionData != null) {
-      if (mounted) {
-        setState(() {
-          isUserLoggedIn = true;
-        });
-      }
-    }
-  }
-
-  Future<void> checkAccountState() async {
-    final openbox = Hive.box('sessionBox');
-    final sessionId = openbox.get('sessionData');
-    final region =
-        Provider.of<RegionProvider>(context, listen: false).currentRegion;
-    final baseUrl = getBaseUrl(region);
-    final response = await http.get(
-      Uri.parse(
-        '${baseUrl}tv/${widget.serieId}/account_states?api_key=$apiKey&session_id=$sessionId',
-      ),
-    );
-
-    if (response.statusCode == 200) {
-      final Map<String, dynamic> responseData = json.decode(response.body);
-      if (mounted) {
-        setState(() {
-          isSerieWatchlist = responseData['watchlist'];
-          isSerieFavorite = responseData['favorite'];
-          isSerieRated = responseData['rated'];
-          if (isSerieRated != false) {
-            userRating = responseData['rated']['value'];
-          }
-        });
-      }
-    }
-  }
-
-  Future<void> _fetchSerieDetails() async {
-    try {
-      final region =
-          Provider.of<RegionProvider>(context, listen: false).currentRegion;
-      final responseData = await fetchSerieDetails(widget.serieId, region);
-      if (mounted) {
-        setState(() {
-          serieDetails = responseData;
-          budget = responseData['budget'];
-          genres = responseData['genres'];
-          backdrops = responseData['backdrop_path'];
-          score = responseData['vote_average'];
-          about = responseData['overview'];
-          duration = responseData['runtime'];
-          posterPath = responseData['poster_path'];
-          releaseDate = responseData['release_date'];
-          language = responseData['original_language'];
-          seasons = responseData['number_of_seasons'];
-          episodes = responseData['number_of_episodes'];
-        });
-      }
-    } catch (e) {
-      throw Exception('Failed to load serie details');
-    }
-  }
-
-  void updateImdbRating(String rating) {
-    if (mounted) {
-      setState(() {
-        imdbRating = rating;
-      });
-    }
-  }
-
-  void updateRottenTomatoesRating(String rating) {
-    if (mounted) {
-      setState(() {
-        rottenTomatoesRating = rating;
-      });
-    }
-  }
-
-  Future<void> fetchExternalId() async {
-    try {
-      final region =
-          Provider.of<RegionProvider>(context, listen: false).currentRegion;
-      final baseUrl = getBaseUrl(region);
-      // Make an HTTP GET request to fetch movie details from the first API
-      final response = await http.get(
-        Uri.parse(
-            '${baseUrl}tv/${widget.serieId}/external_ids?api_key=$apiKey'),
-      );
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> responseData = json.decode(response.body);
-        if (mounted) {
-          setState(() {
-            externalIds = responseData;
-            imdbId = responseData['imdb_id'];
-          });
-        }
-        if (imdbId != null) {
-          await getSerieRatings(
-              imdbId, updateImdbRating, updateRottenTomatoesRating);
-        }
-      } else {
-        throw Exception('Failed to load serie details');
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error: $e');
-      }
-    }
-  }
-
-  void _refreshShowWatchStatus() {
-    // Increment counter to force ShowWatchToggle widget to rebuild with new state
-    setState(() {
-      _showWatchToggleRefreshCounter++;
-    });
-  }
+  const _SerieDetailPageDesktop(this.state);
 
   @override
   Widget build(BuildContext context) {
+    final widget = state.widget;
+    final serieDetails = state.serieDetails;
+    final backdrops = state.backdrops;
+    final posterPath = state.posterPath;
+    final score = state.score;
+    final imdbRating = state.imdbRating;
+    final rottenTomatoesRating = state.rottenTomatoesRating;
+    final isUserLoggedIn = state.isUserLoggedIn;
+    final isSerieWatchlist = state.isSerieWatchlist;
+    final isSerieFavorite = state.isSerieFavorite;
+    final isSerieRated = state.isSerieRated;
+    final userRating = state.userRating;
+    final genres = state.genres;
+    final about = state.about;
+    final seasons = state.seasons;
+    final episodes = state.episodes;
+    final language = state.language;
+    final imdbId = state.imdbId;
+    final _creditsFuture = state._creditsFuture;
+    final _showWatchToggleRefreshCounter = state._showWatchToggleRefreshCounter;
+
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
+
     return Scaffold(
       appBar: Platform.isLinux || Platform.isWindows || Platform.isMacOS
           ? AppBar(
@@ -298,17 +119,6 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                   ),
                                   Row(
                                     children: [
-                                      // IconButton(
-                                      //   onPressed: () {
-                                      //     _castImagesFuture.then((imageUrls) {
-                                      //       _openImageGallery(imageUrls);
-                                      //     });
-                                      //   },
-                                      //   icon: const Icon(
-                                      //     Icons.image_rounded,
-                                      //     color: Colors.white,
-                                      //   ),
-                                      // ),
                                       Visibility(
                                         visible: isUserLoggedIn == true,
                                         child: GestureDetector(
@@ -322,10 +132,10 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                                 openbox.get('accountId');
                                             final String sessionData =
                                                 openbox.get('sessionData');
-                                            if (isSerieWatchlist!) {
+                                            if (isSerieWatchlist) {
                                               // Remove from watchlist
-                                              setState(() {
-                                                isSerieWatchlist = false;
+                                              state.updateState(() {
+                                                state.isSerieWatchlist = false;
                                               });
                                               await removeFromWatchList(
                                                   accountId,
@@ -335,8 +145,8 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                               profileRefreshNotifier.value++;
                                             } else {
                                               // Add to watchlist
-                                              setState(() {
-                                                isSerieWatchlist = true;
+                                              state.updateState(() {
+                                                state.isSerieWatchlist = true;
                                               });
                                               await addWatchList(
                                                   accountId,
@@ -349,7 +159,7 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                           child: Icon(
                                             isSerieWatchlist == null
                                                 ? Icons.bookmark_border
-                                                : isSerieWatchlist!
+                                                : isSerieWatchlist
                                                     ? Icons.bookmark
                                                     : Icons.bookmark_border,
                                             color: Colors.white,
@@ -370,9 +180,9 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                                 openbox.get('accountId');
                                             final String sessionData =
                                                 openbox.get('sessionData');
-                                            if (isSerieFavorite!) {
-                                              setState(() {
-                                                isSerieFavorite = false;
+                                            if (isSerieFavorite) {
+                                              state.updateState(() {
+                                                state.isSerieFavorite = false;
                                               });
                                               await removeFromFavorite(
                                                   accountId,
@@ -381,8 +191,8 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                                   context);
                                               profileRefreshNotifier.value++;
                                             } else {
-                                              setState(() {
-                                                isSerieFavorite = true;
+                                              state.updateState(() {
+                                                state.isSerieFavorite = true;
                                               });
                                               await addFavorite(
                                                   accountId,
@@ -395,7 +205,7 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                           child: Icon(
                                             isSerieFavorite == null
                                                 ? Icons.favorite_border
-                                                : isSerieFavorite!
+                                                : isSerieFavorite
                                                     ? Icons.favorite
                                                     : Icons.favorite_border,
                                             color: Colors.white,
@@ -431,7 +241,7 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                                               8.0),
                                                       child: RatingBar.builder(
                                                         initialRating:
-                                                            userRating ?? 0,
+                                                            userRating,
                                                         minRating: 1,
                                                         maxRating: 10,
                                                         itemSize: 35,
@@ -457,7 +267,7 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                                               widget.serieId;
                                                           final openbox =
                                                               Hive.box('sessionBox');
-
+ 
                                                           final String
                                                               sessionData =
                                                               openbox.get(
@@ -467,9 +277,9 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                                               serieId,
                                                               rating,
                                                               context);
-                                                          setState(() {
-                                                            isSerieRated = {'value': rating};
-                                                            userRating = rating;
+                                                          state.updateState(() {
+                                                            state.isSerieRated = {'value': rating};
+                                                            state.userRating = rating;
                                                             profileRefreshNotifier.value++;
                                                           });
                                                         },
@@ -483,7 +293,7 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                                       onTap: () async {
                                                         final openbox =
                                                             Hive.box('sessionBox');
-
+ 
                                                         final String
                                                             sessionData =
                                                             openbox.get(
@@ -494,9 +304,9 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                                             context);
                                                         Navigator.of(context)
                                                             .pop();
-                                                        setState(() {
-                                                          isSerieRated = false;
-                                                          userRating = null;
+                                                        state.updateState(() {
+                                                          state.isSerieRated = false;
+                                                          state.userRating = null;
                                                         });
                                                       },
                                                       child: const Text(
@@ -516,7 +326,7 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                               },
                                             ),
                                             child: Text(
-                                              '👤 ${userRating?.toStringAsFixed(1)}',
+                                              '👤 ${userRating.toStringAsFixed(1)}',
                                               style: const TextStyle(
                                                 fontWeight: FontWeight.w300,
                                                 fontSize: 13,
@@ -580,7 +390,7 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                                                   await Hive
                                                                       .openBox(
                                                                           'sessionBox');
-
+ 
                                                               final String
                                                                   sessionData =
                                                                   openbox.get(
@@ -590,10 +400,10 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                                                   serieId,
                                                                   rating,
                                                                   context);
-                                                              setState(() {
-                                                                isSerieRated =
+                                                              state.updateState(() {
+                                                                state.isSerieRated =
                                                                     '"value":$rating';
-                                                                userRating =
+                                                                state.userRating =
                                                                     rating;
                                                               });
                                                             },
@@ -628,7 +438,7 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                       ),
                                       Visibility(
                                         visible: imdbRating != null &&
-                                            imdbRating!.isNotEmpty,
+                                            imdbRating.isNotEmpty,
                                         child: Container(
                                           margin: const EdgeInsets.all(5),
                                           padding: const EdgeInsets.all(10),
@@ -665,7 +475,7 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                           ),
                                         ),
                                       ),
-
+ 
                                       // Mark as Watched toggle button
                                       Padding(
                                         padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
@@ -679,7 +489,7 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                           },
                                         ),
                                       ),
-
+ 
                                       Center(
                                         child: SingleChildScrollView(
                                           scrollDirection: Axis.horizontal,
@@ -723,7 +533,7 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                                 widget.serieId,
                                                 widget.serieName,
                                                 imdbId!,
-                                                onWatchStatusChanged: _refreshShowWatchStatus),
+                                                onWatchStatusChanged: state._refreshShowWatchStatus),
                                             child: Text('Details',
                                                 style: getSeriesButtonTextStyle(
                                                     widget.serieId)),
@@ -863,7 +673,7 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                                                       const EdgeInsets.all(8.0),
                                                   child: Text(
                                                     language != null
-                                                        ? language!
+                                                        ? language
                                                             .toUpperCase()
                                                         : 'N/A',
                                                     style: const TextStyle(
@@ -906,7 +716,7 @@ class _SerieDetailPageDesktopState extends State<SerieDetailPageDesktop> {
                               data['cast'] ?? [];
                           final List<Map<String, dynamic>> crewList =
                               data['crew'] ?? [];
-
+ 
                           return Column(
                             children: [
                               Row(

@@ -3,7 +3,6 @@ import 'dart:ui';
 
 import 'package:Mirarr/seriesPage/UI/customSeriesWidget.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_serie.dart';
-import 'package:Mirarr/seriesPage/function/on_tap_serie_desktop.dart';
 import 'package:flutter/material.dart';
 
 class ListGridViewSeries extends StatefulWidget {
@@ -43,9 +42,7 @@ class _ListGridViewSeriesState extends State<ListGridViewSeries> {
           itemBuilder: (context, index) {
             final serie = widget.serieList[index];
             return GestureDetector(
-              onTap: () => Platform.isAndroid || Platform.isIOS
-                  ? onTapSerie(serie.name, serie.id, context)
-                  : onTapSerieDesktop(serie.name, serie.id, context),
+              onTap: () => onTapSerie(serie.name, serie.id, context),
               child: CustomSeriesWidget(serie: serie),
             );
           },

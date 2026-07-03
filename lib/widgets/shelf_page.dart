@@ -4,10 +4,8 @@ import 'dart:ui';
 
 import 'package:Mirarr/moviesPage/checkers/custom_tmdb_ids_effects.dart';
 import 'package:Mirarr/moviesPage/movieDetailPage.dart';
-import 'package:Mirarr/moviesPage/movieDetailPageDesktop.dart';
 import 'package:Mirarr/seriesPage/checkers/custom_tmdb_ids_effects_series.dart';
 import 'package:Mirarr/seriesPage/serieDetailPage.dart';
-import 'package:Mirarr/seriesPage/serieDetailPageDesktop.dart';
 import 'package:flutter/material.dart';
 import 'package:Mirarr/database/watch_history_database.dart';
 import 'package:Mirarr/models/watch_history_model.dart';
@@ -29,40 +27,22 @@ class _ShelfPageState extends State<ShelfPage> with TickerProviderStateMixin {
   int _lastIndex = -1;
 
   Future<void> _navigateToMovie(String title, int id) async {
-    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => MovieDetailPageDesktop(movieTitle: title, movieId: id),
-        ),
-      );
-    } else {
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => MovieDetailPage(movieTitle: title, movieId: id),
-        ),
-      );
-    }
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MovieDetailPage(movieTitle: title, movieId: id),
+      ),
+    );
     _loadWatchHistory();
   }
 
   Future<void> _navigateToSerie(String title, int id) async {
-    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => SerieDetailPageDesktop(serieName: title, serieId: id),
-        ),
-      );
-    } else {
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => SerieDetailPage(serieName: title, serieId: id),
-        ),
-      );
-    }
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SerieDetailPage(serieName: title, serieId: id),
+      ),
+    );
     _loadWatchHistory();
   }
   late TabController _tabController;

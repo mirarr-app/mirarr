@@ -1,328 +1,49 @@
-import 'package:Mirarr/widgets/profile.dart';
-import 'dart:io';
-import 'dart:ui';
+part of 'movieDetailPage.dart';
 
-import 'package:Mirarr/functions/fetchers/fetch_movie_credits.dart';
-import 'package:Mirarr/functions/fetchers/fetch_movie_details.dart';
-import 'package:Mirarr/functions/fetchers/fetch_other_movies_by_director.dart';
-import 'package:Mirarr/functions/get_base_url.dart';
-import 'package:Mirarr/functions/regionprovider_class.dart';
-import 'package:Mirarr/moviesPage/checkers/custom_tmdb_ids_effects.dart';
-import 'package:Mirarr/moviesPage/functions/get_imdb_rating.dart';
-import 'package:Mirarr/moviesPage/functions/movie_tmdb_actions.dart';
-import 'package:Mirarr/moviesPage/functions/on_tap_movie_desktop.dart';
-import 'package:Mirarr/moviesPage/functions/torrent_links.dart';
-import 'package:Mirarr/moviesPage/movieDetailPage.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:intl/intl.dart';
-import 'package:Mirarr/moviesPage/UI/cast_crew_row.dart';
-import 'package:Mirarr/widgets/bottom_bar.dart';
-import 'package:Mirarr/moviesPage/functions/check_availability.dart';
-import 'package:Mirarr/widgets/custom_divider.dart';
-import 'package:Mirarr/widgets/image_gallery_page.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:Mirarr/moviesPage/functions/watch_links.dart';
-import 'package:provider/provider.dart';
-import 'package:Mirarr/database/watch_history_database.dart';
+class _MovieDetailPageDesktop extends StatelessWidget {
+  final _MovieDetailPageState state;
 
-class MovieDetailPageDesktop extends StatefulWidget {
-  final String movieTitle;
-  final int movieId;
-
-  const MovieDetailPageDesktop(
-      {super.key, required this.movieTitle, required this.movieId});
-
-  @override
-  _MovieDetailPageDesktopState createState() => _MovieDetailPageDesktopState();
-}
-
-class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
-  late Future<List<String>> _castImagesFuture;
-  bool? isMovieWatchlist;
-  bool? isMovieFavorite;
-  Future<dynamic>? _creditsFuture;
-  Future<dynamic>? _availabilityFuture;
-  Future<dynamic>? _directorMoviesFuture;
-  bool isUserLoggedIn = false;
-  dynamic isMovieRated;
-  double? userRating;
-  double? userScore;
-  String? imdbId;
-  
-  // Watch history variables
-  final WatchHistoryDatabase _watchHistoryDb = WatchHistoryDatabase();
-  bool isWatched = false;
-
-  final apiKey = dotenv.env['TMDB_API_KEY'];
-
-  Map<String, dynamic>? moviedetails;
-  Map<String, dynamic>? movieInfo;
-
-  double? popularity;
-  int? budget;
-  int? revenue;
-  List<dynamic>? genres;
-  List<dynamic>? productionCountries;
-  List<dynamic>? productionCompanies;
-  List<dynamic>? spokenLanguages;
-
-  String? backdrops;
-  double? score;
-  String? about;
-  int? duration;
-  String? releaseDate;
-  String? language;
-  String? posterPath;
-  String? imdbRating;
-  String rottenTomatoesRating = 'N/A';
-
-  @override
-  void initState() {
-    super.initState();
-    checkUserLogin();
-    _fetchMovieDetails();
-    checkAccountState();
-    _loadMovieImages();
-    _checkWatchedStatus();
-    final region =
-        Provider.of<RegionProvider>(context, listen: false).currentRegion;
-    _availabilityFuture = checkAvailability(widget.movieId, region);
-    _creditsFuture = fetchCredits(widget.movieId, region).then((data) {
-      final List<dynamic> crewList = data['crew'] ?? [];
-      for (var crewMember in crewList) {
-        if (crewMember['job'] == 'Director') {
-          if (mounted) {
-            setState(() {
-              _directorMoviesFuture = fetchOtherMoviesByDirector(crewMember['id'], region);
-            });
-          }
-          break;
-        }
-      }
-      return data;
-    });
-
-  }
-
-  void onTapMovie(String movieTitle, int movieId) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) =>
-            MovieDetailPage(movieTitle: movieTitle, movieId: movieId),
-      ),
-    );
-  }
-
-  void _loadMovieImages() {
-    _castImagesFuture = _fetchMovieImages(widget.movieId);
-  }
-
-  void _openImageGallery(List<String> imageUrls) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ImageGalleryPage(imageUrls: imageUrls),
-      ),
-    );
-  }
-
-  Future<void> checkUserLogin() async {
-    final openbox = Hive.box('sessionBox');
-    final sessionData = openbox.get('sessionData');
-    if (sessionData != null) {
-      if (mounted) {
-        setState(() {
-          isUserLoggedIn = true;
-        });
-      }
-    }
-  }
-
-  Future<void> checkAccountState() async {
-    final openbox = Hive.box('sessionBox');
-    final sessionId = openbox.get('sessionData');
-    final region =
-        Provider.of<RegionProvider>(context, listen: false).currentRegion;
-    final baseUrl = getBaseUrl(region);
-    final response = await http.get(
-      Uri.parse(
-          '${baseUrl}movie/${widget.movieId}/account_states?api_key=$apiKey&session_id=$sessionId'),
-    );
-
-    if (response.statusCode == 200) {
-      final Map<String, dynamic> responseData = json.decode(response.body);
-      if (mounted) {
-        setState(() {
-          isMovieWatchlist = responseData['watchlist'];
-          isMovieFavorite = responseData['favorite'];
-          isMovieRated = responseData['rated'];
-          if (isMovieRated != false) {
-            userRating = responseData['rated']['value'];
-          }
-        });
-      }
-    }
-  }
-
-  Future<List<String>> _fetchMovieImages(int movieId) async {
-    final region =
-        Provider.of<RegionProvider>(context, listen: false).currentRegion;
-    final baseUrl = getBaseUrl(region);
-    final response = await http.get(
-      Uri.parse('${baseUrl}movie/$movieId/images?api_key=$apiKey'),
-    );
-    if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body)['backdrops'];
-      return data.map((image) => image['file_path'] as String).toList();
-    } else {
-      throw Exception('Failed to load cast images');
-    }
-  }
-
-  void updateImdbRating(String rating) {
-    if (mounted) {
-      setState(() {
-        imdbRating = rating;
-      });
-    }
-  }
-
-  void updateRottenTomatoesRating(String rating) {
-    if (mounted) {
-      setState(() {
-        rottenTomatoesRating = rating;
-      });
-    }
-  }
-
-  Future<void> _fetchMovieDetails() async {
-    try {
-      final region =
-          Provider.of<RegionProvider>(context, listen: false).currentRegion;
-      final responseData = await fetchMovieDetails(widget.movieId, region);
-      if (mounted) {
-        setState(() {
-          moviedetails = responseData;
-          budget = responseData['budget'];
-          revenue = responseData['revenue'];
-          genres = responseData['genres'];
-          backdrops = responseData['backdrop_path'];
-          score = responseData['vote_average'];
-          about = responseData['overview'];
-          duration = responseData['runtime'];
-          releaseDate = responseData['release_date'];
-          language = responseData['original_language'];
-          posterPath = responseData['poster_path'];
-          productionCountries = responseData['production_countries'];
-          productionCompanies = responseData['production_companies'];
-          spokenLanguages = responseData['spoken_languages'];
-          imdbId = responseData['imdb_id'];
-        });
-      }
-      if (imdbId != null) {
-        await getMovieRatings(
-            imdbId, updateImdbRating, updateRottenTomatoesRating);
-      }
-    } catch (e) {
-      throw Exception('Failed to load movie details');
-    }
-  }
-
-  Future<void> _checkWatchedStatus() async {
-    final watched = await _watchHistoryDb.isWatched(widget.movieId, 'movie');
-    if (mounted) {
-      setState(() {
-        isWatched = watched;
-      });
-    }
-  }
-
-  Future<void> _markAsWatched() async {
-    try {
-      await _watchHistoryDb.addMovieToHistory(
-        tmdbId: widget.movieId,
-        title: widget.movieTitle,
-        posterPath: posterPath,
-        userRating: userRating,
-      );
-      
-      if (mounted) {
-        setState(() {
-          isWatched = true;
-        });
-      }
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${widget.movieTitle} marked as watched!'),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error marking movie as watched: $e'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
-    }
-  }
-
-  Future<void> _removeFromWatched() async {
-    try {
-      final watchHistory = await _watchHistoryDb.getWatchHistoryByTmdbId(widget.movieId, 'movie');
-      if (watchHistory.isNotEmpty) {
-        await _watchHistoryDb.deleteWatchHistoryItem(watchHistory.first.id!);
-        if (mounted) {
-          setState(() {
-            isWatched = false;
-          });
-        }
-        
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('${widget.movieTitle} removed from watched!'),
-              backgroundColor: Colors.orange,
-              duration: const Duration(seconds: 2),
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error removing movie from watched: $e'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
-    }
-  }
+  const _MovieDetailPageDesktop(this.state);
 
   @override
   Widget build(BuildContext context) {
+    final widget = state.widget;
+    final moviedetails = state.moviedetails;
+    final duration = state.duration;
+    final releaseDate = state.releaseDate;
+    final imdbRating = state.imdbRating;
+    final rottenTomatoesRating = state.rottenTomatoesRating;
+    final isWatched = state.isWatched;
+    final posterPath = state.posterPath;
+    final score = state.score;
+    final backdrops = state.backdrops;
+    final isUserLoggedIn = state.isUserLoggedIn;
+    final isMovieWatchlist = state.isMovieWatchlist;
+    final isMovieFavorite = state.isMovieFavorite;
+    final isMovieRated = state.isMovieRated;
+    final userRating = state.userRating;
+    final genres = state.genres;
+    final about = state.about;
+    final budget = state.budget;
+    final revenue = state.revenue;
+    final productionCountries = state.productionCountries;
+    final productionCompanies = state.productionCompanies;
+    final spokenLanguages = state.spokenLanguages;
+    final imdbId = state.imdbId;
+    final _availabilityFuture = state._availabilityFuture;
+    final _creditsFuture = state._creditsFuture;
+    final _directorMoviesFuture = state._directorMoviesFuture;
+    final _castImagesFuture = state._castImagesFuture;
+    final language = state.language;
+
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
-    int? hours = duration != null ? duration! ~/ 60 : null;
-    int? minutes = duration != null ? duration! % 60 : null;
-    String year = releaseDate != null && releaseDate!.isNotEmpty
-        ? releaseDate!.substring(0, 4)
+    int? hours = duration != null ? duration ~/ 60 : null;
+    int? minutes = duration != null ? duration % 60 : null;
+    String year = releaseDate != null && releaseDate.isNotEmpty
+        ? releaseDate.substring(0, 4)
         : 'NA';
+
     return Scaffold(
       appBar: Platform.isLinux || Platform.isWindows || Platform.isMacOS
           ? AppBar(
@@ -413,7 +134,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                       IconButton(
                                         onPressed: () {
                                           _castImagesFuture.then((imageUrls) {
-                                            _openImageGallery(imageUrls);
+                                            state._openImageGallery(imageUrls);
                                           });
                                         },
                                         icon: const Icon(
@@ -434,10 +155,10 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                 openbox.get('accountId');
                                             final String sessionData =
                                                 openbox.get('sessionData');
-                                            if (isMovieWatchlist!) {
+                                            if (isMovieWatchlist) {
                                               // Remove from watchlist
-                                              setState(() {
-                                                isMovieWatchlist = false;
+                                              state.updateState(() {
+                                                state.isMovieWatchlist = false;
                                               });
                                               await removeFromWatchList(
                                                   accountId,
@@ -447,8 +168,8 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                               profileRefreshNotifier.value++;
                                             } else {
                                               // Add to watchlist
-                                              setState(() {
-                                                isMovieWatchlist = true;
+                                              state.updateState(() {
+                                                state.isMovieWatchlist = true;
                                               });
                                               await addWatchList(
                                                   accountId,
@@ -461,7 +182,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                           child: Icon(
                                             isMovieWatchlist == null
                                                 ? Icons.bookmark_border
-                                                : isMovieWatchlist!
+                                                : isMovieWatchlist
                                                     ? Icons.bookmark
                                                     : Icons.bookmark_border,
                                             color: Colors.white,
@@ -486,32 +207,32 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                   openbox.get('accountId');
                                               final String sessionData =
                                                   openbox.get('sessionData');
-                                              if (isMovieFavorite!) {
+                                              if (isMovieFavorite) {
                                                 removeFromFavorite(
                                                     accountId,
                                                     sessionData,
                                                     movieId,
                                                     context);
-                                                setState(() {
-                                                  isMovieFavorite = false;
-                                                 profileRefreshNotifier.value++;
-                                               });
+                                                state.updateState(() {
+                                                  state.isMovieFavorite = false;
+                                                  profileRefreshNotifier.value++;
+                                                });
                                               } else {
                                                 addFavorite(
                                                     accountId,
                                                     sessionData,
                                                     movieId,
                                                     context);
-                                                setState(() {
-                                                  isMovieFavorite = true;
-                                                 profileRefreshNotifier.value++;
-                                               });
+                                                state.updateState(() {
+                                                  state.isMovieFavorite = true;
+                                                  profileRefreshNotifier.value++;
+                                                });
                                               }
                                             },
                                             child: Icon(
                                               isMovieFavorite == null
                                                   ? Icons.favorite_border
-                                                  : isMovieFavorite!
+                                                  : isMovieFavorite
                                                       ? Icons.favorite
                                                       : Icons.favorite_border,
                                               color: Colors.white,
@@ -548,7 +269,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                               8.0),
                                                       child: RatingBar.builder(
                                                         initialRating:
-                                                            userRating ?? 0,
+                                                            userRating,
                                                         minRating: 1,
                                                         maxRating: 10,
                                                         itemSize: 35,
@@ -574,7 +295,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                               widget.movieId;
                                                           final openbox =
                                                               Hive.box('sessionBox');
-
+ 
                                                           final String
                                                               sessionData =
                                                               openbox.get(
@@ -584,9 +305,9 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                               movieId,
                                                               rating,
                                                               context);
-                                                          setState(() {
-                                                            isMovieRated = {'value': rating};
-                                                            userRating = rating;
+                                                          state.updateState(() {
+                                                            state.isMovieRated = {'value': rating};
+                                                            state.userRating = rating;
                                                             profileRefreshNotifier.value++;
                                                           });
                                                         },
@@ -600,7 +321,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                       onTap: () async {
                                                         final openbox =
                                                             Hive.box('sessionBox');
-
+ 
                                                         final String
                                                             sessionData =
                                                             openbox.get(
@@ -611,11 +332,11 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                             context);
                                                         Navigator.of(context)
                                                             .pop();
-                                                        setState(() {
-                                                          isMovieRated = false;
-                                                             userRating = null;
-                                                             profileRefreshNotifier.value++;
-                                                           });
+                                                        state.updateState(() {
+                                                          state.isMovieRated = false;
+                                                          state.userRating = null;
+                                                          profileRefreshNotifier.value++;
+                                                        });
                                                       },
                                                       child: const Text(
                                                         ' 🗑️ Delete Rating',
@@ -634,7 +355,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                               },
                                             ),
                                             child: Text(
-                                              '👤 ${userRating?.toStringAsFixed(1)}',
+                                              '👤 ${userRating.toStringAsFixed(1)}',
                                               style: const TextStyle(
                                                 fontWeight: FontWeight.w300,
                                                 fontSize: 13,
@@ -687,7 +408,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                               widget.movieId;
                                                           final openbox =
                                                               Hive.box('sessionBox');
-
+ 
                                                           final String
                                                               sessionData =
                                                               openbox.get(
@@ -697,9 +418,9 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                               movieId,
                                                               rating,
                                                               context);
-                                                          setState(() {
-                                                            isMovieRated = '"value":$rating';
-                                                            userRating = rating;
+                                                          state.updateState(() {
+                                                            state.isMovieRated = '"value":$rating';
+                                                            state.userRating = rating;
                                                             profileRefreshNotifier.value++;
                                                           });
                                                         },
@@ -734,7 +455,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                       ),
                                       Visibility(
                                         visible: imdbRating != null &&
-                                            imdbRating!.isNotEmpty,
+                                            imdbRating.isNotEmpty,
                                         child: Container(
                                           margin: const EdgeInsets.all(5),
                                           padding: const EdgeInsets.all(10),
@@ -771,10 +492,10 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                           ),
                                         ),
                                       ),
-
+ 
                                       // Mark as Watched button
                                       GestureDetector(
-                                        onTap: isWatched ? _removeFromWatched : _markAsWatched,
+                                        onTap: isWatched ? state._removeFromWatched : state._markAsWatched,
                                         child: Container(
                                           margin: const EdgeInsets.all(5),
                                           padding: const EdgeInsets.all(10),
@@ -789,6 +510,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                 isWatched ? Icons.check_circle : Icons.visibility,
                                                 color: Colors.white,
                                                 size: 16,
+                                                
                                               ),
                                               const SizedBox(width: 4),
                                               Text(
@@ -803,7 +525,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                           ),
                                         ),
                                       ),
-
+ 
                                       Center(
                                         child: SingleChildScrollView(
                                           scrollDirection: Axis.horizontal,
@@ -1060,7 +782,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                       const EdgeInsets.all(8.0),
                                                   child: Text(
                                                     language != null
-                                                        ? language!
+                                                        ? language
                                                             .toUpperCase()
                                                         : 'N/A',
                                                     style: const TextStyle(
@@ -1103,7 +825,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                               data['cast'] ?? [];
                           final List<Map<String, dynamic>> crewList =
                               data['crew'] ?? [];
-
+ 
                           return Column(
                             children: [
                               Row(
@@ -1158,19 +880,19 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                           final Map<String, List<Map<String, dynamic>>> data =
                               snapshot.data
                                   as Map<String, List<Map<String, dynamic>>>;
-
+ 
                           final List<Map<String, dynamic>> crewList =
                               data['crew'] ?? [];
-
+ 
                           Map<String, dynamic>? director;
-
+ 
                           for (var crewMember in crewList) {
                             if (crewMember['job'] == 'Director') {
                               director = crewMember;
                               break;
                             }
                           }
-
+ 
                           if (director != null) {
                             return Column(
                               children: [
@@ -1199,7 +921,7 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                     } else {
                                       List<dynamic> movies =
                                           snapshot.data as List<dynamic>;
-
+ 
                                       return SingleChildScrollView(
                                         scrollDirection: Axis.horizontal,
                                         child: Row(
@@ -1212,16 +934,9 @@ class _MovieDetailPageDesktopState extends State<MovieDetailPageDesktop> {
                                                     Card(
                                                       elevation: 4,
                                                       child: GestureDetector(
-                                                        onTap: () => Platform
-                                                                    .isAndroid ||
-                                                                Platform.isIOS
-                                                            ? onTapMovie(
-                                                                movie['title'],
-                                                                movie['id'])
-                                                            : onTapMovieDesktop(
-                                                                movie['title'],
-                                                                movie['id'],
-                                                                context),
+                                                        onTap: () => state.onTapMovie(
+                                                            movie['title'],
+                                                            movie['id']),
                                                         child: Container(
                                                           height: 300,
                                                           width: 200,

@@ -3,8 +3,6 @@ import 'dart:io';
 import 'package:Mirarr/functions/fetchers/fetch_movie_details.dart';
 import 'package:Mirarr/functions/fetchers/fetch_serie_details.dart';
 import 'package:Mirarr/functions/regionprovider_class.dart';
-import 'package:Mirarr/moviesPage/functions/on_tap_movie_desktop.dart';
-import 'package:Mirarr/seriesPage/function/on_tap_serie_desktop.dart';
 import 'package:flutter/material.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_serie.dart';
@@ -83,11 +81,7 @@ class TMDBUrlParser {
         try {
           final movieTitle = await _getMovieTitle(movieId, context);
           if (context.mounted) {
-            if (Platform.isAndroid || Platform.isIOS) {
-              onTapMovie(movieTitle, movieId, context);
-            } else {
-              onTapMovieDesktop(movieTitle, movieId, context);
-            }
+            onTapMovie(movieTitle, movieId, context);
           }
         } catch (e) {
           debugPrint('Error fetching movie title: $e');
@@ -98,11 +92,7 @@ class TMDBUrlParser {
       if (serieId != null) {
         final serieTitle = await _getSerieTitle(serieId, context);
         if (context.mounted) {
-          if (Platform.isAndroid || Platform.isIOS) {
-            onTapSerie(serieTitle, serieId, context);
-          } else {
-            onTapSerieDesktop(serieTitle, serieId, context);
-          }
+          onTapSerie(serieTitle, serieId, context);
         }
       }
     }
