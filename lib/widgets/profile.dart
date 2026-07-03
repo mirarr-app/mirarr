@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:Mirarr/functions/fetchers/fetch_serie_details.dart';
@@ -20,9 +19,7 @@ import 'package:http/http.dart' as http;
 import 'package:Mirarr/moviesPage/models/movie.dart';
 import 'package:provider/provider.dart';
 import 'package:Mirarr/moviesPage/movieDetailPage.dart';
-import 'package:Mirarr/moviesPage/movieDetailPageDesktop.dart';
 import 'package:Mirarr/seriesPage/serieDetailPage.dart';
-import 'package:Mirarr/seriesPage/serieDetailPageDesktop.dart';
 import 'package:Mirarr/functions/navigation_provider.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -54,40 +51,22 @@ class _ProfilePageState extends State<ProfilePage> {
   int _tvRatedFetchId = 0;
 
   Future<void> _navigateToMovie(String title, int id) async {
-    if (Platform.isAndroid || Platform.isIOS) {
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => MovieDetailPage(movieTitle: title, movieId: id),
-        ),
-      );
-    } else {
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => MovieDetailPageDesktop(movieTitle: title, movieId: id),
-        ),
-      );
-    }
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MovieDetailPage(movieTitle: title, movieId: id),
+      ),
+    );
     checkInternetAndFetchData();
   }
 
   Future<void> _navigateToSerie(String title, int id) async {
-    if (Platform.isAndroid || Platform.isIOS) {
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => SerieDetailPage(serieName: title, serieId: id),
-        ),
-      );
-    } else {
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => SerieDetailPageDesktop(serieName: title, serieId: id),
-        ),
-      );
-    }
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SerieDetailPage(serieName: title, serieId: id),
+      ),
+    );
     checkInternetAndFetchData();
   }
 

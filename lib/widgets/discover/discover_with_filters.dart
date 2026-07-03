@@ -6,7 +6,6 @@ import 'package:Mirarr/functions/get_base_url.dart';
 import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/moviesPage/UI/customMovieWidget.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie.dart';
-import 'package:Mirarr/moviesPage/functions/on_tap_movie_desktop.dart';
 import 'package:Mirarr/moviesPage/models/movie.dart';
 import 'package:Mirarr/widgets/custom_divider.dart';
 import 'package:Mirarr/widgets/discover/genre_chips.dart';
@@ -561,11 +560,7 @@ class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
                                 final movie = movies[index];
                                 return GestureDetector(
                                   onTap: () =>
-                                      Platform.isAndroid || Platform.isIOS
-                                          ? onTapMovie(
-                                              movie.title, movie.id, context)
-                                          : onTapMovieDesktop(
-                                              movie.title, movie.id, context),
+                                      onTapMovie(movie.title, movie.id, context),
                                   child: CustomMovieWidget(movie: movie),
                                 );
                               },

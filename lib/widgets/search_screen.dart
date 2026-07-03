@@ -7,10 +7,8 @@ import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/moviesPage/UI/cast_crew_row.dart';
 import 'package:Mirarr/moviesPage/UI/movie_result.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie.dart';
-import 'package:Mirarr/moviesPage/functions/on_tap_movie_desktop.dart';
 import 'package:Mirarr/seriesPage/UI/serie_result.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_serie.dart';
-import 'package:Mirarr/seriesPage/function/on_tap_serie_desktop.dart';
 import 'package:Mirarr/widgets/discover/discover_with_filters.dart';
 import 'package:Mirarr/widgets/models/person.dart';
 import 'package:Mirarr/widgets/person_result.dart';
@@ -259,10 +257,7 @@ class _SearchScreenState extends State<SearchScreen>
                           itemBuilder: (context, index) {
                             final movie = movieResults[index];
                             return GestureDetector(
-                              onTap: () => Platform.isAndroid || Platform.isIOS
-                                  ? onTapMovie(movie.title, movie.id, context)
-                                  : onTapMovieDesktop(
-                                      movie.title, movie.id, context),
+                              onTap: () => onTapMovie(movie.title, movie.id, context),
                               child: MovieSearchResult(
                                 movie: movie,
                               ),
@@ -339,10 +334,7 @@ class _SearchScreenState extends State<SearchScreen>
                           itemBuilder: (context, index) {
                             final serie = tvResults[index];
                             return GestureDetector(
-                              onTap: () => Platform.isAndroid || Platform.isIOS
-                                  ? onTapSerie(serie.name, serie.id, context)
-                                  : onTapSerieDesktop(
-                                      serie.name, serie.id, context),
+                              onTap: () => onTapSerie(serie.name, serie.id, context),
                               child: SerieSearchResult(
                                 serie: serie,
                               ),

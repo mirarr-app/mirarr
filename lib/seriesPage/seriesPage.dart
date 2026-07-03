@@ -7,7 +7,6 @@ import 'package:Mirarr/functions/fetchers/fetch_series_by_genre.dart';
 import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_gridview_serie.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_serie.dart';
-import 'package:Mirarr/seriesPage/function/on_tap_serie_desktop.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart';
@@ -211,10 +210,7 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
                           itemBuilder: (context, index) {
                             final serie = trendingSeries[index];
                             return GestureDetector(
-                              onTap: () => Platform.isAndroid || Platform.isIOS
-                                  ? onTapSerie(serie.name, serie.id, context)
-                                  : onTapSerieDesktop(
-                                      serie.name, serie.id, context),
+                              onTap: () => onTapSerie(serie.name, serie.id, context),
                               child: CustomSeriesWidget(
                                 serie: serie,
                               ),
@@ -258,10 +254,7 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
                           itemBuilder: (context, index) {
                             final serie = popularSeries[index];
                             return GestureDetector(
-                              onTap: () => Platform.isAndroid || Platform.isIOS
-                                  ? onTapSerie(serie.name, serie.id, context)
-                                  : onTapSerieDesktop(
-                                      serie.name, serie.id, context),
+                              onTap: () => onTapSerie(serie.name, serie.id, context),
                               child: CustomSeriesWidget(
                                 serie: serie,
                               ),
@@ -316,16 +309,11 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
                                 itemCount: seriesByGenre[genre.id]?.length ?? 0,
                                 itemBuilder: (context, index) {
                                   final serie = seriesByGenre[genre.id]![index];
-                                  return GestureDetector(
-                                    onTap: () =>
-                                        Platform.isAndroid || Platform.isIOS
-                                            ? onTapSerie(
-                                                serie.name, serie.id, context)
-                                            : onTapSerieDesktop(
-                                                serie.name, serie.id, context),
-                                    child: CustomSeriesWidget(
-                                      serie: serie,
-                                    ),
+                                   return GestureDetector(
+                                     onTap: () => onTapSerie(serie.name, serie.id, context),
+                                     child: CustomSeriesWidget(
+                                       serie: serie,
+                                     ),
                                   );
                                 },
                               ),

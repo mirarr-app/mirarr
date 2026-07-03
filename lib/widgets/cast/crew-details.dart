@@ -5,7 +5,6 @@ import 'dart:ui';
 import 'package:Mirarr/functions/get_base_url.dart';
 import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie.dart';
-import 'package:Mirarr/moviesPage/functions/on_tap_movie_desktop.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -502,9 +501,7 @@ class _CrewDetailPageState extends State<CrewDetailPage> {
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
     return GestureDetector(
-      onTap: () => Platform.isAndroid || Platform.isIOS
-          ? onTapMovie(movie['title'], movie['id'], context)
-          : onTapMovieDesktop(movie['title'], movie['id'], context),
+      onTap: () => onTapMovie(movie['title'], movie['id'], context),
       child: Padding(
         padding: const EdgeInsets.all(6),
         child: Stack(
