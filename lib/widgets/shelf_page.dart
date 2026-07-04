@@ -1,5 +1,5 @@
-import 'dart:io';
 import 'dart:async';
+import 'package:Mirarr/functions/platform_helper.dart';
 import 'dart:ui';
 
 import 'package:Mirarr/moviesPage/checkers/custom_tmdb_ids_effects.dart';
@@ -119,7 +119,7 @@ class _ShelfPageState extends State<ShelfPage> with TickerProviderStateMixin {
     return Scaffold(
       appBar: TabBar(
                labelColor: Colors.black,
-        padding: Platform.isAndroid || Platform.isIOS
+        padding: AppPlatform.isMobile
             ? const EdgeInsets.fromLTRB(0, 36, 0, 0)
             : const EdgeInsets.fromLTRB(0, 0, 0, 0),
         indicator: BoxDecoration(color: Theme.of(context).primaryColor),
@@ -231,7 +231,7 @@ class _ShelfPageState extends State<ShelfPage> with TickerProviderStateMixin {
                         child: GridView.builder(
                           padding: const EdgeInsets.all(16),
                           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: Platform.isWindows || Platform.isLinux || Platform.isMacOS ? 5 : 3,
+                            crossAxisCount: (AppPlatform.isDesktop || (AppPlatform.isWeb && MediaQuery.of(context).size.width >= 800)) ? 5 : 3,
                             childAspectRatio: 0.7,
                             crossAxisSpacing: 12,
                             mainAxisSpacing: 12,

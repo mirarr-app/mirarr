@@ -45,8 +45,7 @@ class _MovieDetailPageDesktop extends StatelessWidget {
         : 'NA';
 
     return Scaffold(
-      appBar: Platform.isLinux || Platform.isWindows || Platform.isMacOS
-          ? AppBar(
+      appBar: AppBar(
               toolbarHeight: 40,
               backgroundColor: getMovieColor(context, widget.movieId),
               iconTheme: const IconThemeData(color: Colors.black),
@@ -59,8 +58,7 @@ class _MovieDetailPageDesktop extends StatelessWidget {
                   ),
                 ),
               ],
-            )
-          : null,
+            ),
       body: moviedetails == null
           ? const Center(
               child: CircularProgressIndicator(),

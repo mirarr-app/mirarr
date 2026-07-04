@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:async';
-import 'dart:io';
 import 'dart:ui';
+import 'package:Mirarr/functions/platform_helper.dart';
 import 'package:Mirarr/functions/get_base_url.dart';
 import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/moviesPage/UI/cast_crew_row.dart';
@@ -166,7 +166,7 @@ class _SearchScreenState extends State<SearchScreen>
     return Scaffold(
       appBar: TabBar(
         labelColor: Colors.black,
-        padding: Platform.isAndroid || Platform.isIOS
+        padding: AppPlatform.isMobile
             ? const EdgeInsets.fromLTRB(0, 32, 0, 0)
             : const EdgeInsets.fromLTRB(0, 0, 0, 0),
         indicator: BoxDecoration(color: Theme.of(context).primaryColor),
@@ -411,7 +411,7 @@ class _SearchScreenState extends State<SearchScreen>
                           gridDelegate:
                               SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount:
-                                Platform.isAndroid || Platform.isIOS ? 2 : 6,
+                                AppPlatform.isMobile ? 2 : 6,
                             crossAxisSpacing: 5,
                             mainAxisSpacing: 5,
                           ),

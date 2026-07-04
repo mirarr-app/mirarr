@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:isolate';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:Mirarr/functions/get_base_url.dart';
 import 'package:Mirarr/seriesPage/models/serie.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -41,6 +42,9 @@ Future<List<Genre>> fetchGenres(String region) async {
   );
 
   if (response.statusCode == 200) {
+    if (kIsWeb) {
+      return _parseGenresInIsolate(response.body);
+    }
     final receivePort = ReceivePort();
 
     try {
@@ -92,6 +96,9 @@ Future<List<Serie>> fetchSeriesByGenre(int genreId, String region) async {
   );
 
   if (response.statusCode == 200) {
+    if (kIsWeb) {
+      return _parseSeriesInIsolate(response.body);
+    }
     final receivePort = ReceivePort();
 
     try {

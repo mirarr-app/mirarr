@@ -32,22 +32,20 @@ class _SerieDetailPageDesktop extends StatelessWidget {
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
 
     return Scaffold(
-      appBar: Platform.isLinux || Platform.isWindows || Platform.isMacOS
-          ? AppBar(
-              toolbarHeight: 40,
-              backgroundColor: Theme.of(context).primaryColor,
-              iconTheme: const IconThemeData(color: Colors.black),
-              actions: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
-                  child: Text(
-                    widget.serieName,
-                    style: const TextStyle(color: Colors.black),
-                  ),
-                ),
-              ],
-            )
-          : null,
+      appBar: AppBar(
+        toolbarHeight: 40,
+        backgroundColor: Theme.of(context).primaryColor,
+        iconTheme: const IconThemeData(color: Colors.black),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
+            child: Text(
+              widget.serieName,
+              style: const TextStyle(color: Colors.black),
+            ),
+          ),
+        ],
+      ),
       body: serieDetails == null
           ? const Center(
               child: CircularProgressIndicator(),
@@ -729,8 +727,8 @@ class _SerieDetailPageDesktop extends StatelessWidget {
                                       textAlign: TextAlign.justify,
                                       style: TextStyle(
                                           color: Theme.of(context).primaryColor,
-                                          fontSize: Platform.isAndroid ||
-                                                  Platform.isIOS
+                                          fontSize: AppPlatform.isAndroid ||
+                                                  AppPlatform.isIOS
                                               ? 18
                                               : 30,
                                           fontWeight: FontWeight.w700),
@@ -750,8 +748,8 @@ class _SerieDetailPageDesktop extends StatelessWidget {
                                       textAlign: TextAlign.justify,
                                       style: TextStyle(
                                           color: Theme.of(context).primaryColor,
-                                          fontSize: Platform.isAndroid ||
-                                                  Platform.isIOS
+                                          fontSize: AppPlatform.isAndroid ||
+                                                  AppPlatform.isIOS
                                               ? 18
                                               : 30,
                                           fontWeight: FontWeight.w700),

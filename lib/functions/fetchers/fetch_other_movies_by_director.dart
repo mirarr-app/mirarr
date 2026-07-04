@@ -1,4 +1,5 @@
 import 'dart:isolate';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'package:Mirarr/functions/get_base_url.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -44,6 +45,9 @@ Future<List<dynamic>> fetchOtherMoviesByDirector(
     Uri.parse('${baseUrl}person/$castId/movie_credits?api_key=$apiKey'),
   );
   if (response.statusCode == 200) {
+    if (kIsWeb) {
+      return _parseMoviesInIsolate(response.body);
+    }
     final receivePort = ReceivePort();
 
     try {

@@ -1,5 +1,6 @@
 import 'dart:isolate';
 import 'dart:convert';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'package:Mirarr/moviesPage/models/movie.dart';
@@ -43,6 +44,9 @@ Future<List<Movie>> fetchTrendingMovies(String region) async {
   );
 
   if (response.statusCode == 200) {
+    if (kIsWeb) {
+      return _parseMoviesInIsolate(response.body);
+    }
     final receivePort = ReceivePort();
 
     try {

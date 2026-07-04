@@ -1,4 +1,5 @@
 import 'dart:isolate';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'package:Mirarr/functions/get_base_url.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -37,6 +38,9 @@ Future<Map<String, List<Map<String, dynamic>>>> fetchCredits(
     );
 
     if (response.statusCode == 200) {
+      if (kIsWeb) {
+        return _parseCreditsInIsolate(response.body);
+      }
       final receivePort = ReceivePort();
 
       try {

@@ -45,6 +45,24 @@ class _MovieDetailPageMobile extends StatelessWidget {
         : 'NA';
 
     return Scaffold(
+      //only show appbar on ios and web
+      appBar: AppPlatform.isIOS || AppPlatform.isWeb ?
+      AppBar(
+        automaticallyImplyLeading: true,
+        toolbarHeight: 40,
+              backgroundColor: getMovieColor(context, widget.movieId),
+              iconTheme: const IconThemeData(color: Colors.black),
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
+                  child: Text(
+                    widget.movieTitle,
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                ),
+              ],
+      )
+      : null,
       body: moviedetails == null
           ? const Center(
               child: CircularProgressIndicator(),
@@ -181,7 +199,7 @@ class _MovieDetailPageMobile extends StatelessWidget {
                           ),
                         ),
                         Visibility(
-                          visible: Platform.isAndroid,
+                          visible: AppPlatform.isAndroid,
                           child: Positioned(
                             top: 190,
                             right: 30,

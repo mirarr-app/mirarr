@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -6,6 +7,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 
 class UpdateChecker {
   static Future<void> checkForUpdate(BuildContext context) async {
+    if (kIsWeb) return;
     final currentVersion = await _getCurrentVersion();
     final latestVersion = await _getLatestVersion();
 

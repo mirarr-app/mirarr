@@ -33,6 +33,24 @@ class _SerieDetailPageMobile extends StatelessWidget {
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
 
     return Scaffold(
+      //only show appbar on ios and web
+      appBar: AppPlatform.isIOS || AppPlatform.isWeb ?
+      AppBar(
+        automaticallyImplyLeading: true,
+         toolbarHeight: 40,
+        backgroundColor: Theme.of(context).primaryColor,
+        iconTheme: const IconThemeData(color: Colors.black),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
+            child: Text(
+              widget.serieName,
+              style: const TextStyle(color: Colors.black),
+            ),
+          ),
+        ],
+      )
+      : null,
       body: serieDetails == null
           ? const Center(
               child: CircularProgressIndicator(),
@@ -167,7 +185,7 @@ class _SerieDetailPageMobile extends StatelessWidget {
                         ),
                       ),
                       Visibility(
-                        visible: Platform.isAndroid,
+                        visible: AppPlatform.isAndroid,
                         child: Positioned(
                           top: 190,
                           right: 30,

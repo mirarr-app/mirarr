@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:ui';
+import 'package:Mirarr/functions/platform_helper.dart';
 
 import 'package:Mirarr/seriesPage/UI/omdb_table.dart';
 import 'package:flutter/material.dart';
@@ -102,7 +103,7 @@ class _TvChartTableState extends State<TvChartTable> {
           ),
           bottom: TabBar(
             labelColor: Colors.black,
-            padding: Platform.isAndroid || Platform.isIOS
+            padding: AppPlatform.isMobile
                 ? const EdgeInsets.fromLTRB(0, 32, 0, 0)
                 : const EdgeInsets.fromLTRB(0, 0, 0, 0),
             indicator: BoxDecoration(color: Theme.of(context).primaryColor),
@@ -205,7 +206,7 @@ class _TvChartTableState extends State<TvChartTable> {
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: SizedBox(
-            width: Platform.isAndroid || Platform.isIOS ? null : screenWidth,
+            width: AppPlatform.isMobile ? null : screenWidth,
             child: SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.all(4.0),
