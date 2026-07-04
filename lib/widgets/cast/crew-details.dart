@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
+import 'package:Mirarr/functions/platform_helper.dart';
 import 'package:Mirarr/functions/get_base_url.dart';
 import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie.dart';
@@ -128,8 +129,7 @@ class _CrewDetailPageState extends State<CrewDetailPage> {
         }
 
         return Scaffold(
-          appBar: Platform.isLinux || Platform.isWindows || Platform.isMacOS
-              ? AppBar(
+          appBar: AppBar(
                   toolbarHeight: 40,
                   backgroundColor: Theme.of(context).primaryColor,
                   iconTheme: const IconThemeData(color: Colors.black),
@@ -141,8 +141,7 @@ class _CrewDetailPageState extends State<CrewDetailPage> {
                           style: const TextStyle(color: Colors.black),
                         ),
                       ),
-                    ])
-              : null,
+                    ]),
           body: snapshot.connectionState == ConnectionState.waiting
               ? const Center(child: CircularProgressIndicator())
               : snapshot.hasError
@@ -156,7 +155,9 @@ class _CrewDetailPageState extends State<CrewDetailPage> {
   Widget _buildContent(Map<String, dynamic> castData) {
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
-    return Platform.isAndroid || Platform.isIOS
+    final isMobileLayout = AppPlatform.isMobile ||
+        (AppPlatform.isWeb && MediaQuery.of(context).size.width < 800);
+    return isMobileLayout
         ? Scaffold(
             body: FutureBuilder<Map<String, dynamic>>(
               future: _castDetailsFuture,

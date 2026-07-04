@@ -1,5 +1,7 @@
 import 'package:Mirarr/widgets/profile.dart';
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:Mirarr/functions/platform_helper.dart';
 
 import 'package:Mirarr/database/watch_history_database.dart';
 import 'package:Mirarr/functions/fetchers/fetch_serie_details.dart';
@@ -229,7 +231,8 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (Platform.isAndroid || Platform.isIOS) {
+    final isMobileLayout = AppPlatform.isMobile || (kIsWeb && MediaQuery.of(context).size.width < 800);
+    if (isMobileLayout) {
       return _SerieDetailPageMobile(this);
     } else {
       return _SerieDetailPageDesktop(this);

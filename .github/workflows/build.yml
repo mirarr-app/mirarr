@@ -168,6 +168,50 @@ jobs:
               name: ios-app
               path: build/ios/iphoneos/mirarr.ipa
 
+  build_web:
+    name: Build Web
+    runs-on: ubuntu-latest
+    env:
+      TMDB_API_READ: ${{ secrets.TMDB_API_READ }}
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      OMDB_API_KEY: ${{ secrets.OMDB_API_KEY }}
+      OMDB_API_KEY_FOR_SERIES: ${{ secrets.OMDB_API_KEY_FOR_SERIES }}
+      OMDB_API_KEY_FOR_EPISODES: ${{ secrets.OMDB_API_KEY_FOR_EPISODES }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.0'
+      - run: flutter pub get
+      - run: |
+          echo "TMDB_API_READ=${{ secrets.TMDB_API_READ }}" > .env
+          echo "TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}" >> .env
+          echo "OMDB_API_KEY=${{ secrets.OMDB_API_KEY }}" >> .env
+          echo "OMDB_API_KEY_FOR_SERIES=${{ secrets.OMDB_API_KEY_FOR_SERIES }}" >> .env
+          echo "OMDB_API_KEY_FOR_EPISODES=${{ secrets.OMDB_API_KEY_FOR_EPISODES }}" >> .env
+
+      - run: flutter build web --release --base-href "/mirarr/"
+      - name: Upload Web Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  deploy_web:
+    name: Deploy to GitHub Pages
+    needs: build_web
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
   upload-release:
     permissions: write-all
     needs: [build_android, build_linux, build_windows, build_ios]

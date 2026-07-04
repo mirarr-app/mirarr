@@ -13,6 +13,7 @@ import 'package:provider/provider.dart';
 import 'package:app_links/app_links.dart';
 import 'dart:io';
 import 'package:window_manager/window_manager.dart';
+import 'package:flutter/foundation.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -21,7 +22,7 @@ void main() async {
   await dotenv.load(fileName: ".env");
   await Hive.initFlutter();
   await Hive.openBox('sessionBox');
-  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+  if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
     await windowManager.ensureInitialized();
     WindowManager.instance.setMinimumSize(const Size(1600, 900));
   }
@@ -67,7 +68,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _initAppLinks() async {
-    if (!_isInitialized && !Platform.isLinux) {
+    if (!_isInitialized && (kIsWeb || !Platform.isLinux)) {
       _appLinks = AppLinks();
 
       // Handle initial URI if the app was launched from a link

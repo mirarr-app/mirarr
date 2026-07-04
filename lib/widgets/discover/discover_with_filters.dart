@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
+import 'package:Mirarr/functions/platform_helper.dart';
 
 import 'package:Mirarr/functions/get_base_url.dart';
 import 'package:Mirarr/functions/regionprovider_class.dart';
@@ -40,7 +41,7 @@ class DiscoverMoviesPage extends StatefulWidget {
 class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
   RangeValues _yearRange = const RangeValues(1900, 2024);
   List<Movie> movies = [];
-  int crossAxisCount = Platform.isAndroid || Platform.isIOS ? 2 : 4;
+  int crossAxisCount = AppPlatform.isMobile ? 2 : 4;
   bool isLoading = false;
   List<Human> andSelectedPeople = [];
   List<Genre> allGenres = [];
@@ -452,9 +453,7 @@ class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
                       ),
                     ),
                     Visibility(
-                      visible: Platform.isMacOS ||
-                          Platform.isWindows ||
-                          Platform.isLinux,
+                      visible: AppPlatform.isDesktop,
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
                         child: Text(
@@ -470,9 +469,7 @@ class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
                     const CustomDivider(),
                     LayoutBuilder(
                       builder: (context, constraints) {
-                        if (Platform.isWindows ||
-                            Platform.isLinux ||
-                            Platform.isMacOS) {
+                        if (AppPlatform.isDesktop) {
                           return Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [

@@ -17,6 +17,8 @@ import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:Mirarr/functions/file_saver.dart' as fs;
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -646,17 +648,18 @@ class _SettingsPageState extends State<SettingsPage> {
                                   borderRadius: BorderRadius.circular(20)),
                             ),
                           ),
-                          ElevatedButton.icon(
-                            onPressed: _importDbFile,
-                            icon: const Icon(Icons.settings_backup_restore, size: 18),
-                            label: const Text('Database (.db)'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(context).primaryColor,
-                              foregroundColor: Colors.black,
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20)),
+                          if (!kIsWeb)
+                            ElevatedButton.icon(
+                              onPressed: _importDbFile,
+                              icon: const Icon(Icons.settings_backup_restore, size: 18),
+                              label: const Text('Database (.db)'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Theme.of(context).primaryColor,
+                                foregroundColor: Colors.black,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20)),
+                              ),
                             ),
-                          ),
                         ],
                       ),
                     ],
@@ -735,18 +738,19 @@ class _SettingsPageState extends State<SettingsPage> {
                               ),
                             ),
                           ),
-                          ElevatedButton.icon(
-                            onPressed: _exportDbFile,
-                            icon: const Icon(Icons.save, size: 18),
-                            label: const Text('Database (.db)'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(context).primaryColor,
-                              foregroundColor: Colors.black,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
+                          if (!kIsWeb)
+                            ElevatedButton.icon(
+                              onPressed: _exportDbFile,
+                              icon: const Icon(Icons.save, size: 18),
+                              label: const Text('Database (.db)'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Theme.of(context).primaryColor,
+                                foregroundColor: Colors.black,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
                               ),
                             ),
-                          ),
                         ],
                       ),
                     ],
@@ -990,6 +994,7 @@ class _SettingsPageState extends State<SettingsPage> {
       final result = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['csv'],
+        withData: true,
       );
       if (result == null || result.files.isEmpty) return;
 
@@ -1085,6 +1090,7 @@ class _SettingsPageState extends State<SettingsPage> {
       final result = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['json'],
+        withData: true,
       );
       if (result == null || result.files.isEmpty) return;
 
@@ -1173,7 +1179,17 @@ class _SettingsPageState extends State<SettingsPage> {
       final listMap = movies.map((item) => item.toMap()).toList();
       final jsonString = const JsonEncoder.withIndent('  ').convert(listMap);
       
-      if (Platform.isLinux || Platform.isWindows) {
+      if (kIsWeb) {
+        fs.saveFile(jsonString, 'watched_movies.json');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Movies exported successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else if (Platform.isLinux || Platform.isWindows) {
         final outputFile = await FilePicker.saveFile(
           dialogTitle: 'Save Watched Movies JSON',
           fileName: 'watched_movies.json',
@@ -1228,7 +1244,17 @@ class _SettingsPageState extends State<SettingsPage> {
       final listMap = shows.map((item) => item.toMap()).toList();
       final jsonString = const JsonEncoder.withIndent('  ').convert(listMap);
       
-      if (Platform.isLinux || Platform.isWindows) {
+      if (kIsWeb) {
+        fs.saveFile(jsonString, 'watched_shows.json');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('TV shows exported successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else if (Platform.isLinux || Platform.isWindows) {
         final outputFile = await FilePicker.saveFile(
           dialogTitle: 'Save Watched TV Shows JSON',
           fileName: 'watched_shows.json',
@@ -1268,6 +1294,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _exportDbFile() async {
+    if (kIsWeb) return;
     try {
       final documentsDirectory = await getApplicationDocumentsDirectory();
       final dbPath = p.join(documentsDirectory.path, 'watch_history.db');
@@ -1320,10 +1347,12 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _importMoviesJson() async {
+    bool isDialogOpen = false;
     try {
       final result = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['json'],
+        withData: true,
       );
       if (result == null || result.files.isEmpty) return;
 
@@ -1331,7 +1360,7 @@ class _SettingsPageState extends State<SettingsPage> {
       String content = '';
       if (file.bytes != null) {
         content = utf8.decode(file.bytes!);
-      } else if (file.path != null) {
+      } else if (!kIsWeb && file.path != null) {
         final ioFile = File(file.path!);
         content = await ioFile.readAsString();
       } else {
@@ -1353,29 +1382,65 @@ class _SettingsPageState extends State<SettingsPage> {
         return;
       }
 
-      final db = WatchHistoryDatabase();
-      int count = 0;
+      final List<WatchHistoryItem> items = [];
       for (var rawMap in decoded) {
         if (rawMap is Map<String, dynamic>) {
           final Map<String, dynamic> map = Map<String, dynamic>.from(rawMap);
           if (map['user_rating'] is int) {
             map['user_rating'] = (map['user_rating'] as int).toDouble();
           }
-          final item = WatchHistoryItem.fromMap(map);
-          await db.insertWatchHistoryItem(item);
-          count++;
+          items.add(WatchHistoryItem.fromMap(map));
         }
+      }
+
+      if (items.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No valid movie watch history items found.')),
+          );
+        }
+        return;
+      }
+
+      if (mounted) {
+        isDialogOpen = true;
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const PopScope(
+            canPop: false,
+            child: AlertDialog(
+              content: Row(
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(width: 20),
+                  Expanded(child: Text('Importing movie watch history...')),
+                ],
+              ),
+            ),
+          ),
+        ).then((_) => isDialogOpen = false);
+      }
+
+      final db = WatchHistoryDatabase();
+      await db.importWatchHistory(items);
+
+      if (mounted && isDialogOpen) {
+        Navigator.of(context).pop();
       }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Successfully imported $count watched movies!'),
+            content: Text('Successfully imported ${items.length} watched movies!'),
             backgroundColor: Colors.green,
           ),
         );
       }
     } catch (e) {
+      if (mounted && isDialogOpen) {
+        Navigator.of(context).pop();
+      }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error importing movies: $e')),
@@ -1385,10 +1450,12 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _importShowsJson() async {
+    bool isDialogOpen = false;
     try {
       final result = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['json'],
+        withData: true,
       );
       if (result == null || result.files.isEmpty) return;
 
@@ -1396,7 +1463,7 @@ class _SettingsPageState extends State<SettingsPage> {
       String content = '';
       if (file.bytes != null) {
         content = utf8.decode(file.bytes!);
-      } else if (file.path != null) {
+      } else if (!kIsWeb && file.path != null) {
         final ioFile = File(file.path!);
         content = await ioFile.readAsString();
       } else {
@@ -1418,29 +1485,65 @@ class _SettingsPageState extends State<SettingsPage> {
         return;
       }
 
-      final db = WatchHistoryDatabase();
-      int count = 0;
+      final List<WatchHistoryItem> items = [];
       for (var rawMap in decoded) {
         if (rawMap is Map<String, dynamic>) {
           final Map<String, dynamic> map = Map<String, dynamic>.from(rawMap);
           if (map['user_rating'] is int) {
             map['user_rating'] = (map['user_rating'] as int).toDouble();
           }
-          final item = WatchHistoryItem.fromMap(map);
-          await db.insertWatchHistoryItem(item);
-          count++;
+          items.add(WatchHistoryItem.fromMap(map));
         }
+      }
+
+      if (items.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No valid show watch history items found.')),
+          );
+        }
+        return;
+      }
+
+      if (mounted) {
+        isDialogOpen = true;
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const PopScope(
+            canPop: false,
+            child: AlertDialog(
+              content: Row(
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(width: 20),
+                  Expanded(child: Text('Importing TV shows watch history...')),
+                ],
+              ),
+            ),
+          ),
+        ).then((_) => isDialogOpen = false);
+      }
+
+      final db = WatchHistoryDatabase();
+      await db.importWatchHistory(items);
+
+      if (mounted && isDialogOpen) {
+        Navigator.of(context).pop();
       }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Successfully imported $count watched TV shows!'),
+            content: Text('Successfully imported ${items.length} watched TV shows!'),
             backgroundColor: Colors.green,
           ),
         );
       }
     } catch (e) {
+      if (mounted && isDialogOpen) {
+        Navigator.of(context).pop();
+      }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error importing TV shows: $e')),
@@ -1450,6 +1553,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _importDbFile() async {
+    if (kIsWeb) return;
     try {
       final result = await FilePicker.pickFiles(
         type: FileType.custom,

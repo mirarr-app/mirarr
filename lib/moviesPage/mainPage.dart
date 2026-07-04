@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:ui';
 import 'package:Mirarr/functions/fetchers/fetch_movies_by_genre.dart';
 import 'package:Mirarr/functions/fetchers/fetch_popular_movies.dart';
