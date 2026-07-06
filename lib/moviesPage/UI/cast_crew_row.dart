@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:Mirarr/widgets/tv_focus_wrapper.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:Mirarr/widgets/cast/cast-details.dart';
 import 'package:Mirarr/widgets/cast/crew-details.dart';
@@ -33,7 +34,8 @@ Widget buildCastRow(List<Map<String, dynamic>> castList, BuildContext context) {
       children: castList.map<Widget>((cast) {
         return Padding(
           padding: const EdgeInsets.fromLTRB(13, 8, 0, 8),
-          child: GestureDetector(
+          child: TvFocusWrapper(
+            borderRadius: 30.0,
             onTap: () {
               onTapCast(context, cast['id']);
             },
@@ -101,7 +103,8 @@ Widget buildCrewRow(List<Map<String, dynamic>> crewList, BuildContext context) {
       children: crewList.map<Widget>((crew) {
         return Padding(
           padding: const EdgeInsets.fromLTRB(13, 8, 0, 8),
-          child: GestureDetector(
+          child: TvFocusWrapper(
+            borderRadius: 30.0,
             onTap: () {
               onTapCrew(context, crew['id']);
             },
@@ -171,7 +174,8 @@ Widget buildCrewRowDesktop(
         return Padding(
           padding: const EdgeInsets.fromLTRB(
               20, 16, 0, 16), // Increase horizontal and vertical padding
-          child: GestureDetector(
+          child: TvFocusWrapper(
+            borderRadius: 45.0,
             onTap: () {
               onTapCrew(context, crew['id']);
             },
@@ -242,7 +246,8 @@ Widget buildCastRowDesktop(
       children: castList.map<Widget>((cast) {
         return Padding(
           padding: const EdgeInsets.fromLTRB(20, 16, 0, 16),
-          child: GestureDetector(
+          child: TvFocusWrapper(
+            borderRadius: 45.0,
             onTap: () {
               onTapCast(context, cast['id']);
             },

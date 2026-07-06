@@ -7,6 +7,7 @@ import 'package:Mirarr/moviesPage/movieDetailPage.dart';
 import 'package:Mirarr/seriesPage/checkers/custom_tmdb_ids_effects_series.dart';
 import 'package:Mirarr/seriesPage/serieDetailPage.dart';
 import 'package:flutter/material.dart';
+import 'package:Mirarr/widgets/tv_focus_wrapper.dart';
 import 'package:Mirarr/database/watch_history_database.dart';
 import 'package:Mirarr/models/watch_history_model.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -54,11 +55,11 @@ class _ShelfPageState extends State<ShelfPage> with TickerProviderStateMixin {
   String _movieQuery = '';
   String _showQuery = '';
   String _diaryQuery = '';
-  
+
   List<WatchHistoryItem> watchedMovies = [];
   List<WatchHistoryItem> watchedShows = [];
   List<WatchHistoryItem> diaryItems = [];
-  
+
   bool isLoading = true;
 
   @override
@@ -115,8 +116,9 @@ class _ShelfPageState extends State<ShelfPage> with TickerProviderStateMixin {
     }
 
     final region = Provider.of<RegionProvider>(context, listen: false).currentRegion;
-    
+
     return Scaffold(
+      extendBody: true,
       appBar: TabBar(
                labelColor: Colors.black,
         padding: AppPlatform.isMobile
@@ -132,7 +134,7 @@ class _ShelfPageState extends State<ShelfPage> with TickerProviderStateMixin {
             Tab(text: 'Diary', icon: Icon(Icons.book)),
           ],
         ),
-      
+
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : TabBarView(
@@ -419,7 +421,7 @@ class _ShelfPageState extends State<ShelfPage> with TickerProviderStateMixin {
   }
 
   Widget _buildMovieCard(WatchHistoryItem movie, String region) {
-    return GestureDetector(
+    return TvFocusWrapper(
       onTap: () => _navigateToMovie(movie.title, movie.tmdbId),
       child: Card(
         elevation: 4,
@@ -474,7 +476,7 @@ class _ShelfPageState extends State<ShelfPage> with TickerProviderStateMixin {
   }
 
   Widget _buildShowCard(WatchHistoryItem show, String region) {
-    return GestureDetector(
+    return TvFocusWrapper(
       onTap: () => _navigateToSerie(show.title, show.tmdbId),
       child: Card(
         margin: const EdgeInsets.only(bottom: 12),

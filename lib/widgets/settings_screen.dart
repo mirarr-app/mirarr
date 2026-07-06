@@ -71,18 +71,18 @@ class _SettingsPageState extends State<SettingsPage> {
         _supabaseUrlController.text.trim().isEmpty ? null : _supabaseUrlController.text.trim(),
         _supabaseAnonKeyController.text.trim().isEmpty ? null : _supabaseAnonKeyController.text.trim(),
       );
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            supabaseProvider.isConfigured 
-              ? 'Supabase configuration saved successfully!' 
+            supabaseProvider.isConfigured
+              ? 'Supabase configuration saved successfully!'
               : 'Supabase configuration cleared',
           ),
           backgroundColor: Theme.of(context).primaryColor,
         ),
       );
-      
+
       // Reload sync status after configuration change
       _loadSyncStatus();
     }
@@ -93,11 +93,11 @@ class _SettingsPageState extends State<SettingsPage> {
     await supabaseProvider.clearSupabaseConfig();
     _supabaseUrlController.clear();
     _supabaseAnonKeyController.clear();
-    
+
     setState(() {
       _syncStatus = null;
     });
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Supabase configuration cleared'),
@@ -116,7 +116,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
     final syncService = SupabaseSyncService(supabaseProvider.client);
     final success = await syncService.syncWatchHistory();
-    
+
     setState(() {
       _isSyncing = false;
     });
@@ -124,8 +124,8 @@ class _SettingsPageState extends State<SettingsPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          success 
-            ? 'Watch history synced successfully!' 
+          success
+            ? 'Watch history synced successfully!'
             : 'Failed to sync watch history. Check your connection. Make sure you have configured Supabase correctly. Read the documentation for more information.',
         ),
         backgroundColor: success ? Colors.green : Colors.red,
@@ -147,7 +147,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
     final syncService = SupabaseSyncService(supabaseProvider.client);
     final success = await syncService.uploadWatchHistory();
-    
+
     setState(() {
       _isSyncing = false;
     });
@@ -155,8 +155,8 @@ class _SettingsPageState extends State<SettingsPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          success 
-            ? 'Watch history uploaded successfully!' 
+          success
+            ? 'Watch history uploaded successfully!'
             : 'Failed to sync watch history. Check your connection. Make sure you have configured Supabase correctly. Read the documentation for more information.',
         ),
         backgroundColor: success ? Colors.green : Colors.red,
@@ -178,7 +178,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
     final syncService = SupabaseSyncService(supabaseProvider.client);
     final success = await syncService.downloadWatchHistory();
-    
+
     setState(() {
       _isSyncing = false;
     });
@@ -186,8 +186,8 @@ class _SettingsPageState extends State<SettingsPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          success 
-            ? 'Watch history downloaded successfully!' 
+          success
+            ? 'Watch history downloaded successfully!'
             : 'Failed to sync watch history. Check your connection. Make sure you have configured Supabase correctly. Read the documentation for more information.',
         ),
         backgroundColor: success ? Colors.green : Colors.red,
@@ -202,6 +202,7 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+extendBody: true,
       appBar: AppBar(
         title: const Text(
           'Settings',
@@ -341,7 +342,7 @@ class _SettingsPageState extends State<SettingsPage> {
                               ],
                             ),
                           ),
-                        
+
                         // Sync Section
                         if (supabaseProvider.isConfigured) ...[
                           const SizedBox(height: 24),
@@ -386,14 +387,14 @@ class _SettingsPageState extends State<SettingsPage> {
                             const SizedBox(height: 12),
                           ],
                           // link to documentation
-                  
+
                           const SizedBox(height: 8),
                           Row(
                             children: [
                                Flexible(
                                 child: ElevatedButton.icon(
                                   onPressed: _isSyncing ? null : _syncWatchHistory,
-                                  icon: _isSyncing 
+                                  icon: _isSyncing
                                     ? const SizedBox(
                                         width: 16,
                                         height: 16,
@@ -460,7 +461,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         trailing:  Icon(Icons.arrow_forward_ios, color: Theme.of(context).primaryColor,),
                       ),
                     ),
-                    
+
             // Import Data Section
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 8, 8),
@@ -667,7 +668,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
               ),
             ),
-            
+
             // Export Data Section
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 8, 8),
@@ -758,7 +759,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
               ),
             ),
-            
+
             // Region Selection Section
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 8, 8),
@@ -810,7 +811,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 },
               ),
             ),
-            
+
             // Theme Selection Section
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 8, 8),
@@ -821,7 +822,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ),
             const CustomDivider(),
-            
+
             // Theme List
             ListView(
               shrinkWrap: true,
@@ -1175,10 +1176,10 @@ class _SettingsPageState extends State<SettingsPage> {
         }
         return;
       }
-      
+
       final listMap = movies.map((item) => item.toMap()).toList();
       final jsonString = const JsonEncoder.withIndent('  ').convert(listMap);
-      
+
       if (kIsWeb) {
         fs.saveFile(jsonString, 'watched_movies.json');
         if (mounted) {
@@ -1213,7 +1214,7 @@ class _SettingsPageState extends State<SettingsPage> {
         final filePath = '${directory.path}/watched_movies.json';
         final file = File(filePath);
         await file.writeAsString(jsonString);
-        
+
         await Share.shareXFiles(
           [XFile(filePath)],
           subject: 'Mirarr Watched Movies Export',
@@ -1240,10 +1241,10 @@ class _SettingsPageState extends State<SettingsPage> {
         }
         return;
       }
-      
+
       final listMap = shows.map((item) => item.toMap()).toList();
       final jsonString = const JsonEncoder.withIndent('  ').convert(listMap);
-      
+
       if (kIsWeb) {
         fs.saveFile(jsonString, 'watched_shows.json');
         if (mounted) {
@@ -1278,7 +1279,7 @@ class _SettingsPageState extends State<SettingsPage> {
         final filePath = '${directory.path}/watched_shows.json';
         final file = File(filePath);
         await file.writeAsString(jsonString);
-        
+
         await Share.shareXFiles(
           [XFile(filePath)],
           subject: 'Mirarr Watched TV Shows Export',
@@ -1299,7 +1300,7 @@ class _SettingsPageState extends State<SettingsPage> {
       final documentsDirectory = await getApplicationDocumentsDirectory();
       final dbPath = p.join(documentsDirectory.path, 'watch_history.db');
       final dbFile = File(dbPath);
-      
+
       if (!await dbFile.exists()) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -1308,7 +1309,7 @@ class _SettingsPageState extends State<SettingsPage> {
         }
         return;
       }
-      
+
       if (Platform.isLinux || Platform.isWindows) {
         final outputFile = await FilePicker.saveFile(
           dialogTitle: 'Save Database File',
@@ -1331,7 +1332,7 @@ class _SettingsPageState extends State<SettingsPage> {
         final tempDirectory = await getTemporaryDirectory();
         final tempDbPath = p.join(tempDirectory.path, 'watch_history.db');
         await dbFile.copy(tempDbPath);
-        
+
         await Share.shareXFiles(
           [XFile(tempDbPath)],
           subject: 'Mirarr Database Export',
@@ -1845,7 +1846,7 @@ class _TvTimeImportProgressDialogState extends State<TvTimeImportProgressDialog>
   bool _isSeries = false;
   String _currentName = '';
   final WatchHistoryDatabase _db = WatchHistoryDatabase();
-  
+
   // Cache show/movie lookups to avoid redundant API queries
   final Map<String, Map<String, dynamic>?> _tmdbCache = {};
 
@@ -1876,7 +1877,7 @@ class _TvTimeImportProgressDialogState extends State<TvTimeImportProgressDialog>
         }
       } catch (_) {}
     }
-    
+
     if (tvdbId != null) {
       try {
         final findUrl = '${baseUrl}find/$tvdbId?api_key=$apiKey&external_source=tvdb_id';
@@ -1905,7 +1906,7 @@ class _TvTimeImportProgressDialogState extends State<TvTimeImportProgressDialog>
           return results.first;
         }
       }
-      
+
       if (year != null) {
         // Try search without year
         final searchUrlNoYear = '${baseUrl}search/movie?api_key=$apiKey&query=${Uri.encodeComponent(title)}';
@@ -1977,7 +1978,7 @@ class _TvTimeImportProgressDialogState extends State<TvTimeImportProgressDialog>
   void _startImport() async {
     // Determine if movies or series JSON
     final isSeriesDetected = widget.jsonList.any((item) => item is Map && item.containsKey('seasons'));
-    
+
     if (mounted) {
       setState(() {
         _isSeries = isSeriesDetected;
@@ -1994,7 +1995,7 @@ class _TvTimeImportProgressDialogState extends State<TvTimeImportProgressDialog>
           final tvdbId = idMap?['tvdb'] as int?;
           final imdbId = idMap?['imdb'] as String?;
           final seriesCreatedAtStr = seriesItem['created_at'] as String?;
-          
+
           final seasons = seriesItem['seasons'] as List<dynamic>?;
           if (seasons != null) {
             for (var season in seasons) {
@@ -2009,7 +2010,7 @@ class _TvTimeImportProgressDialogState extends State<TvTimeImportProgressDialog>
                         final episodeNumber = episode['number'] as int? ?? 1;
                         final episodeTitle = episode['name'] as String? ?? 'Episode $episodeNumber';
                         final watchedAtStr = episode['watched_at'] as String?;
-                        
+
                         watchedEpisodes.add({
                           'seriesTitle': seriesTitle,
                           'tvdbId': tvdbId,

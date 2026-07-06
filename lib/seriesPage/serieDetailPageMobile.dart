@@ -32,30 +32,13 @@ class _SerieDetailPageMobile extends StatelessWidget {
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
 
-    return Scaffold(
-      //only show appbar on ios and web
-      appBar: AppPlatform.isIOS || AppPlatform.isWeb ?
-      AppBar(
-        automaticallyImplyLeading: true,
-         toolbarHeight: 40,
-        backgroundColor: Theme.of(context).primaryColor,
-        iconTheme: const IconThemeData(color: Colors.black),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
-            child: Text(
-              widget.serieName,
-              style: const TextStyle(color: Colors.black),
-            ),
-          ),
-        ],
-      )
-      : null,
-      body: serieDetails == null
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
-          : SingleChildScrollView(
+    final bool isTv = TvFocusModeManager.isTvDevice;
+
+    final Widget bodyContent = serieDetails == null
+        ? const Center(
+            child: CircularProgressIndicator(),
+          )
+        : SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -189,7 +172,8 @@ class _SerieDetailPageMobile extends StatelessWidget {
                         child: Positioned(
                           top: 190,
                           right: 30,
-                          child: GestureDetector(
+                          child: TvFocusWrapper(
+                            borderRadius: 30.0,
                             onTap: () {
                               showGeneralDialog(
                                 context: context,
@@ -263,21 +247,25 @@ class _SerieDetailPageMobile extends StatelessWidget {
                                 },
                               );
                             },
-                            child: const Icon(
-                              Icons.share,
-                              color: Colors.white,
-                              size: 25,
+                            child: const Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Icon(
+                                Icons.share,
+                                color: Colors.white,
+                                size: 25,
+                              ),
                             ),
                           ),
                         ),
                       ),
- 
+
                       Visibility(
                         visible: isUserLoggedIn == true,
                         child: Positioned(
                           top: 140,
                           right: 30,
-                          child: GestureDetector(
+                          child: TvFocusWrapper(
+                            borderRadius: 30.0,
                             onTap: () async {
                               if (isSerieWatchlist == null) {
                                   return;
@@ -305,14 +293,17 @@ class _SerieDetailPageMobile extends StatelessWidget {
                                 profileRefreshNotifier.value++;
                               }
                             },
-                            child: Icon(
-                              isSerieWatchlist == null
-                                  ? Icons.bookmark_border
-                                  : isSerieWatchlist
-                                      ? Icons.bookmark
-                                      : Icons.bookmark_border,
-                              color: Colors.white,
-                              size: 25,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Icon(
+                                isSerieWatchlist == null
+                                    ? Icons.bookmark_border
+                                    : isSerieWatchlist
+                                        ? Icons.bookmark
+                                        : Icons.bookmark_border,
+                                color: Colors.white,
+                                size: 25,
+                              ),
                             ),
                           ),
                         ),
@@ -322,7 +313,8 @@ class _SerieDetailPageMobile extends StatelessWidget {
                         child: Positioned(
                           top: 90,
                           right: 30,
-                          child: GestureDetector(
+                          child: TvFocusWrapper(
+                            borderRadius: 30.0,
                             onTap: () async {
                               if (isSerieFavorite == null) {
                                 return;
@@ -348,14 +340,17 @@ class _SerieDetailPageMobile extends StatelessWidget {
                                 profileRefreshNotifier.value++;
                               }
                             },
-                            child: Icon(
-                              isSerieFavorite == null
-                                  ? Icons.favorite_border
-                                  : isSerieFavorite
-                                      ? Icons.favorite
-                                      : Icons.favorite_border,
-                              color: Colors.white,
-                              size: 25,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Icon(
+                                isSerieFavorite == null
+                                    ? Icons.favorite_border
+                                    : isSerieFavorite
+                                        ? Icons.favorite
+                                        : Icons.favorite_border,
+                                color: Colors.white,
+                                size: 25,
+                              ),
                             ),
                           ),
                         ),
@@ -373,7 +368,8 @@ class _SerieDetailPageMobile extends StatelessWidget {
                                 color: Colors.black38,
                                 borderRadius:
                                     BorderRadius.all(Radius.circular(30))),
-                            child: GestureDetector(
+                            child: TvFocusWrapper(
+                              borderRadius: 30.0,
                               onTap: () => showModalBottomSheet(
                                 context: context,
                                 builder: (BuildContext context) {
@@ -425,7 +421,7 @@ class _SerieDetailPageMobile extends StatelessWidget {
                                         onTap: () async {
                                           final openbox =
                                               Hive.box('sessionBox');
- 
+
                                           final String sessionData =
                                               openbox.get('sessionData');
                                           removeRating(sessionData,
@@ -451,12 +447,15 @@ class _SerieDetailPageMobile extends StatelessWidget {
                                   );
                                 },
                               ),
-                              child: Text(
-                                '👤 ${userRating.toStringAsFixed(1)}',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w300,
-                                  fontSize: 13,
-                                  color: Colors.white,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                                child: Text(
+                                  '👤 ${userRating.toStringAsFixed(1)}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w300,
+                                    fontSize: 13,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
                             ),
@@ -474,7 +473,8 @@ class _SerieDetailPageMobile extends StatelessWidget {
                                   color: Colors.black38,
                                   borderRadius:
                                       BorderRadius.all(Radius.circular(30))),
-                              child: GestureDetector(
+                              child: TvFocusWrapper(
+                                  borderRadius: 30.0,
                                   onTap: () {
                                     showModalBottomSheet(
                                       context: context,
@@ -505,7 +505,7 @@ class _SerieDetailPageMobile extends StatelessWidget {
                                               onRatingUpdate: (rating) async {
                                                 final movieId = widget.serieId;
                                                 final openbox = Hive.box('sessionBox');
- 
+
                                                 final String sessionData =
                                                     openbox.get('sessionData');
                                                 state.updateState(() {
@@ -525,15 +525,18 @@ class _SerieDetailPageMobile extends StatelessWidget {
                                       },
                                     );
                                   },
-                                  child: const Icon(
-                                    Icons.add_reaction,
-                                    color: Colors.white,
+                                  child: const Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Icon(
+                                      Icons.add_reaction,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                        
- 
+
+
                         Positioned(
                           top: 40,
                           left: 20,
@@ -783,8 +786,37 @@ class _SerieDetailPageMobile extends StatelessWidget {
                   ),
                 ],
               ),
+            );
+
+    return Scaffold(
+      extendBody: true,
+      //only show appbar on ios and web
+      appBar: AppPlatform.isIOS || AppPlatform.isWeb ?
+      AppBar(
+        automaticallyImplyLeading: true,
+         toolbarHeight: 40,
+        backgroundColor: Theme.of(context).primaryColor,
+        iconTheme: const IconThemeData(color: Colors.black),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
+            child: Text(
+              widget.serieName,
+              style: const TextStyle(color: Colors.black),
             ),
-      bottomNavigationBar: const BottomBar(),
+          ),
+        ],
+      )
+      : null,
+      body: isTv
+          ? Column(
+              children: [
+                const BottomBar(),
+                Expanded(child: bodyContent),
+              ],
+            )
+          : bodyContent,
+      bottomNavigationBar: isTv ? null : const BottomBar(),
     );
   }
 

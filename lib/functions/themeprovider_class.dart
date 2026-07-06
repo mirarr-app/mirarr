@@ -107,6 +107,11 @@ class AppThemes {
     hintColor: Colors.orangeAccent[200],
     cardColor: Colors.orange,
     scaffoldBackgroundColor: Colors.black,
+    focusColor: Colors.deepOrange.withOpacity(0.3),
+    hoverColor: Colors.deepOrange.withOpacity(0.15),
+    listTileTheme: const ListTileThemeData(
+      selectedColor: Colors.deepOrange,
+    ),
   );
 
   static final ThemeData blueTheme = ThemeData(
@@ -136,6 +141,11 @@ class AppThemes {
     hintColor: Colors.lightBlue[200],
     cardColor: Colors.blue,
     scaffoldBackgroundColor: Colors.black,
+    focusColor: Colors.blueAccent.withOpacity(0.3),
+    hoverColor: Colors.blueAccent.withOpacity(0.15),
+    listTileTheme: const ListTileThemeData(
+      selectedColor: Colors.blueAccent,
+    ),
   );
 
   static final ThemeData redTheme = ThemeData(
@@ -165,6 +175,11 @@ class AppThemes {
     hintColor: Colors.red[200],
     cardColor: Colors.red,
     scaffoldBackgroundColor: Colors.black,
+    focusColor: Colors.redAccent.withOpacity(0.3),
+    hoverColor: Colors.redAccent.withOpacity(0.15),
+    listTileTheme: const ListTileThemeData(
+      selectedColor: Colors.redAccent,
+    ),
   );
 
   static final ThemeData greyTheme = ThemeData(
@@ -194,6 +209,11 @@ class AppThemes {
     hintColor: Colors.grey[400],
     cardColor: Colors.grey,
     scaffoldBackgroundColor: Colors.black,
+    focusColor: Colors.blueGrey.withOpacity(0.3),
+    hoverColor: Colors.blueGrey.withOpacity(0.15),
+    listTileTheme: const ListTileThemeData(
+      selectedColor: Colors.blueGrey,
+    ),
   );
 
   static final ThemeData yellowTheme = ThemeData(
@@ -223,6 +243,11 @@ class AppThemes {
     hintColor: Colors.yellow[200],
     cardColor: Colors.yellow,
     scaffoldBackgroundColor: Colors.black,
+    focusColor: Colors.amber.withOpacity(0.3),
+    hoverColor: Colors.amber.withOpacity(0.15),
+    listTileTheme: const ListTileThemeData(
+      selectedColor: Colors.amber,
+    ),
   );
 
   static final ThemeData brownTheme = ThemeData(
@@ -252,6 +277,11 @@ class AppThemes {
     hintColor: Colors.brown[200],
     cardColor: Colors.brown,
     scaffoldBackgroundColor: Colors.black,
+    focusColor: Colors.amber.withOpacity(0.3),
+    hoverColor: Colors.amber.withOpacity(0.15),
+    listTileTheme: const ListTileThemeData(
+      selectedColor: Colors.amber,
+    ),
   );
   static final ThemeData greenTheme = ThemeData(
     progressIndicatorTheme: const ProgressIndicatorThemeData(year2023: false),
@@ -280,6 +310,11 @@ class AppThemes {
     hintColor: Colors.lightGreen[200],
     cardColor: Colors.green,
     scaffoldBackgroundColor: Colors.black,
+    focusColor: Colors.greenAccent.withOpacity(0.3),
+    hoverColor: Colors.greenAccent.withOpacity(0.15),
+    listTileTheme: const ListTileThemeData(
+      selectedColor: Colors.greenAccent,
+    ),
   );
   static final ThemeData monoFontTheme = ThemeData(
     progressIndicatorTheme: const ProgressIndicatorThemeData(year2023: false),
@@ -308,6 +343,11 @@ class AppThemes {
     hintColor: Colors.grey[400],
     cardColor: Colors.grey,
     scaffoldBackgroundColor: Colors.black,
+    focusColor: Colors.blueGrey.withOpacity(0.3),
+    hoverColor: Colors.blueGrey.withOpacity(0.15),
+    listTileTheme: const ListTileThemeData(
+      selectedColor: Colors.blueGrey,
+    ),
   );
 
   static final ThemeData nothingFontTheme = ThemeData(
@@ -337,5 +377,10 @@ class AppThemes {
     hintColor: Colors.grey[400],
     cardColor: Colors.grey,
     scaffoldBackgroundColor: Colors.black,
+    focusColor: Colors.blueGrey.withOpacity(0.3),
+    hoverColor: Colors.blueGrey.withOpacity(0.15),
+    listTileTheme: const ListTileThemeData(
+      selectedColor: Colors.blueGrey,
+    ),
   );
 }

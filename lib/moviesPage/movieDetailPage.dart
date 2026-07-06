@@ -1,4 +1,5 @@
 import 'package:Mirarr/widgets/profile.dart';
+import 'package:Mirarr/widgets/tv_focus_wrapper.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:Mirarr/functions/platform_helper.dart';

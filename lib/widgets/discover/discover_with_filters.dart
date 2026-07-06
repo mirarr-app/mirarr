@@ -264,6 +264,7 @@ class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+extendBody: true,
       body: ScrollConfiguration(
         behavior: ScrollConfiguration.of(context).copyWith(
           dragDevices: {
@@ -295,7 +296,7 @@ class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
                               if (_debounce?.isActive ?? false) {
                                 _debounce!.cancel();
                               }
-                              
+
                               final completer = Completer<Iterable<Human>>();
                               _debounce = Timer(const Duration(milliseconds: 500), () async {
                                 if (!mounted) {
@@ -310,7 +311,7 @@ class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
                                   completer.complete([]);
                                 }
                               });
-                              
+
                               return completer.future;
                             },
                             onSelected: _addPerson,

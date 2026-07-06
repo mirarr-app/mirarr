@@ -12,6 +12,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:Mirarr/widgets/custom_divider.dart';
 import 'package:Mirarr/widgets/image_gallery_page.dart';
+import 'package:Mirarr/widgets/tv_focus_wrapper.dart';
 import 'package:provider/provider.dart';
 
 class CrewDetailPage extends StatefulWidget {
@@ -129,6 +130,7 @@ class _CrewDetailPageState extends State<CrewDetailPage> {
         }
 
         return Scaffold(
+          extendBody: true,
           appBar: AppBar(
                   toolbarHeight: 40,
                   backgroundColor: Theme.of(context).primaryColor,
@@ -159,6 +161,7 @@ class _CrewDetailPageState extends State<CrewDetailPage> {
         (AppPlatform.isWeb && MediaQuery.of(context).size.width < 800);
     return isMobileLayout
         ? Scaffold(
+extendBody: true,
             body: FutureBuilder<Map<String, dynamic>>(
               future: _castDetailsFuture,
               builder: (context, snapshot) {
@@ -501,7 +504,8 @@ class _CrewDetailPageState extends State<CrewDetailPage> {
   Widget _buildMovieItem(dynamic movie) {
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
-    return GestureDetector(
+    return TvFocusWrapper(
+      borderRadius: 20.0,
       onTap: () => onTapMovie(movie['title'], movie['id'], context),
       child: Padding(
         padding: const EdgeInsets.all(6),

@@ -20,6 +20,7 @@ class _ListGridViewMoviesState extends State<ListGridViewMovies> {
   Widget build(BuildContext context) {
     int crossAxisCount = AppPlatform.isMobile ? 2 : 4;
     return Scaffold(
+      extendBody: true,
       appBar: AppBar(
         toolbarHeight: 40,
         backgroundColor: Theme.of(context).primaryColor,

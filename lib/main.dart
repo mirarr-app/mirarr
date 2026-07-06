@@ -5,6 +5,7 @@ import 'package:Mirarr/functions/url_parser.dart';
 import 'package:Mirarr/functions/navigation_provider.dart';
 import 'package:Mirarr/widgets/main_shell.dart';
 import 'package:Mirarr/widgets/check_updates.dart';
+import 'package:Mirarr/widgets/tv_focus_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -19,6 +20,7 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await TvFocusModeManager.init();
   await dotenv.load(fileName: ".env");
   await Hive.initFlutter();
   await Hive.openBox('sessionBox');
@@ -103,13 +105,16 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return Consumer<ThemeProvider>(builder: (context, themeProvider, child) {
-      return MaterialApp(
-        navigatorKey: navigatorKey,
-        debugShowCheckedModeBanner: false,
-        title: 'Mirarr',
-        theme: themeProvider.currentTheme,
-        home: const Scaffold(
-          body: AppInitWidget(),
+      return Listener(
+        onPointerDown: (_) => TvFocusModeManager.onPointerDown(),
+        child: MaterialApp(
+          navigatorKey: navigatorKey,
+          debugShowCheckedModeBanner: false,
+          title: 'Mirarr',
+          theme: themeProvider.currentTheme,
+          home: const Scaffold(
+            body: AppInitWidget(),
+          ),
         ),
       );
     });

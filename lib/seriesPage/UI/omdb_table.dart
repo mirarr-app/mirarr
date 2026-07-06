@@ -120,6 +120,7 @@ class _OmdbTableState extends State<OmdbTable> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Scaffold(
+extendBody: true,
         body: Center(
           child: CircularProgressIndicator(),
         ),
@@ -128,6 +129,7 @@ class _OmdbTableState extends State<OmdbTable> {
 
     if (_error != null) {
       return const Scaffold(
+extendBody: true,
         body: Center(
           child: Padding(
             padding: EdgeInsets.all(16.0),
@@ -150,6 +152,7 @@ class _OmdbTableState extends State<OmdbTable> {
 
     if (_seasonEpisodes.isEmpty) {
       return const Scaffold(
+extendBody: true,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -168,6 +171,7 @@ class _OmdbTableState extends State<OmdbTable> {
         .reduce((max, length) => length > max ? length : max);
 
     return Scaffold(
+      extendBody: true,
       appBar: AppBar(
         title: Text(
           widget.title,

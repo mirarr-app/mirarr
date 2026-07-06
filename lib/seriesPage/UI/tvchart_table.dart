@@ -94,6 +94,7 @@ class _TvChartTableState extends State<TvChartTable> {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
+extendBody: true,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
