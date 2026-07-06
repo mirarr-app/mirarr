@@ -453,7 +453,7 @@ class _TvChartTableState extends State<TvChartTable> {
                                           decoration: BoxDecoration(
                                             color: _getRatingColor(episode.rating),
                                             borderRadius: BorderRadius.circular(4),
-                                            border: BorderSide(
+                                            border: Border.all(
                                               color: Colors.white.withOpacity(0.05),
                                               width: 0.5,
                                             ),
@@ -499,7 +499,7 @@ class _TvChartTableState extends State<TvChartTable> {
       decoration: BoxDecoration(
         color: const Color(0xFF111111),
         borderRadius: BorderRadius.circular(12),
-        border: BorderSide(color: Colors.white.withOpacity(0.05), width: 1),
+        border: Border.all(color: Colors.white.withOpacity(0.05), width: 1),
       ),
       child: Column(
         children: [
