@@ -920,6 +920,25 @@ extendBody: true,
                         .setTheme(AppThemes.nothingFontTheme);
                   },
                 ),
+                if (Provider.of<ThemeProvider>(context).isOmarchyLinux)
+                  ListTile(
+                    title: const Text('Omarchy Theme',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        )),
+                    trailing: const Text(
+                      'Omarchy',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontFamily: 'RobotoMono',
+                      ),
+                    ),
+                    onTap: () {
+                      Provider.of<ThemeProvider>(context, listen: false)
+                          .setOmarchyTheme();
+                    },
+                  ),
               ],
             ),
           ],
