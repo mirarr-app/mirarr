@@ -66,9 +66,6 @@ No you don't have to. But the login process enables extra features like watchlis
 - [OMDB](http://www.omdbapi.com/) for their mostly free API.
 - [scnsrc](https://scnsrc.me/) for their great RSS feed of released movies.
 - External resources who we refer to when playing movies/TV shows.
-- vidsrc for dl links.
-- TV chart for TV shows table.
-
 
 #### Support
 Consider starring the project.
