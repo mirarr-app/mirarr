@@ -90,595 +90,309 @@ class _SerieDetailPageDesktop extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    decoration: const BoxDecoration(
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(20)),
-                                    ),
-                                    child: Text(widget.serieName,
-                                        style: getSeriesTitleTextStyle(
-                                            widget.serieId)),
-                                  ),
-                                  Row(
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(left: 40),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.start,
                                     children: [
-                                      Visibility(
-                                        visible: isUserLoggedIn == true,
-                                        child: GestureDetector(
-                                          onTap: () async {
-                                            if (isSerieWatchlist == null) {
-                                              return;
-                                            }
-                                            final serieId = widget.serieId;
-                                            final openbox = Hive.box('sessionBox');
-                                            final String accountId =
-                                                openbox.get('accountId');
-                                            final String sessionData =
-                                                openbox.get('sessionData');
-                                            if (isSerieWatchlist) {
-                                              // Remove from watchlist
-                                              state.updateState(() {
-                                                state.isSerieWatchlist = false;
-                                              });
-                                              await removeFromWatchList(
-                                                  accountId,
-                                                  sessionData,
-                                                  serieId,
-                                                  context);
-                                              profileRefreshNotifier.value++;
-                                            } else {
-                                              // Add to watchlist
-                                              state.updateState(() {
-                                                state.isSerieWatchlist = true;
-                                              });
-                                              await addWatchList(
-                                                  accountId,
-                                                  sessionData,
-                                                  serieId,
-                                                  context);
-                                              profileRefreshNotifier.value++;
-                                            }
-                                          },
-                                          child: Icon(
-                                            isSerieWatchlist == null
-                                                ? Icons.bookmark_border
-                                                : isSerieWatchlist
-                                                    ? Icons.bookmark
-                                                    : Icons.bookmark_border,
-                                            color: Colors.white,
-                                            size: 30,
-                                          ),
-                                        ),
+                                      Text(
+                                        widget.serieName,
+                                        style: getSeriesTitleTextStyle(widget.serieId),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                      Visibility(
-                                        visible: isUserLoggedIn == true,
-                                        child: GestureDetector(
-                                          onTap: () async {
-                                            if (isSerieFavorite == null) {
-                                              return;
-                                            }
-                                            final serieId = widget.serieId;
-                                            final openbox = Hive.box('sessionBox');
-                                            final String accountId =
-                                                openbox.get('accountId');
-                                            final String sessionData =
-                                                openbox.get('sessionData');
-                                            if (isSerieFavorite) {
-                                              state.updateState(() {
-                                                state.isSerieFavorite = false;
-                                              });
-                                              await removeFromFavorite(
-                                                  accountId,
-                                                  sessionData,
-                                                  serieId,
-                                                  context);
-                                              profileRefreshNotifier.value++;
-                                            } else {
-                                              state.updateState(() {
-                                                state.isSerieFavorite = true;
-                                              });
-                                              await addFavorite(
-                                                  accountId,
-                                                  sessionData,
-                                                  serieId,
-                                                  context);
-                                              profileRefreshNotifier.value++;
-                                            }
-                                          },
-                                          child: Icon(
-                                            isSerieFavorite == null
-                                                ? Icons.favorite_border
-                                                : isSerieFavorite
-                                                    ? Icons.favorite
-                                                    : Icons.favorite_border,
-                                            color: Colors.white,
-                                            size: 30,
-                                          ),
+                                      const SizedBox(height: 12),
+                                      if (genres != null && (genres as List<dynamic>).isNotEmpty) ...[
+                                        Wrap(
+                                          spacing: 8,
+                                          runSpacing: 4,
+                                          crossAxisAlignment: WrapCrossAlignment.center,
+                                          children: [
+                                            Text(
+                                              (genres as List<dynamic>).map((g) => g['name']).join(', '),
+                                              style: const TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w300),
+                                            ),
+                                          ],
                                         ),
-                                      ),
-                                      // logged in and rated
-                                      if (isUserLoggedIn == true &&
-                                          isSerieRated != false &&
-                                          userRating != null)
-                                        Container(
-                                          margin: const EdgeInsets.all(10),
-                                          padding: const EdgeInsets.all(10),
-                                          decoration: const BoxDecoration(
-                                              color: Colors.black38,
-                                              borderRadius: BorderRadius.all(
-                                                  Radius.circular(30))),
-                                          child: GestureDetector(
-                                            onTap: () => showModalBottomSheet(
+                                        const SizedBox(height: 16),
+                                      ],
+                                      Wrap(
+                                        spacing: 12,
+                                        runSpacing: 12,
+                                        crossAxisAlignment: WrapCrossAlignment.center,
+                                        children: [
+                                          if (score != null)
+                                            _buildRatingBadge(
+                                              label: 'TMDB',
+                                              score: score.toStringAsFixed(1),
+                                              icon: const Icon(Icons.star_rounded, color: Colors.amber, size: 18),
                                               context: context,
-                                              builder: (BuildContext context) {
-                                                return Column(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                    const SizedBox(
-                                                      height: 20,
-                                                    ),
-                                                    Padding(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              8.0),
-                                                      child: RatingBar.builder(
-                                                        initialRating:
-                                                            userRating,
-                                                        minRating: 1,
-                                                        maxRating: 10,
-                                                        itemSize: 35,
-                                                        unratedColor:
-                                                            Colors.grey,
-                                                        direction:
-                                                            Axis.horizontal,
-                                                        allowHalfRating: true,
-                                                        itemCount: 10,
-                                                        itemPadding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                                horizontal: 0),
-                                                        itemBuilder:
-                                                            (context, _) =>
-                                                                const Icon(
-                                                          Icons.star,
-                                                          color: Colors.amber,
+                                            ),
+                                          if (imdbRating != null && imdbRating.isNotEmpty)
+                                            _buildRatingBadge(
+                                              label: 'IMDb',
+                                              score: imdbRating,
+                                              icon: const Icon(Icons.star_rounded, color: Colors.amber, size: 18),
+                                              context: context,
+                                            ),
+                                          if (rottenTomatoesRating != 'N/A')
+                                            _buildRatingBadge(
+                                              label: 'Rotten Tomatoes',
+                                              score: rottenTomatoesRating,
+                                              icon: const Text('🍅', style: TextStyle(fontSize: 14)),
+                                              context: context,
+                                            ),
+                                          if (isUserLoggedIn == true && isSerieRated != false && userRating != null)
+                                            GestureDetector(
+                                              onTap: () => showModalBottomSheet(
+                                                context: context,
+                                                builder: (BuildContext context) {
+                                                  return Column(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    children: [
+                                                      const SizedBox(height: 20),
+                                                      Padding(
+                                                        padding: const EdgeInsets.all(8.0),
+                                                        child: RatingBar.builder(
+                                                          initialRating: userRating,
+                                                          minRating: 1,
+                                                          maxRating: 10,
+                                                          itemSize: 35,
+                                                          unratedColor: Colors.grey,
+                                                          direction: Axis.horizontal,
+                                                          allowHalfRating: true,
+                                                          itemCount: 10,
+                                                          itemPadding: const EdgeInsets.symmetric(horizontal: 0),
+                                                          itemBuilder: (context, _) => const Icon(
+                                                            Icons.star,
+                                                            color: Colors.amber,
+                                                          ),
+                                                          onRatingUpdate: (rating) async {
+                                                            final serieId = widget.serieId;
+                                                            final openbox = Hive.box('sessionBox');
+                                                            final String sessionData = openbox.get('sessionData');
+                                                            addRating(sessionData, serieId, rating, context);
+                                                            state.updateState(() {
+                                                              state.isSerieRated = {'value': rating};
+                                                              state.userRating = rating;
+                                                              profileRefreshNotifier.value++;
+                                                            });
+                                                          },
                                                         ),
-                                                        onRatingUpdate:
-                                                            (rating) async {
-                                                          final serieId =
-                                                              widget.serieId;
-                                                          final openbox =
-                                                              Hive.box('sessionBox');
-
-                                                          final String
-                                                              sessionData =
-                                                              openbox.get(
-                                                                  'sessionData');
-                                                          addRating(
-                                                              sessionData,
-                                                              serieId,
-                                                              rating,
-                                                              context);
+                                                      ),
+                                                      const CustomDivider(),
+                                                      const SizedBox(height: 10),
+                                                      GestureDetector(
+                                                        onTap: () async {
+                                                          final openbox = Hive.box('sessionBox');
+                                                          final String sessionData = openbox.get('sessionData');
+                                                          removeRating(sessionData, widget.serieId, context);
+                                                          Navigator.of(context).pop();
                                                           state.updateState(() {
-                                                            state.isSerieRated = {'value': rating};
-                                                            state.userRating = rating;
-                                                            profileRefreshNotifier.value++;
+                                                            state.isSerieRated = false;
+                                                            state.userRating = null;
                                                           });
                                                         },
+                                                        child: const Text(
+                                                          ' 🗑️ Delete Rating',
+                                                          style: TextStyle(
+                                                              color: Colors.white,
+                                                              fontWeight: FontWeight.bold,
+                                                              fontSize: 18),
+                                                        ),
                                                       ),
-                                                    ),
-                                                    const CustomDivider(),
-                                                    const SizedBox(
-                                                      height: 10,
-                                                    ),
-                                                    GestureDetector(
-                                                      onTap: () async {
-                                                        final openbox =
-                                                            Hive.box('sessionBox');
-
-                                                        final String
-                                                            sessionData =
-                                                            openbox.get(
-                                                                'sessionData');
-                                                        removeRating(
-                                                            sessionData,
-                                                            widget.serieId,
-                                                            context);
-                                                        Navigator.of(context)
-                                                            .pop();
-                                                        state.updateState(() {
-                                                          state.isSerieRated = false;
-                                                          state.userRating = null;
-                                                        });
-                                                      },
-                                                      child: const Text(
-                                                        ' 🗑️ Delete Rating',
-                                                        style: TextStyle(
-                                                            color: Colors.white,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            fontSize: 18),
-                                                      ),
-                                                    ),
-                                                    const SizedBox(
-                                                      height: 20,
-                                                    ),
-                                                  ],
-                                                );
-                                              },
-                                            ),
-                                            child: Text(
-                                              '👤 ${userRating.toStringAsFixed(1)}',
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.w300,
-                                                fontSize: 13,
-                                                color: Colors.white,
+                                                      const SizedBox(height: 20),
+                                                    ],
+                                                  );
+                                                },
+                                              ),
+                                              child: _buildRatingBadge(
+                                                label: 'User',
+                                                score: userRating.toStringAsFixed(1),
+                                                icon: const Icon(Icons.person_rounded, color: Colors.blueAccent, size: 18),
+                                                context: context,
                                               ),
                                             ),
+                                          ShowWatchToggle(
+                                            key: ValueKey('show_watch_toggle_$_showWatchToggleRefreshCounter'),
+                                            serieId: widget.serieId,
+                                            serieName: widget.serieName,
+                                            posterPath: posterPath,
+                                            onToggle: () {
+                                              // The widget handles its own state
+                                            },
                                           ),
-                                        ),
-                                      //logged in not rated
-                                      if (isUserLoggedIn == true &&
-                                          isSerieRated == false &&
-                                          userRating == null)
-                                        Container(
-                                            decoration: const BoxDecoration(
-                                                color: Colors.black38,
-                                                borderRadius: BorderRadius.all(
-                                                    Radius.circular(30))),
-                                            child: IconButton(
-                                                onPressed: () {
+                                        ],
+                                      ),
+                                      const SizedBox(height: 12),
+                                      if (isUserLoggedIn == true) ...[
+                                        Row(
+                                          spacing: 12,
+                                          children: [
+                                            _buildActionButton(
+                                              icon: isSerieWatchlist == true ? Icons.bookmark : Icons.bookmark_border,
+                                              iconColor: isSerieWatchlist == true ? Theme.of(context).primaryColor : Colors.white,
+                                              tooltip: isSerieWatchlist == true ? 'Remove from Watchlist' : 'Add to Watchlist',
+                                              onTap: () async {
+                                                if (isSerieWatchlist == null) return;
+                                                final serieId = widget.serieId;
+                                                final openbox = Hive.box('sessionBox');
+                                                final String accountId = openbox.get('accountId');
+                                                final String sessionData = openbox.get('sessionData');
+                                                if (isSerieWatchlist) {
+                                                  state.updateState(() {
+                                                    state.isSerieWatchlist = false;
+                                                  });
+                                                  await removeFromWatchList(accountId, sessionData, serieId, context);
+                                                  profileRefreshNotifier.value++;
+                                                } else {
+                                                  state.updateState(() {
+                                                    state.isSerieWatchlist = true;
+                                                  });
+                                                  await addWatchList(accountId, sessionData, serieId, context);
+                                                  profileRefreshNotifier.value++;
+                                                }
+                                              },
+                                            ),
+                                            _buildActionButton(
+                                              icon: isSerieFavorite == true ? Icons.favorite : Icons.favorite_border,
+                                              iconColor: isSerieFavorite == true ? Colors.redAccent : Colors.white,
+                                              tooltip: isSerieFavorite == true ? 'Remove from Favorites' : 'Add to Favorites',
+                                              onTap: () async {
+                                                if (isSerieFavorite == null) return;
+                                                final serieId = widget.serieId;
+                                                final openbox = Hive.box('sessionBox');
+                                                final String accountId = openbox.get('accountId');
+                                                final String sessionData = openbox.get('sessionData');
+                                                if (isSerieFavorite) {
+                                                  state.updateState(() {
+                                                    state.isSerieFavorite = false;
+                                                  });
+                                                  await removeFromFavorite(accountId, sessionData, serieId, context);
+                                                  profileRefreshNotifier.value++;
+                                                } else {
+                                                  state.updateState(() {
+                                                    state.isSerieFavorite = true;
+                                                  });
+                                                  await addFavorite(accountId, sessionData, serieId, context);
+                                                  profileRefreshNotifier.value++;
+                                                }
+                                              },
+                                            ),
+                                            if (isSerieRated == false && userRating == null)
+                                              _buildActionButton(
+                                                icon: Icons.add_reaction_rounded,
+                                                iconColor: Colors.white,
+                                                tooltip: 'Rate Show',
+                                                onTap: () {
                                                   showModalBottomSheet(
                                                     context: context,
-                                                    builder:
-                                                        (BuildContext context) {
+                                                    builder: (BuildContext context) {
                                                       return Column(
-                                                        mainAxisSize:
-                                                            MainAxisSize.min,
+                                                        mainAxisSize: MainAxisSize.min,
                                                         children: [
-                                                          const SizedBox(
-                                                            height: 20,
-                                                          ),
+                                                          const SizedBox(height: 20),
                                                           RatingBar.builder(
                                                             initialRating: 5,
                                                             minRating: 1,
                                                             maxRating: 10,
                                                             itemSize: 35,
-                                                            unratedColor:
-                                                                Colors.grey,
-                                                            direction:
-                                                                Axis.horizontal,
-                                                            allowHalfRating:
-                                                                true,
+                                                            unratedColor: Colors.grey,
+                                                            direction: Axis.horizontal,
+                                                            allowHalfRating: true,
                                                             itemCount: 10,
-                                                            itemPadding:
-                                                                const EdgeInsets
-                                                                    .symmetric(
-                                                                    horizontal:
-                                                                        0),
-                                                            itemBuilder:
-                                                                (context, _) =>
-                                                                    const Icon(
+                                                            itemPadding: const EdgeInsets.symmetric(horizontal: 0),
+                                                            itemBuilder: (context, _) => const Icon(
                                                               Icons.star,
-                                                              color:
-                                                                  Colors.amber,
+                                                              color: Colors.amber,
                                                             ),
-                                                            onRatingUpdate:
-                                                                (rating) async {
-                                                              final serieId =
-                                                                  widget
-                                                                      .serieId;
-                                                              final openbox =
-                                                                  await Hive
-                                                                      .openBox(
-                                                                          'sessionBox');
-
-                                                              final String
-                                                                  sessionData =
-                                                                  openbox.get(
-                                                                      'sessionData');
-                                                              addRating(
-                                                                  sessionData,
-                                                                  serieId,
-                                                                  rating,
-                                                                  context);
+                                                            onRatingUpdate: (rating) async {
+                                                              final serieId = widget.serieId;
+                                                              final openbox = await Hive.openBox('sessionBox');
+                                                              final String sessionData = openbox.get('sessionData');
+                                                              addRating(sessionData, serieId, rating, context);
                                                               state.updateState(() {
-                                                                state.isSerieRated =
-                                                                    '"value":$rating';
-                                                                state.userRating =
-                                                                    rating;
+                                                                state.isSerieRated = '"value":$rating';
+                                                                state.userRating = rating;
                                                               });
                                                             },
                                                           ),
-                                                          const SizedBox(
-                                                            height: 40,
-                                                          ),
+                                                          const SizedBox(height: 40),
                                                         ],
                                                       );
                                                     },
                                                   );
                                                 },
-                                                icon: const Icon(
-                                                  Icons.add_reaction,
-                                                  color: Colors.white,
-                                                ))),
-                                      Container(
-                                        margin: const EdgeInsets.all(10),
-                                        padding: const EdgeInsets.all(10),
-                                        decoration: const BoxDecoration(
-                                            color: Colors.black38,
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(30))),
-                                        child: Text(
-                                          '⭐ ${score?.toStringAsFixed(1)}',
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w300,
-                                            fontSize: 13,
+                                              ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 20),
+                                      ],
+                                      _buildPrimaryButton(
+                                        text: 'Details',
+                                        backgroundColor: getSeriesColor(context, widget.serieId),
+                                        textStyle: getSeriesButtonTextStyle(widget.serieId),
+                                        icon: Icons.info_outline_rounded,
+                                        onPressed: () => seasonsAndEpisodes(
+                                          context,
+                                          widget.serieId,
+                                          widget.serieName,
+                                          imdbId!,
+                                          imagePath: backdrops,
+                                          onWatchStatusChanged: state._refreshShowWatchStatus,
+                                        ),
+                                      ),
+                                      if (about != null && about.isNotEmpty) ...[
+                                        const SizedBox(height: 24),
+                                        const Text(
+                                          'Overview',
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
                                             color: Colors.white,
+                                            letterSpacing: 0.5,
                                           ),
                                         ),
-                                      ),
-                                      Visibility(
-                                        visible: imdbRating != null &&
-                                            imdbRating.isNotEmpty,
-                                        child: Container(
-                                          margin: const EdgeInsets.all(5),
-                                          padding: const EdgeInsets.all(10),
-                                          decoration: const BoxDecoration(
-                                              color: Colors.black38,
-                                              borderRadius: BorderRadius.all(
-                                                  Radius.circular(30))),
+                                        const SizedBox(height: 8),
+                                        ConstrainedBox(
+                                          constraints: const BoxConstraints(maxWidth: 800),
                                           child: Text(
-                                            'IMDB⭐ $imdbRating',
-                                            style: const TextStyle(
+                                            about,
+                                            style: TextStyle(
+                                              color: Colors.white.withOpacity(0.8),
+                                              fontSize: 16,
+                                              height: 1.5,
                                               fontWeight: FontWeight.w300,
-                                              fontSize: 13,
-                                              color: Colors.white,
                                             ),
+                                            textAlign: TextAlign.left,
                                           ),
                                         ),
-                                      ),
-                                      Visibility(
-                                        visible: rottenTomatoesRating != 'N/A',
-                                        child: Container(
-                                          margin: const EdgeInsets.all(5),
-                                          padding: const EdgeInsets.all(10),
-                                          decoration: const BoxDecoration(
-                                              color: Colors.black38,
-                                              borderRadius: BorderRadius.all(
-                                                  Radius.circular(30))),
-                                          child: Text(
-                                            'Rotten Tomatoes🍅 $rottenTomatoesRating',
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.w300,
-                                              fontSize: 13,
-                                              color: Colors.white,
-                                            ),
+                                      ],
+                                      const SizedBox(height: 24),
+                                      Wrap(
+                                        spacing: 16,
+                                        runSpacing: 16,
+                                        children: [
+                                          _buildInfoCard(
+                                            title: 'SEASONS',
+                                            value: '$seasons',
                                           ),
-                                        ),
-                                      ),
-
-                                      // Mark as Watched toggle button
-                                      Padding(
-                                        padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
-                                        child: ShowWatchToggle(
-                                          key: ValueKey('show_watch_toggle_$_showWatchToggleRefreshCounter'),
-                                          serieId: widget.serieId,
-                                          serieName: widget.serieName,
-                                          posterPath: posterPath,
-                                          onToggle: () {
-                                            // The widget handles its own state
-                                          },
-                                        ),
-                                      ),
-
-                                      Center(
-                                        child: SingleChildScrollView(
-                                          scrollDirection: Axis.horizontal,
-                                          child: Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: (genres as List<dynamic>)
-                                                .map<Widget>((genre) {
-                                              return Text(
-                                                genre['name'] + ' | ',
-                                                style: const TextStyle(
-                                                    fontSize: 14,
-                                                    color: Colors.white,
-                                                    fontWeight:
-                                                        FontWeight.w200),
-                                              );
-                                            }).toList(),
+                                          _buildInfoCard(
+                                            title: 'EPISODES',
+                                            value: '$episodes',
                                           ),
-                                        ),
+                                          _buildInfoCard(
+                                            title: 'LANGUAGE',
+                                            value: language != null ? language.toUpperCase() : 'N/A',
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.fromLTRB(
-                                        25, 10, 25, 0),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Center(
-                                            child: SizedBox(
-                                          width: 400,
-                                          child: FloatingActionButton(
-                                            heroTag: null,
-                                            backgroundColor: getSeriesColor(
-                                                context, widget.serieId),
-                                            onPressed: () => seasonsAndEpisodes(
-                                                context,
-                                                widget.serieId,
-                                                widget.serieName,
-                                                imdbId!,
-                                                imagePath: backdrops,
-                                                onWatchStatusChanged: state._refreshShowWatchStatus),
-                                            child: Text('Details',
-                                                style: getSeriesButtonTextStyle(
-                                                    widget.serieId)),
-                                          ),
-                                        ))
-                                      ],
-                                    ),
-                                  ),
-                                  const CustomDivider(),
-                                  Padding(
-                                    padding:
-                                        const EdgeInsets.fromLTRB(20, 0, 20, 0),
-                                    child: Container(
-                                        width: 600,
-                                        alignment: Alignment.center,
-                                        child: Text(
-                                          about!,
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w300,
-                                          ),
-                                          textAlign: TextAlign.left,
-                                        )),
-                                  ),
-                                  Padding(
-                                    padding:
-                                        const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        SizedBox(
-                                          width: 110,
-                                          child: Container(
-                                            padding: const EdgeInsets.fromLTRB(
-                                                5, 5, 5, 5),
-                                            margin: const EdgeInsets.fromLTRB(
-                                                5, 5, 5, 5),
-                                            decoration: BoxDecoration(
-                                              color: getSeriesBackgroundColor(
-                                                  context, widget.serieId),
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
-                                            ),
-                                            child: Column(
-                                              children: [
-                                                const Text(
-                                                  'Seasons',
-                                                  style: TextStyle(
-                                                    color: Colors.white70,
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.w200,
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  child: Text(
-                                                    '$seasons',
-                                                    style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: 18,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                        SizedBox(
-                                          width: 110,
-                                          child: Container(
-                                            padding: const EdgeInsets.fromLTRB(
-                                                5, 5, 5, 5),
-                                            margin: const EdgeInsets.fromLTRB(
-                                                5, 5, 5, 5),
-                                            decoration: BoxDecoration(
-                                              color: getSeriesBackgroundColor(
-                                                  context, widget.serieId),
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
-                                            ),
-                                            child: Column(
-                                              children: [
-                                                const Text(
-                                                  'Episodes',
-                                                  style: TextStyle(
-                                                    color: Colors.white70,
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.w200,
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  child: Text(
-                                                    '$episodes',
-                                                    style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: 18,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                        SizedBox(
-                                          width: 110,
-                                          child: Container(
-                                            padding: const EdgeInsets.fromLTRB(
-                                                5, 5, 5, 5),
-                                            margin: const EdgeInsets.fromLTRB(
-                                                5, 5, 5, 5),
-                                            decoration: BoxDecoration(
-                                              color: getSeriesBackgroundColor(
-                                                  context, widget.serieId),
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
-                                            ),
-                                            child: Column(
-                                              children: [
-                                                const Text(
-                                                  'Language',
-                                                  style: TextStyle(
-                                                    color: Colors.white70,
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.w200,
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  child: Text(
-                                                    language != null
-                                                        ? language
-                                                            .toUpperCase()
-                                                        : 'N/A',
-                                                    style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: 18,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
+                                ),
+                              )
                             ],
                           ),
                         ),
@@ -788,6 +502,146 @@ class _SerieDetailPageDesktop extends StatelessWidget {
             )
           : bodyContent,
       bottomNavigationBar: isTv ? null : BottomBar(),
+    );
+  }
+
+  Widget _buildRatingBadge({
+    required String label,
+    required String score,
+    required Widget icon,
+    required BuildContext context,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.07),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.1)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          icon,
+          const SizedBox(width: 6),
+          Text(
+            label.isNotEmpty ? "$label $score" : score,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required Color iconColor,
+    required VoidCallback onTap,
+    String? tooltip,
+  }) {
+    return Tooltip(
+      message: tooltip ?? '',
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(30),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white.withOpacity(0.07),
+            border: Border.all(color: Colors.white.withOpacity(0.1)),
+          ),
+          child: Icon(
+            icon,
+            color: iconColor,
+            size: 20,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPrimaryButton({
+    required String text,
+    required Color backgroundColor,
+    required TextStyle textStyle,
+    required VoidCallback onPressed,
+    required IconData icon,
+  }) {
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        height: 52,
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: backgroundColor.withOpacity(0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            )
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: textStyle.color, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              text,
+              style: textStyle.copyWith(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoCard({
+    required String title,
+    required String value,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.08)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.5),
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0.5,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
