@@ -37,8 +37,8 @@ void showTorrentOptions(BuildContext context, int movieId, String movieTitle,
         'https://www.torrentleech.org/torrents/browse/index/imdbID/$movieImdbId/categories/8,9,11,37,43,14,12,13,47,15,29,26,32,27,34,35,36,44',
   };
 
-  List<String> _publicTorrents = optionPublicTorrents.keys.toList();
-  List<String> _privateTorrents = optionPrivateTorrents.keys.toList();
+  List<String> publicTorrents = optionPublicTorrents.keys.toList();
+  List<String> privateTorrents = optionPrivateTorrents.keys.toList();
 
   showModalBottomSheet(
     context: context,
@@ -63,9 +63,9 @@ void showTorrentOptions(BuildContext context, int movieId, String movieTitle,
                 ),
                 Expanded(
                   child: ListView.builder(
-                    itemCount: _publicTorrents.length,
+                    itemCount: publicTorrents.length,
                     itemBuilder: (BuildContext context, int index) {
-                      String option = _publicTorrents[index];
+                      String option = publicTorrents[index];
                       String? url = optionPublicTorrents[option];
                       return ListTile(
                         leading: Icon(Icons.play_arrow, color: mainColor),
@@ -93,9 +93,9 @@ void showTorrentOptions(BuildContext context, int movieId, String movieTitle,
                 ),
                 Expanded(
                   child: ListView.builder(
-                    itemCount: _privateTorrents.length,
+                    itemCount: privateTorrents.length,
                     itemBuilder: (BuildContext context, int index) {
-                      String option = _privateTorrents[index];
+                      String option = privateTorrents[index];
                       String? url = optionPrivateTorrents[option];
                       return ListTile(
                         leading: Icon(Icons.play_arrow, color: mainColor),

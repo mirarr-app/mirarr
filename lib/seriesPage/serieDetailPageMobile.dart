@@ -25,8 +25,8 @@ class _SerieDetailPageMobile extends StatelessWidget {
     final episodes = state.episodes;
     final language = state.language;
     final imdbId = state.imdbId;
-    final _creditsFuture = state._creditsFuture;
-    final _showWatchToggleKey = state._showWatchToggleKey;
+    final creditsFuture = state._creditsFuture;
+    final showWatchToggleKey = state._showWatchToggleKey;
     final screenShotController = state.screenShotController;
 
     final region =
@@ -541,7 +541,7 @@ class _SerieDetailPageMobile extends StatelessWidget {
                           top: 40,
                           left: 20,
                           child: ShowWatchToggle(
-                            key: _showWatchToggleKey,
+                            key: showWatchToggleKey,
                             serieId: widget.serieId,
                             serieName: widget.serieName,
                             posterPath: posterPath,
@@ -731,7 +731,7 @@ class _SerieDetailPageMobile extends StatelessWidget {
                     ),
                   ),
                   FutureBuilder(
-                    future: _creditsFuture,
+                    future: creditsFuture,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());

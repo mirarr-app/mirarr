@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:Mirarr/functions/platform_helper.dart';
 import 'package:Mirarr/functions/get_imdb_score.dart';
 import 'package:Mirarr/functions/get_base_url.dart';
 import 'package:Mirarr/functions/regionprovider_class.dart';
@@ -188,11 +187,11 @@ class _TvChartTableState extends State<TvChartTable> {
     if (rating == null) {
       return Colors.grey[850]!;
     }
-    if (rating >= 9.0) return const Color(0xFF1E5631).withOpacity(0.85); // Excellent
-    if (rating >= 8.0) return const Color(0xFF4C9A2A).withOpacity(0.85); // Good
-    if (rating >= 7.0) return const Color(0xFFD4AF37).withOpacity(0.85); // Average
-    if (rating >= 6.0) return const Color(0xFFE97451).withOpacity(0.85); // Mediocre
-    return const Color(0xFFC21807).withOpacity(0.85); // Poor
+    if (rating >= 9.0) return const Color(0xFF1E5631).withValues(alpha: 0.85); // Excellent
+    if (rating >= 8.0) return const Color(0xFF4C9A2A).withValues(alpha: 0.85); // Good
+    if (rating >= 7.0) return const Color(0xFFD4AF37).withValues(alpha: 0.85); // Average
+    if (rating >= 6.0) return const Color(0xFFE97451).withValues(alpha: 0.85); // Mediocre
+    return const Color(0xFFC21807).withValues(alpha: 0.85); // Poor
   }
 
   void _showEpisodeDetails(BuildContext context, int seasonNumber, Episode episode) {
@@ -202,7 +201,7 @@ class _TvChartTableState extends State<TvChartTable> {
         backgroundColor: const Color(0xFF1A1A1A),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: Theme.of(context).primaryColor.withOpacity(0.4), width: 1.5),
+          side: BorderSide(color: Theme.of(context).primaryColor.withValues(alpha: 0.4), width: 1.5),
         ),
         title: Text(
           'Season $seasonNumber, Episode ${episode.number}',
@@ -292,7 +291,7 @@ class _TvChartTableState extends State<TvChartTable> {
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                   child: Container(
-                    color: Colors.black.withOpacity(0.7),
+                    color: Colors.black.withValues(alpha: 0.7),
                   ),
                 ),
               ),
@@ -491,7 +490,7 @@ class _TvChartTableState extends State<TvChartTable> {
                                             color: _getRatingColor(episode.rating),
                                             borderRadius: BorderRadius.circular(4),
                                             border: Border.all(
-                                              color: Colors.white.withOpacity(0.05),
+                                              color: Colors.white.withValues(alpha: 0.05),
                                               width: 0.5,
                                             ),
                                           ),
@@ -536,7 +535,7 @@ class _TvChartTableState extends State<TvChartTable> {
       decoration: BoxDecoration(
         color: const Color(0xFF111111),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.05), width: 1),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05), width: 1),
       ),
       child: Column(
         children: [

@@ -74,7 +74,7 @@ class CustomMovieWidget extends StatelessWidget {
             Container(
               margin: const EdgeInsets.only(top: 8, left: 10),
               padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(),
+              decoration: const BoxDecoration(),
               child: Text(
                 '⭐ ${movie.score?.toStringAsFixed(1)}',
                 style: const TextStyle(
@@ -88,7 +88,7 @@ class CustomMovieWidget extends StatelessWidget {
               child: Container(
                 margin: const EdgeInsets.only(top: 8),
                 padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(),
+                decoration: const BoxDecoration(),
                 child: FutureBuilder(
                   future: checkAvailability(movie.id, context),
                   builder: (context, snapshot) {

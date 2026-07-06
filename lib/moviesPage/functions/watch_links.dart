@@ -352,7 +352,7 @@ class _WatchOptionsContentState extends State<_WatchOptionsContent> {
           leading: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: widget.mainColor.withOpacity(0.2),
+              color: widget.mainColor.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
@@ -582,7 +582,7 @@ class _WatchOptionsContentState extends State<_WatchOptionsContent> {
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: widget.mainColor.withOpacity(0.2),
+          color: widget.mainColor.withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(
@@ -623,7 +623,7 @@ class _WatchOptionsContentState extends State<_WatchOptionsContent> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: widget.mainColor.withOpacity(0.3),
+                color: widget.mainColor.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
@@ -639,7 +639,7 @@ class _WatchOptionsContentState extends State<_WatchOptionsContent> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.3),
+                  color: Colors.blue.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
@@ -655,7 +655,7 @@ class _WatchOptionsContentState extends State<_WatchOptionsContent> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: Colors.purple.withOpacity(0.3),
+                  color: Colors.purple.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
@@ -671,7 +671,7 @@ class _WatchOptionsContentState extends State<_WatchOptionsContent> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.3),
+                  color: Colors.orange.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: const Text(

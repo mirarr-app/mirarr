@@ -169,7 +169,7 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
                 boxShadow: showHighlight
                     ? [
                         BoxShadow(
-                          color: Theme.of(context).primaryColor.withOpacity(0.5),
+                          color: Theme.of(context).primaryColor.withValues(alpha: 0.5),
                           blurRadius: 10,
                           spreadRadius: 2,
                         )

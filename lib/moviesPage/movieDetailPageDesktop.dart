@@ -30,10 +30,10 @@ class _MovieDetailPageDesktop extends StatelessWidget {
     final productionCompanies = state.productionCompanies;
     final spokenLanguages = state.spokenLanguages;
     final imdbId = state.imdbId;
-    final _availabilityFuture = state._availabilityFuture;
-    final _creditsFuture = state._creditsFuture;
-    final _directorMoviesFuture = state._directorMoviesFuture;
-    final _castImagesFuture = state._castImagesFuture;
+    final availabilityFuture = state._availabilityFuture;
+    final creditsFuture = state._creditsFuture;
+    final directorMoviesFuture = state._directorMoviesFuture;
+    final castImagesFuture = state._castImagesFuture;
     final language = state.language;
 
     final region =
@@ -132,10 +132,10 @@ class _MovieDetailPageDesktop extends StatelessWidget {
                                               style: const TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w500),
                                             ),
                                           ],
-                                          if (genres != null && (genres as List<dynamic>).isNotEmpty) ...[
+                                          if (genres != null && (genres).isNotEmpty) ...[
                                             const Text('•', style: TextStyle(color: Colors.white38, fontSize: 16)),
                                             Text(
-                                              (genres as List<dynamic>).map((g) => g['name']).join(', '),
+                                              (genres).map((g) => g['name']).join(', '),
                                               style: const TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w300),
                                             ),
                                           ],
@@ -255,7 +255,7 @@ class _MovieDetailPageDesktop extends StatelessWidget {
                                             iconColor: Colors.white,
                                             tooltip: 'View Gallery',
                                             onTap: () {
-                                              _castImagesFuture.then((imageUrls) {
+                                              castImagesFuture.then((imageUrls) {
                                                 state._openImageGallery(imageUrls);
                                               });
                                             },
@@ -366,7 +366,7 @@ class _MovieDetailPageDesktop extends StatelessWidget {
                                         runSpacing: 16,
                                         children: [
                                           FutureBuilder(
-                                            future: _availabilityFuture,
+                                            future: availabilityFuture,
                                             builder: (context, snapshot) {
                                               if (snapshot.connectionState == ConnectionState.waiting || snapshot.hasError || snapshot.data != true) {
                                                 return const SizedBox();
@@ -417,7 +417,7 @@ class _MovieDetailPageDesktop extends StatelessWidget {
                                           child: Text(
                                             about,
                                             style: TextStyle(
-                                              color: Colors.white.withOpacity(0.8),
+                                              color: Colors.white.withValues(alpha: 0.8),
                                               fontSize: 16,
                                               height: 1.5,
                                               fontWeight: FontWeight.w300,
@@ -456,7 +456,7 @@ class _MovieDetailPageDesktop extends StatelessWidget {
                       ),
                     ),
                     FutureBuilder(
-                      future: _creditsFuture,
+                      future: creditsFuture,
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
@@ -520,7 +520,7 @@ class _MovieDetailPageDesktop extends StatelessWidget {
                     ),
                     const CustomDivider(),
                     FutureBuilder(
-                      future: _creditsFuture,
+                      future: creditsFuture,
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
@@ -559,10 +559,10 @@ class _MovieDetailPageDesktop extends StatelessWidget {
                                             widget.movieId)),
                                   ),
                                 ),
-                              _directorMoviesFuture == null
+                              directorMoviesFuture == null
                                   ? const Center(child: CircularProgressIndicator())
                                   : FutureBuilder(
-                                      future: _directorMoviesFuture,
+                                      future: directorMoviesFuture,
                                   builder: (context, snapshot) {
                                     if (snapshot.connectionState ==
                                         ConnectionState.waiting) {
@@ -855,9 +855,9 @@ class _MovieDetailPageDesktop extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.07),
+        color: Colors.white.withValues(alpha: 0.07),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -892,8 +892,8 @@ class _MovieDetailPageDesktop extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.white.withOpacity(0.07),
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
+            color: Colors.white.withValues(alpha: 0.07),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           ),
           child: Icon(
             icon,
@@ -915,10 +915,10 @@ class _MovieDetailPageDesktop extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: isWatched ? Colors.green.withOpacity(0.2) : Colors.white.withOpacity(0.07),
+          color: isWatched ? Colors.green.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.07),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isWatched ? Colors.green.withOpacity(0.5) : Colors.white.withOpacity(0.1),
+            color: isWatched ? Colors.green.withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.1),
           ),
         ),
         child: Row(
@@ -962,7 +962,7 @@ class _MovieDetailPageDesktop extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: backgroundColor.withOpacity(0.3),
+              color: backgroundColor.withValues(alpha: 0.3),
               blurRadius: 12,
               offset: const Offset(0, 4),
             )
@@ -1001,9 +1001,9 @@ class _MovieDetailPageDesktop extends StatelessWidget {
         height: 52,
         padding: const EdgeInsets.symmetric(horizontal: 24),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.06),
+          color: Colors.white.withValues(alpha: 0.06),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.white.withOpacity(0.12)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -1033,9 +1033,9 @@ class _MovieDetailPageDesktop extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1043,7 +1043,7 @@ class _MovieDetailPageDesktop extends StatelessWidget {
           Text(
             title,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.5),
+              color: Colors.white.withValues(alpha: 0.5),
               fontSize: 12,
               fontWeight: FontWeight.w500,
               letterSpacing: 0.5,

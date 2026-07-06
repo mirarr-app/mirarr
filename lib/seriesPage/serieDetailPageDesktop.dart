@@ -25,8 +25,8 @@ class _SerieDetailPageDesktop extends StatelessWidget {
     final episodes = state.episodes;
     final language = state.language;
     final imdbId = state.imdbId;
-    final _creditsFuture = state._creditsFuture;
-    final _showWatchToggleRefreshCounter = state._showWatchToggleRefreshCounter;
+    final creditsFuture = state._creditsFuture;
+    final showWatchToggleRefreshCounter = state._showWatchToggleRefreshCounter;
 
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
@@ -104,14 +104,14 @@ class _SerieDetailPageDesktop extends StatelessWidget {
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                       const SizedBox(height: 12),
-                                      if (genres != null && (genres as List<dynamic>).isNotEmpty) ...[
+                                      if (genres != null && (genres).isNotEmpty) ...[
                                         Wrap(
                                           spacing: 8,
                                           runSpacing: 4,
                                           crossAxisAlignment: WrapCrossAlignment.center,
                                           children: [
                                             Text(
-                                              (genres as List<dynamic>).map((g) => g['name']).join(', '),
+                                              (genres).map((g) => g['name']).join(', '),
                                               style: const TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w300),
                                             ),
                                           ],
@@ -216,7 +216,7 @@ class _SerieDetailPageDesktop extends StatelessWidget {
                                               ),
                                             ),
                                           ShowWatchToggle(
-                                            key: ValueKey('show_watch_toggle_$_showWatchToggleRefreshCounter'),
+                                            key: ValueKey('show_watch_toggle_$showWatchToggleRefreshCounter'),
                                             serieId: widget.serieId,
                                             serieName: widget.serieName,
                                             posterPath: posterPath,
@@ -361,7 +361,7 @@ class _SerieDetailPageDesktop extends StatelessWidget {
                                           child: Text(
                                             about,
                                             style: TextStyle(
-                                              color: Colors.white.withOpacity(0.8),
+                                              color: Colors.white.withValues(alpha: 0.8),
                                               fontSize: 16,
                                               height: 1.5,
                                               fontWeight: FontWeight.w300,
@@ -399,7 +399,7 @@ class _SerieDetailPageDesktop extends StatelessWidget {
                       ),
                     ),
                     FutureBuilder(
-                      future: _creditsFuture,
+                      future: creditsFuture,
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
@@ -501,7 +501,7 @@ class _SerieDetailPageDesktop extends StatelessWidget {
               ],
             )
           : bodyContent,
-      bottomNavigationBar: isTv ? null : BottomBar(),
+      bottomNavigationBar: isTv ? null : const BottomBar(),
     );
   }
 
@@ -514,9 +514,9 @@ class _SerieDetailPageDesktop extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.07),
+        color: Colors.white.withValues(alpha: 0.07),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -551,8 +551,8 @@ class _SerieDetailPageDesktop extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.white.withOpacity(0.07),
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
+            color: Colors.white.withValues(alpha: 0.07),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           ),
           child: Icon(
             icon,
@@ -582,7 +582,7 @@ class _SerieDetailPageDesktop extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: backgroundColor.withOpacity(0.3),
+              color: backgroundColor.withValues(alpha: 0.3),
               blurRadius: 12,
               offset: const Offset(0, 4),
             )
@@ -615,9 +615,9 @@ class _SerieDetailPageDesktop extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -625,7 +625,7 @@ class _SerieDetailPageDesktop extends StatelessWidget {
           Text(
             title,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.5),
+              color: Colors.white.withValues(alpha: 0.5),
               fontSize: 12,
               fontWeight: FontWeight.w500,
               letterSpacing: 0.5,

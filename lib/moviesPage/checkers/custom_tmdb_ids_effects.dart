@@ -96,19 +96,19 @@ TextStyle getMovieTitleTextStyle(int tmdbId) => switch (tmdbId) {
 
 Color getMovieBackgroundColor(BuildContext context, int tmdbId) =>
     switch (tmdbId) {
-      _ when isHarryPotter(tmdbId) => const Color(0xFF641E1E).withOpacity(0.8),
-      _ when isMatrix(tmdbId) => const Color(0xFF0e1b0f).withOpacity(0.8),
-      _ when isStarwars(tmdbId) => const Color(0xFF201652).withOpacity(0.8),
-      _ when isSpiderman(tmdbId) => const Color(0xFFea1818).withOpacity(0.6),
-      _ when isAvengers(tmdbId) => const Color(0xFF460061).withOpacity(0.8),
-      _ when isBatman(tmdbId) => const Color(0xFF03084e).withOpacity(0.8),
-      _ when isShrek(tmdbId) => const Color(0xFFb0c400).withOpacity(0.8),
-      _ when isDeadpool(tmdbId) => const Color(0xFF8f2121).withOpacity(0.8),
-      _ when isDune(tmdbId) => const Color(0xFF3d2d1c).withOpacity(0.8),
-      _ when isMonsters(tmdbId) => const Color(0xFF5aff49).withOpacity(0.8),
-      _ when isLotr(tmdbId) => const Color(0xFFb87316).withOpacity(0.8),
-      _ when isHobbit(tmdbId) => const Color(0xFF201d05).withOpacity(0.8),
-      _ => Colors.grey.withOpacity(0.2),
+      _ when isHarryPotter(tmdbId) => const Color(0xFF641E1E).withValues(alpha: 0.8),
+      _ when isMatrix(tmdbId) => const Color(0xFF0e1b0f).withValues(alpha: 0.8),
+      _ when isStarwars(tmdbId) => const Color(0xFF201652).withValues(alpha: 0.8),
+      _ when isSpiderman(tmdbId) => const Color(0xFFea1818).withValues(alpha: 0.6),
+      _ when isAvengers(tmdbId) => const Color(0xFF460061).withValues(alpha: 0.8),
+      _ when isBatman(tmdbId) => const Color(0xFF03084e).withValues(alpha: 0.8),
+      _ when isShrek(tmdbId) => const Color(0xFFb0c400).withValues(alpha: 0.8),
+      _ when isDeadpool(tmdbId) => const Color(0xFF8f2121).withValues(alpha: 0.8),
+      _ when isDune(tmdbId) => const Color(0xFF3d2d1c).withValues(alpha: 0.8),
+      _ when isMonsters(tmdbId) => const Color(0xFF5aff49).withValues(alpha: 0.8),
+      _ when isLotr(tmdbId) => const Color(0xFFb87316).withValues(alpha: 0.8),
+      _ when isHobbit(tmdbId) => const Color(0xFF201d05).withValues(alpha: 0.8),
+      _ => Colors.grey.withValues(alpha: 0.2),
     };
 
 TextStyle getMovieAboutTextStyle(BuildContext context, int tmdbId) =>

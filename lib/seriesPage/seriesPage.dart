@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:Mirarr/functions/fetchers/fetch_popular_series.dart';

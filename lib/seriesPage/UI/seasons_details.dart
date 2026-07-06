@@ -262,7 +262,7 @@ void seasonsAndEpisodes(
                           height: 5,
                           margin: const EdgeInsets.only(bottom: 12),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.3),
+                            color: Colors.white.withValues(alpha: 0.3),
                             borderRadius: BorderRadius.circular(2.5),
                           ),
                         ),
@@ -525,7 +525,7 @@ void episodesGuide(int seasonNumber, BuildContext context, int serieId,
                           height: 5,
                           margin: const EdgeInsets.only(bottom: 12),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.3),
+                            color: Colors.white.withValues(alpha: 0.3),
                             borderRadius: BorderRadius.circular(2.5),
                           ),
                         ),
@@ -830,7 +830,7 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
                             height: 5,
                             margin: const EdgeInsets.only(bottom: 16),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.3),
+                              color: Colors.white.withValues(alpha: 0.3),
                               borderRadius: BorderRadius.circular(2.5),
                             ),
                           ),
@@ -1372,7 +1372,7 @@ class _EpisodeWatchToggleButtonState extends State<EpisodeWatchToggleButton> {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: Colors.grey.withOpacity(0.3),
+          color: Colors.grey.withValues(alpha: 0.3),
           borderRadius: BorderRadius.circular(20),
         ),
         child: const Row(
@@ -1407,7 +1407,7 @@ class _EpisodeWatchToggleButtonState extends State<EpisodeWatchToggleButton> {
         duration: const Duration(milliseconds: 300),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: _isWatched! ? Colors.green.withOpacity(0.7) : Colors.grey.withOpacity(0.3),
+          color: _isWatched! ? Colors.green.withValues(alpha: 0.7) : Colors.grey.withValues(alpha: 0.3),
           borderRadius: BorderRadius.circular(20),
         ),
         child: AnimatedSwitcher(

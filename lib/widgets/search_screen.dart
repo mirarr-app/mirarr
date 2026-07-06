@@ -207,13 +207,13 @@ class _SearchScreenState extends State<SearchScreen>
           Icon(
             icon,
             size: 64,
-            color: Colors.white.withOpacity(0.15),
+            color: Colors.white.withValues(alpha: 0.15),
           ),
           const SizedBox(height: 16),
           Text(
             message,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.5),
+              color: Colors.white.withValues(alpha: 0.5),
               fontSize: 16,
               fontWeight: FontWeight.w500,
             ),
@@ -231,13 +231,13 @@ class _SearchScreenState extends State<SearchScreen>
           Icon(
             Icons.search_off_rounded,
             size: 64,
-            color: Colors.white.withOpacity(0.15),
+            color: Colors.white.withValues(alpha: 0.15),
           ),
           const SizedBox(height: 16),
           Text(
             "No results found for '$query'",
             style: TextStyle(
-              color: Colors.white.withOpacity(0.5),
+              color: Colors.white.withValues(alpha: 0.5),
               fontSize: 16,
               fontWeight: FontWeight.w500,
             ),
@@ -443,14 +443,14 @@ class _SearchScreenState extends State<SearchScreen>
                       decoration: InputDecoration(
                         hintText: _getSearchLabelText(),
                         hintStyle: TextStyle(
-                          color: Colors.white.withOpacity(0.5),
+                          color: Colors.white.withValues(alpha: 0.5),
                         ),
                         prefixIcon: Icon(
                           Icons.search_rounded,
-                          color: Colors.white.withOpacity(0.5),
+                          color: Colors.white.withValues(alpha: 0.5),
                         ),
                         filled: true,
-                        fillColor: Colors.grey[900]!.withOpacity(0.6),
+                        fillColor: Colors.grey[900]!.withValues(alpha: 0.6),
                         focusedBorder: OutlineInputBorder(
                           borderSide: BorderSide(
                             color: Theme.of(context).primaryColor,
@@ -460,7 +460,7 @@ class _SearchScreenState extends State<SearchScreen>
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide(
-                            color: Colors.white.withOpacity(0.15),
+                            color: Colors.white.withValues(alpha: 0.15),
                             width: 1.5,
                           ),
                           borderRadius: BorderRadius.circular(30),

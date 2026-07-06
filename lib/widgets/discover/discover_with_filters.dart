@@ -1,14 +1,11 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:ui';
-import 'package:Mirarr/functions/platform_helper.dart';
 
 import 'package:Mirarr/functions/get_base_url.dart';
 import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/moviesPage/UI/customMovieWidget.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie.dart';
 import 'package:Mirarr/moviesPage/models/movie.dart';
-import 'package:Mirarr/widgets/custom_divider.dart';
 import 'package:Mirarr/widgets/discover/genre_chips.dart';
 import 'package:Mirarr/widgets/tv_focus_wrapper.dart';
 import 'package:flutter/material.dart';
@@ -261,16 +258,16 @@ class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
       label: Text(genre.name, style: const TextStyle(fontSize: 12)),
       selected: isSelected,
       onSelected: (_) => _toggleGenre(genre),
-      backgroundColor: Colors.white.withOpacity(0.05),
-      selectedColor: chipColor.withOpacity(0.15),
+      backgroundColor: Colors.white.withValues(alpha: 0.05),
+      selectedColor: chipColor.withValues(alpha: 0.15),
       side: BorderSide(
-        color: isSelected ? chipColor : Colors.white.withOpacity(0.1),
+        color: isSelected ? chipColor : Colors.white.withValues(alpha: 0.1),
         width: 1,
       ),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       showCheckmark: false,
       labelStyle: TextStyle(
-        color: isSelected ? chipColor : Colors.white.withOpacity(0.7),
+        color: isSelected ? chipColor : Colors.white.withValues(alpha: 0.7),
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
       ),
       avatar: iconData != null
@@ -290,13 +287,13 @@ class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
         Checkbox(
           activeColor: Theme.of(context).primaryColor,
           checkColor: Colors.black,
-          side: BorderSide(color: Colors.white.withOpacity(0.5)),
+          side: BorderSide(color: Colors.white.withValues(alpha: 0.5)),
           value: _andGenreSearch,
           onChanged: _toggleAndGenre,
         ),
         Text(
           'All selected',
-          style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 11),
+          style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 11),
         ),
       ],
     );
@@ -346,7 +343,7 @@ class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
               ),
             ),
             Row(
@@ -356,7 +353,7 @@ class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
                   activeColor: Theme.of(context).primaryColor,
                   checkColor: Colors.black,
                   side: BorderSide(
-                    color: Colors.white.withOpacity(0.5),
+                    color: Colors.white.withValues(alpha: 0.5),
                   ),
                   value: _andPersonSearch,
                   onChanged: _toggleAndPerson,
@@ -364,7 +361,7 @@ class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
                 Text(
                   _andPersonSearch ? 'All match' : 'Any match',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 11,
                   ),
                 ),
@@ -411,9 +408,9 @@ class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 hintText: 'Search for people...',
-                hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
+                hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.4)),
                 filled: true,
-                fillColor: Colors.grey[900]!.withOpacity(0.8),
+                fillColor: Colors.grey[900]!.withValues(alpha: 0.8),
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(
                     color: Theme.of(context).primaryColor,
@@ -423,7 +420,7 @@ class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(
-                    color: Colors.white.withOpacity(0.15),
+                    color: Colors.white.withValues(alpha: 0.15),
                     width: 1.5,
                   ),
                   borderRadius: BorderRadius.circular(10),
@@ -470,7 +467,7 @@ class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
             runSpacing: 4.0,
             children: andSelectedPeople
                 .map((person) => InputChip(
-                      backgroundColor: Theme.of(context).primaryColor.withOpacity(0.15),
+                      backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.15),
                       selectedColor: Theme.of(context).primaryColor,
                       label: Text(
                         person.name,
@@ -503,7 +500,7 @@ class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
               ),
             ),
             Text(
@@ -523,7 +520,7 @@ class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
           max: 2026,
           divisions: 126,
           activeColor: Theme.of(context).primaryColor,
-          inactiveColor: Colors.white.withOpacity(0.1),
+          inactiveColor: Colors.white.withValues(alpha: 0.1),
           labels: RangeLabels(
             _yearRange.start.round().toString(),
             _yearRange.end.round().toString(),
@@ -550,7 +547,7 @@ class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
               ),
             ),
             _buildAndGenreCheckbox(),
@@ -579,7 +576,7 @@ class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
           title: Text(
             'Genres',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.9),
+              color: Colors.white.withValues(alpha: 0.9),
               fontWeight: FontWeight.bold,
               fontSize: 15,
             ),
@@ -611,8 +608,8 @@ class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
               final isInclude = entry.value == GenreSelection.include;
               return Chip(
                 padding: EdgeInsets.zero,
-                backgroundColor: isInclude ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
-                side: BorderSide(color: isInclude ? Colors.green.withOpacity(0.3) : Colors.red.withOpacity(0.3)),
+                backgroundColor: isInclude ? Colors.green.withValues(alpha: 0.1) : Colors.red.withValues(alpha: 0.1),
+                side: BorderSide(color: isInclude ? Colors.green.withValues(alpha: 0.3) : Colors.red.withValues(alpha: 0.3)),
                 label: Text(
                   genre.name,
                   style: TextStyle(
@@ -717,7 +714,7 @@ class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
             color: Colors.grey[950],
             border: Border(
               right: BorderSide(
-                color: Colors.white.withOpacity(0.05),
+                color: Colors.white.withValues(alpha: 0.05),
                 width: 1,
               ),
             ),

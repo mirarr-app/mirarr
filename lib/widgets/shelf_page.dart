@@ -430,10 +430,10 @@ class _ShelfPageState extends State<ShelfPage> {
     return Container(
       width: 260,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.015),
+        color: Colors.white.withValues(alpha: 0.015),
         border: Border(
           right: BorderSide(
-            color: Colors.white.withOpacity(0.06),
+            color: Colors.white.withValues(alpha: 0.06),
             width: 1,
           ),
         ),
@@ -496,12 +496,12 @@ class _ShelfPageState extends State<ShelfPage> {
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? Theme.of(context).primaryColor.withOpacity(0.12)
+                            ? Theme.of(context).primaryColor.withValues(alpha: 0.12)
                             : Colors.transparent,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: isSelected
-                              ? Theme.of(context).primaryColor.withOpacity(0.3)
+                              ? Theme.of(context).primaryColor.withValues(alpha: 0.3)
                               : Colors.transparent,
                         ),
                       ),
@@ -540,8 +540,8 @@ class _ShelfPageState extends State<ShelfPage> {
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? Theme.of(context).primaryColor.withOpacity(0.2)
-                                  : Colors.white.withOpacity(0.05),
+                                  ? Theme.of(context).primaryColor.withValues(alpha: 0.2)
+                                  : Colors.white.withValues(alpha: 0.05),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
@@ -568,9 +568,9 @@ class _ShelfPageState extends State<ShelfPage> {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.02),
+                color: Colors.white.withValues(alpha: 0.02),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.white.withOpacity(0.05)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -620,15 +620,15 @@ class _ShelfPageState extends State<ShelfPage> {
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).primaryColor.withOpacity(0.15),
+                          backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.15),
                           foregroundColor: Theme.of(context).primaryColor,
                           padding: const EdgeInsets.symmetric(vertical: 8),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         ),
-                        icon: Badge(
+                        icon: const Badge(
                           backgroundColor: Colors.amber,
-                          label: const Text('!', style: TextStyle(color: Colors.black, fontSize: 8, fontWeight: FontWeight.bold)),
-                          child: const Icon(Icons.refresh, size: 14),
+                          label: Text('!', style: TextStyle(color: Colors.black, fontSize: 8, fontWeight: FontWeight.bold)),
+                          child: Icon(Icons.refresh, size: 14),
                         ),
                         label: Text(
                           'Fetch watch times ($uncachedItemsCount logs)',
@@ -681,7 +681,7 @@ class _ShelfPageState extends State<ShelfPage> {
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: Colors.white.withOpacity(0.05))),
+        border: Border(bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
       ),
       child: Row(
         children: [
@@ -709,17 +709,17 @@ class _ShelfPageState extends State<ShelfPage> {
               decoration: InputDecoration(
                 prefixIcon: Icon(Icons.search, color: Theme.of(context).primaryColor, size: 20),
                 hintText: 'Search logs...',
-                hintStyle: TextStyle(color: Theme.of(context).primaryColor.withOpacity(0.5)),
+                hintStyle: TextStyle(color: Theme.of(context).primaryColor.withValues(alpha: 0.5)),
                 filled: true,
-                fillColor: Colors.white.withOpacity(0.03),
+                fillColor: Colors.white.withValues(alpha: 0.03),
                 isDense: true,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Theme.of(context).primaryColor.withOpacity(0.3)),
+                  borderSide: BorderSide(color: Theme.of(context).primaryColor.withValues(alpha: 0.3)),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Theme.of(context).primaryColor.withOpacity(0.2)),
+                  borderSide: BorderSide(color: Theme.of(context).primaryColor.withValues(alpha: 0.2)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -747,9 +747,9 @@ class _ShelfPageState extends State<ShelfPage> {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
       ),
       child: Row(
         children: sections.map((sec) {
@@ -777,7 +777,7 @@ class _ShelfPageState extends State<ShelfPage> {
                   boxShadow: isSelected
                       ? [
                           BoxShadow(
-                            color: Theme.of(context).primaryColor.withOpacity(0.3),
+                            color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           )
@@ -805,7 +805,7 @@ class _ShelfPageState extends State<ShelfPage> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                       decoration: BoxDecoration(
-                        color: isSelected ? Colors.black.withOpacity(0.15) : Colors.white.withOpacity(0.1),
+                        color: isSelected ? Colors.black.withValues(alpha: 0.15) : Colors.white.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -851,18 +851,18 @@ class _ShelfPageState extends State<ShelfPage> {
               decoration: InputDecoration(
                 prefixIcon: Icon(Icons.search, color: Theme.of(context).primaryColor, size: 18),
                 hintText: 'Search $_activeSection...',
-                hintStyle: TextStyle(color: Theme.of(context).primaryColor.withOpacity(0.5), fontSize: 13),
+                hintStyle: TextStyle(color: Theme.of(context).primaryColor.withValues(alpha: 0.5), fontSize: 13),
                 filled: true,
-                fillColor: Colors.white.withOpacity(0.02),
+                fillColor: Colors.white.withValues(alpha: 0.02),
                 isDense: true,
                 contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Theme.of(context).primaryColor.withOpacity(0.3)),
+                  borderSide: BorderSide(color: Theme.of(context).primaryColor.withValues(alpha: 0.3)),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Theme.of(context).primaryColor.withOpacity(0.2)),
+                  borderSide: BorderSide(color: Theme.of(context).primaryColor.withValues(alpha: 0.2)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -884,9 +884,9 @@ class _ShelfPageState extends State<ShelfPage> {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.02),
+        color: Colors.white.withValues(alpha: 0.02),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Column(
         children: [
@@ -940,15 +940,15 @@ class _ShelfPageState extends State<ShelfPage> {
               height: 28,
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).primaryColor.withOpacity(0.15),
+                  backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.15),
                   foregroundColor: Theme.of(context).primaryColor,
                   padding: EdgeInsets.zero,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
-                icon: Badge(
+                icon: const Badge(
                   backgroundColor: Colors.amber,
-                  label: const Text('!', style: TextStyle(color: Colors.black, fontSize: 7, fontWeight: FontWeight.bold)),
-                  child: const Icon(Icons.refresh, size: 12),
+                  label: Text('!', style: TextStyle(color: Colors.black, fontSize: 7, fontWeight: FontWeight.bold)),
+                  child: Icon(Icons.refresh, size: 12),
                 ),
                 label: Text(
                   'Update watch times ($uncachedItemsCount logs pending)',
@@ -1001,7 +1001,7 @@ class _ShelfPageState extends State<ShelfPage> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 2),
       decoration: BoxDecoration(
-        color: isSelected ? Theme.of(context).primaryColor.withOpacity(0.2) : Colors.transparent,
+        color: isSelected ? Theme.of(context).primaryColor.withValues(alpha: 0.2) : Colors.transparent,
         borderRadius: BorderRadius.circular(8),
       ),
       child: IconButton(
@@ -1264,9 +1264,9 @@ class _ShelfPageState extends State<ShelfPage> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor.withOpacity(0.12),
+                        color: Theme.of(context).primaryColor.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Theme.of(context).primaryColor.withOpacity(0.3)),
+                        border: Border.all(color: Theme.of(context).primaryColor.withValues(alpha: 0.3)),
                       ),
                       child: Text(
                         monthKey,
@@ -1282,7 +1282,7 @@ class _ShelfPageState extends State<ShelfPage> {
                     Expanded(
                       child: Container(
                         height: 1,
-                        color: Colors.white.withOpacity(0.08),
+                        color: Colors.white.withValues(alpha: 0.08),
                       ),
                     ),
                   ],
@@ -1303,7 +1303,7 @@ class _ShelfPageState extends State<ShelfPage> {
                             Container(
                               width: 2,
                               height: 12,
-                              color: Colors.white.withOpacity(0.12),
+                              color: Colors.white.withValues(alpha: 0.12),
                             ),
                             TvFocusWrapper(
                               onTap: () async {
@@ -1319,8 +1319,8 @@ class _ShelfPageState extends State<ShelfPage> {
                                 height: 32,
                                 decoration: BoxDecoration(
                                   color: item.type == 'movie'
-                                      ? Colors.orange.withOpacity(0.2)
-                                      : Colors.blue.withOpacity(0.2),
+                                      ? Colors.orange.withValues(alpha: 0.2)
+                                      : Colors.blue.withValues(alpha: 0.2),
                                   shape: BoxShape.circle,
                                   border: Border.all(
                                     color: item.type == 'movie' ? Colors.orange : Colors.blue,
@@ -1328,7 +1328,7 @@ class _ShelfPageState extends State<ShelfPage> {
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: (item.type == 'movie' ? Colors.orange : Colors.blue).withOpacity(0.2),
+                                      color: (item.type == 'movie' ? Colors.orange : Colors.blue).withValues(alpha: 0.2),
                                       blurRadius: 6,
                                     )
                                   ],
@@ -1343,7 +1343,7 @@ class _ShelfPageState extends State<ShelfPage> {
                             Expanded(
                               child: Container(
                                 width: 2,
-                                color: isLastItem ? Colors.transparent : Colors.white.withOpacity(0.12),
+                                color: isLastItem ? Colors.transparent : Colors.white.withValues(alpha: 0.12),
                               ),
                             ),
                           ],
@@ -1376,7 +1376,7 @@ class _ShelfPageState extends State<ShelfPage> {
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20.0),
         decoration: BoxDecoration(
-          color: Colors.redAccent.withOpacity(0.2),
+          color: Colors.redAccent.withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(16),
         ),
         child: const Icon(Icons.delete_sweep, color: Colors.redAccent, size: 28),
@@ -1399,9 +1399,9 @@ class _ShelfPageState extends State<ShelfPage> {
         borderRadius: 16.0,
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.015),
+            color: Colors.white.withValues(alpha: 0.015),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withOpacity(0.04)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(16),
@@ -1505,7 +1505,7 @@ class _ShelfPageState extends State<ShelfPage> {
           elevation: 6,
           margin: EdgeInsets.zero,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          color: Colors.white.withOpacity(0.03),
+          color: Colors.white.withValues(alpha: 0.03),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(16),
             child: Stack(
@@ -1653,7 +1653,7 @@ class _ShelfPageState extends State<ShelfPage> {
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20.0),
         decoration: BoxDecoration(
-          color: Colors.redAccent.withOpacity(0.2),
+          color: Colors.redAccent.withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(16),
         ),
         child: const Icon(Icons.delete_sweep, color: Colors.redAccent, size: 28),
@@ -1678,7 +1678,7 @@ class _ShelfPageState extends State<ShelfPage> {
           elevation: 4,
           margin: const EdgeInsets.only(bottom: 12),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          color: Colors.white.withOpacity(0.02),
+          color: Colors.white.withValues(alpha: 0.02),
           child: Padding(
             padding: const EdgeInsets.all(12.0),
             child: Row(
@@ -1722,7 +1722,7 @@ class _ShelfPageState extends State<ShelfPage> {
                           'Season ${item.seasonNumber}, Episode ${item.episodeNumber}' +
                               (item.episodeTitle != null ? ' - "${item.episodeTitle}"' : ''),
                           style: TextStyle(
-                            color: Theme.of(context).primaryColor.withOpacity(0.8),
+                            color: Theme.of(context).primaryColor.withValues(alpha: 0.8),
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                           ),
@@ -1765,7 +1765,7 @@ class _ShelfPageState extends State<ShelfPage> {
         elevation: 6,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        color: Colors.white.withOpacity(0.03),
+        color: Colors.white.withValues(alpha: 0.03),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(16),
           child: Stack(
@@ -1808,7 +1808,7 @@ class _ShelfPageState extends State<ShelfPage> {
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Theme.of(context).primaryColor.withOpacity(0.4),
+                        color: Theme.of(context).primaryColor.withValues(alpha: 0.4),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
                       )
@@ -1863,7 +1863,7 @@ class _ShelfPageState extends State<ShelfPage> {
                   child: Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: Colors.black54.withOpacity(0.75),
+                      color: Colors.black54.withValues(alpha: 0.75),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(Icons.list_alt, size: 14, color: Colors.white),
@@ -1993,7 +1993,7 @@ class _ShelfPageState extends State<ShelfPage> {
                         background: Container(
                           alignment: Alignment.centerRight,
                           padding: const EdgeInsets.only(right: 20.0),
-                          color: Colors.redAccent.withOpacity(0.2),
+                          color: Colors.redAccent.withValues(alpha: 0.2),
                           child: const Icon(Icons.delete_sweep, color: Colors.redAccent, size: 24),
                         ),
                         confirmDismiss: (direction) => _showDeleteConfirmation(ep),

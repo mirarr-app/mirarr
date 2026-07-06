@@ -1,6 +1,5 @@
 import 'package:Mirarr/widgets/profile.dart';
 import 'package:Mirarr/widgets/tv_focus_wrapper.dart';
-import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:Mirarr/functions/platform_helper.dart';
 
@@ -479,7 +478,7 @@ class _ShowWatchToggleState extends State<ShowWatchToggle> {
         duration: const Duration(milliseconds: 300),
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: _isWatched! ? Colors.green.withOpacity(0.7) : Colors.black38,
+          color: _isWatched! ? Colors.green.withValues(alpha: 0.7) : Colors.black38,
           borderRadius: const BorderRadius.all(Radius.circular(30)),
         ),
         child: AnimatedSwitcher(

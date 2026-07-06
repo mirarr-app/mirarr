@@ -69,7 +69,7 @@ class BottomBar extends StatelessWidget {
                 height: 60,
                 padding: const EdgeInsets.symmetric(horizontal: 10.0),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(30.0),
                   border: Border.all(
                     color: Theme.of(context).cardColor,
@@ -122,7 +122,7 @@ class BottomBar extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? Theme.of(context).highlightColor.withOpacity(0.15)
+                    ? Theme.of(context).highlightColor.withValues(alpha: 0.15)
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(16),
               ),

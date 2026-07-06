@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:async';
-import 'dart:io';
 import 'dart:ui';
 import 'package:Mirarr/functions/platform_helper.dart';
 import 'package:Mirarr/functions/get_base_url.dart';
@@ -513,7 +512,7 @@ class _CastDetailPageState extends State<CastDetailPage> {
               child: Container(
                 padding: const EdgeInsets.all(2),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(5),
                 ),
                 child: Text(

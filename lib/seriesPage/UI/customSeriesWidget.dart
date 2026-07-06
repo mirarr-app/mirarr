@@ -69,7 +69,7 @@ class CustomSeriesWidget extends StatelessWidget {
             Container(
               margin: const EdgeInsets.only(top: 8, left: 10),
               padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(),
+              decoration: const BoxDecoration(),
               child: Text(
                 '⭐ ${serie.score?.toStringAsFixed(1)}',
                 style: const TextStyle(

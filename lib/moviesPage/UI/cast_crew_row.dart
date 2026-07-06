@@ -93,8 +93,8 @@ class _CastCrewCardState extends State<CastCrewCard> {
               height: height,
               decoration: BoxDecoration(
                 color: _isHovered 
-                    ? Colors.white.withOpacity(0.08) 
-                    : Colors.white.withOpacity(0.03),
+                    ? Colors.white.withValues(alpha: 0.08) 
+                    : Colors.white.withValues(alpha: 0.03),
                 borderRadius: BorderRadius.circular(borderRadius - 3.0 > 0 ? borderRadius - 3.0 : 0),
                 border: Border.all(
                   color: _isHovered 
@@ -161,7 +161,7 @@ class _CastCrewCardState extends State<CastCrewCard> {
                             style: TextStyle(
                               fontSize: nameFontSize,
                               fontWeight: FontWeight.bold,
-                              color: _isHovered ? Colors.white : Colors.white.withOpacity(0.9),
+                              color: _isHovered ? Colors.white : Colors.white.withValues(alpha: 0.9),
                               height: 1.25,
                             ),
                           ),

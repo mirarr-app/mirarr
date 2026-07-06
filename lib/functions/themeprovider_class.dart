@@ -115,7 +115,7 @@ class ThemeProvider extends ChangeNotifier {
     final hint = colors['color8'] ?? colors['color7'] ?? Colors.grey[400]!;
 
     return ThemeData(
-      progressIndicatorTheme: const ProgressIndicatorThemeData(year2023: false),
+      progressIndicatorTheme: const ProgressIndicatorThemeData(),
       pageTransitionsTheme: PageTransitionsTheme(
         builders: Map<TargetPlatform, PageTransitionsBuilder>.fromIterable(
           TargetPlatform.values,
@@ -131,8 +131,6 @@ class ThemeProvider extends ChangeNotifier {
         onSecondary: fg,
         error: error,
         onError: fg,
-        background: bg,
-        onBackground: fg,
         surface: bg,
         onSurface: fg,
       ),
@@ -141,8 +139,8 @@ class ThemeProvider extends ChangeNotifier {
       hintColor: hint,
       cardColor: accent,
       scaffoldBackgroundColor: bg,
-      focusColor: accent.withOpacity(0.3),
-      hoverColor: accent.withOpacity(0.15),
+      focusColor: accent.withValues(alpha: 0.3),
+      hoverColor: accent.withValues(alpha: 0.15),
       listTileTheme: ListTileThemeData(
         selectedColor: accent,
       ),
@@ -260,7 +258,7 @@ class ThemeProvider extends ChangeNotifier {
 
 class AppThemes {
   static final ThemeData orangeTheme = ThemeData(
-    progressIndicatorTheme: const ProgressIndicatorThemeData(year2023: false),
+    progressIndicatorTheme: const ProgressIndicatorThemeData(),
     pageTransitionsTheme: PageTransitionsTheme(
       builders: Map<TargetPlatform, PageTransitionsBuilder>.fromIterable(
         TargetPlatform.values,
@@ -276,8 +274,6 @@ class AppThemes {
       onSecondary: Colors.deepOrange,
       error: Colors.red,
       onError: Colors.orange,
-      background: Colors.black,
-      onBackground: Colors.black,
       surface: Colors.black,
       onSurface: Colors.black,
     ),
@@ -286,15 +282,15 @@ class AppThemes {
     hintColor: Colors.orangeAccent[200],
     cardColor: Colors.orange,
     scaffoldBackgroundColor: Colors.black,
-    focusColor: Colors.deepOrange.withOpacity(0.3),
-    hoverColor: Colors.deepOrange.withOpacity(0.15),
+    focusColor: Colors.deepOrange.withValues(alpha: 0.3),
+    hoverColor: Colors.deepOrange.withValues(alpha: 0.15),
     listTileTheme: const ListTileThemeData(
       selectedColor: Colors.deepOrange,
     ),
   );
 
   static final ThemeData blueTheme = ThemeData(
-    progressIndicatorTheme: const ProgressIndicatorThemeData(year2023: false),
+    progressIndicatorTheme: const ProgressIndicatorThemeData(),
     pageTransitionsTheme: PageTransitionsTheme(
       builders: Map<TargetPlatform, PageTransitionsBuilder>.fromIterable(
         TargetPlatform.values,
@@ -310,8 +306,6 @@ class AppThemes {
       onSecondary: Colors.blueAccent,
       error: Colors.red,
       onError: Colors.blue,
-      background: Colors.black,
-      onBackground: Colors.black,
       surface: Colors.black,
       onSurface: Colors.black,
     ),
@@ -320,15 +314,15 @@ class AppThemes {
     hintColor: Colors.lightBlue[200],
     cardColor: Colors.blue,
     scaffoldBackgroundColor: Colors.black,
-    focusColor: Colors.blueAccent.withOpacity(0.3),
-    hoverColor: Colors.blueAccent.withOpacity(0.15),
+    focusColor: Colors.blueAccent.withValues(alpha: 0.3),
+    hoverColor: Colors.blueAccent.withValues(alpha: 0.15),
     listTileTheme: const ListTileThemeData(
       selectedColor: Colors.blueAccent,
     ),
   );
 
   static final ThemeData redTheme = ThemeData(
-    progressIndicatorTheme: const ProgressIndicatorThemeData(year2023: false),
+    progressIndicatorTheme: const ProgressIndicatorThemeData(),
     pageTransitionsTheme: PageTransitionsTheme(
       builders: Map<TargetPlatform, PageTransitionsBuilder>.fromIterable(
         TargetPlatform.values,
@@ -344,8 +338,6 @@ class AppThemes {
       onSecondary: Colors.pinkAccent,
       error: Colors.deepOrange,
       onError: Colors.red,
-      background: Colors.black,
-      onBackground: Colors.black,
       surface: Colors.black,
       onSurface: Colors.black,
     ),
@@ -354,15 +346,15 @@ class AppThemes {
     hintColor: Colors.red[200],
     cardColor: Colors.red,
     scaffoldBackgroundColor: Colors.black,
-    focusColor: Colors.redAccent.withOpacity(0.3),
-    hoverColor: Colors.redAccent.withOpacity(0.15),
+    focusColor: Colors.redAccent.withValues(alpha: 0.3),
+    hoverColor: Colors.redAccent.withValues(alpha: 0.15),
     listTileTheme: const ListTileThemeData(
       selectedColor: Colors.redAccent,
     ),
   );
 
   static final ThemeData greyTheme = ThemeData(
-    progressIndicatorTheme: const ProgressIndicatorThemeData(year2023: false),
+    progressIndicatorTheme: const ProgressIndicatorThemeData(),
     pageTransitionsTheme: PageTransitionsTheme(
       builders: Map<TargetPlatform, PageTransitionsBuilder>.fromIterable(
         TargetPlatform.values,
@@ -378,8 +370,6 @@ class AppThemes {
       onSecondary: Colors.grey,
       error: Colors.red,
       onError: Colors.grey,
-      background: Colors.black,
-      onBackground: Colors.black,
       surface: Colors.black,
       onSurface: Colors.black,
     ),
@@ -388,15 +378,15 @@ class AppThemes {
     hintColor: Colors.grey[400],
     cardColor: Colors.grey,
     scaffoldBackgroundColor: Colors.black,
-    focusColor: Colors.blueGrey.withOpacity(0.3),
-    hoverColor: Colors.blueGrey.withOpacity(0.15),
+    focusColor: Colors.blueGrey.withValues(alpha: 0.3),
+    hoverColor: Colors.blueGrey.withValues(alpha: 0.15),
     listTileTheme: const ListTileThemeData(
       selectedColor: Colors.blueGrey,
     ),
   );
 
   static final ThemeData yellowTheme = ThemeData(
-    progressIndicatorTheme: const ProgressIndicatorThemeData(year2023: false),
+    progressIndicatorTheme: const ProgressIndicatorThemeData(),
     pageTransitionsTheme: PageTransitionsTheme(
       builders: Map<TargetPlatform, PageTransitionsBuilder>.fromIterable(
         TargetPlatform.values,
@@ -412,8 +402,6 @@ class AppThemes {
       onSecondary: Colors.yellowAccent,
       error: Colors.red,
       onError: Colors.yellow,
-      background: Colors.black,
-      onBackground: Colors.black,
       surface: Colors.black,
       onSurface: Colors.black,
     ),
@@ -422,15 +410,15 @@ class AppThemes {
     hintColor: Colors.yellow[200],
     cardColor: Colors.yellow,
     scaffoldBackgroundColor: Colors.black,
-    focusColor: Colors.amber.withOpacity(0.3),
-    hoverColor: Colors.amber.withOpacity(0.15),
+    focusColor: Colors.amber.withValues(alpha: 0.3),
+    hoverColor: Colors.amber.withValues(alpha: 0.15),
     listTileTheme: const ListTileThemeData(
       selectedColor: Colors.amber,
     ),
   );
 
   static final ThemeData brownTheme = ThemeData(
-    progressIndicatorTheme: const ProgressIndicatorThemeData(year2023: false),
+    progressIndicatorTheme: const ProgressIndicatorThemeData(),
     pageTransitionsTheme: PageTransitionsTheme(
       builders: Map<TargetPlatform, PageTransitionsBuilder>.fromIterable(
         TargetPlatform.values,
@@ -446,8 +434,6 @@ class AppThemes {
       onSecondary: Colors.brown,
       error: Colors.red,
       onError: Colors.brown,
-      background: Colors.black,
-      onBackground: Colors.black,
       surface: Colors.black,
       onSurface: Colors.black,
     ),
@@ -456,14 +442,14 @@ class AppThemes {
     hintColor: Colors.brown[200],
     cardColor: Colors.brown,
     scaffoldBackgroundColor: Colors.black,
-    focusColor: Colors.amber.withOpacity(0.3),
-    hoverColor: Colors.amber.withOpacity(0.15),
+    focusColor: Colors.amber.withValues(alpha: 0.3),
+    hoverColor: Colors.amber.withValues(alpha: 0.15),
     listTileTheme: const ListTileThemeData(
       selectedColor: Colors.amber,
     ),
   );
   static final ThemeData greenTheme = ThemeData(
-    progressIndicatorTheme: const ProgressIndicatorThemeData(year2023: false),
+    progressIndicatorTheme: const ProgressIndicatorThemeData(),
     pageTransitionsTheme: PageTransitionsTheme(
       builders: Map<TargetPlatform, PageTransitionsBuilder>.fromIterable(
         TargetPlatform.values,
@@ -479,8 +465,6 @@ class AppThemes {
       onSecondary: Colors.greenAccent,
       error: Colors.red,
       onError: Colors.green,
-      background: Colors.black,
-      onBackground: Colors.black,
       surface: Colors.black,
       onSurface: Colors.black,
     ),
@@ -489,14 +473,14 @@ class AppThemes {
     hintColor: Colors.lightGreen[200],
     cardColor: Colors.green,
     scaffoldBackgroundColor: Colors.black,
-    focusColor: Colors.greenAccent.withOpacity(0.3),
-    hoverColor: Colors.greenAccent.withOpacity(0.15),
+    focusColor: Colors.greenAccent.withValues(alpha: 0.3),
+    hoverColor: Colors.greenAccent.withValues(alpha: 0.15),
     listTileTheme: const ListTileThemeData(
       selectedColor: Colors.greenAccent,
     ),
   );
   static final ThemeData monoFontTheme = ThemeData(
-    progressIndicatorTheme: const ProgressIndicatorThemeData(year2023: false),
+    progressIndicatorTheme: const ProgressIndicatorThemeData(),
     pageTransitionsTheme: PageTransitionsTheme(
       builders: Map<TargetPlatform, PageTransitionsBuilder>.fromIterable(
         TargetPlatform.values,
@@ -512,8 +496,6 @@ class AppThemes {
       onSecondary: Colors.grey,
       error: Colors.red,
       onError: Colors.grey,
-      background: Colors.black,
-      onBackground: Colors.black,
       surface: Colors.black,
       onSurface: Colors.black,
     ),
@@ -522,15 +504,15 @@ class AppThemes {
     hintColor: Colors.grey[400],
     cardColor: Colors.grey,
     scaffoldBackgroundColor: Colors.black,
-    focusColor: Colors.blueGrey.withOpacity(0.3),
-    hoverColor: Colors.blueGrey.withOpacity(0.15),
+    focusColor: Colors.blueGrey.withValues(alpha: 0.3),
+    hoverColor: Colors.blueGrey.withValues(alpha: 0.15),
     listTileTheme: const ListTileThemeData(
       selectedColor: Colors.blueGrey,
     ),
   );
 
   static final ThemeData nothingFontTheme = ThemeData(
-    progressIndicatorTheme: const ProgressIndicatorThemeData(year2023: false),
+    progressIndicatorTheme: const ProgressIndicatorThemeData(),
     pageTransitionsTheme: PageTransitionsTheme(
       builders: Map<TargetPlatform, PageTransitionsBuilder>.fromIterable(
         TargetPlatform.values,
@@ -546,8 +528,6 @@ class AppThemes {
       onSecondary: Colors.grey,
       error: Colors.red,
       onError: Colors.grey,
-      background: Colors.black,
-      onBackground: Colors.black,
       surface: Colors.black,
       onSurface: Colors.black,
     ),
@@ -556,8 +536,8 @@ class AppThemes {
     hintColor: Colors.grey[400],
     cardColor: Colors.grey,
     scaffoldBackgroundColor: Colors.black,
-    focusColor: Colors.blueGrey.withOpacity(0.3),
-    hoverColor: Colors.blueGrey.withOpacity(0.15),
+    focusColor: Colors.blueGrey.withValues(alpha: 0.3),
+    hoverColor: Colors.blueGrey.withValues(alpha: 0.15),
     listTileTheme: const ListTileThemeData(
       selectedColor: Colors.blueGrey,
     ),
