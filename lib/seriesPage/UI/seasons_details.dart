@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:Mirarr/functions/get_base_url.dart';
 import 'package:Mirarr/functions/regionprovider_class.dart';
+import 'package:Mirarr/functions/get_imdb_score.dart';
 import 'package:Mirarr/moviesPage/UI/cast_crew_row.dart';
 import 'package:Mirarr/seriesPage/UI/tvchart_table.dart';
 import 'package:Mirarr/seriesPage/checkers/custom_tmdb_ids_effects_series.dart';
@@ -33,9 +34,29 @@ Future<T> _cachedApiCall<T>(String url, Future<T> Function() apiCall) async {
   return result;
 }
 
+Future<String?> fetchEpisodeImdbId(
+    BuildContext context, int serieId, int seasonNumber, int episodeNumber) async {
+  return _cachedApiCall('episode_imdb_id_${serieId}_${seasonNumber}_$episodeNumber', () async {
+    try {
+      final region = Provider.of<RegionProvider>(context, listen: false).currentRegion;
+      final baseUrl = getBaseUrl(region);
+      final response = await http.get(
+        Uri.parse('${baseUrl}tv/$serieId/season/$seasonNumber/episode/$episodeNumber/external_ids?api_key=$apiKey'),
+      );
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data['imdb_id'] as String?;
+      }
+    } catch (_) {
+      // Ignore
+    }
+    return null;
+  });
+}
+
 Future<String?> fetchImdbRating(
-    String imdbId, int seasonNumber, int episodeNumber) async {
-  return _cachedApiCall('imdb_rating_$imdbId$seasonNumber$episodeNumber',
+    BuildContext context, int serieId, String imdbId, int seasonNumber, int episodeNumber) async {
+  return _cachedApiCall('imdb_rating_${serieId}_${seasonNumber}_$episodeNumber',
       () async {
     try {
       final response = await http.get(
@@ -44,18 +65,44 @@ Future<String?> fetchImdbRating(
       );
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        return data['imdbRating'];
+        final omdbRating = data['imdbRating'];
+        if (omdbRating != null && omdbRating != 'N/A' && omdbRating.toString().trim().isNotEmpty) {
+          return omdbRating.toString();
+        }
+        var episodeImdbId = data['imdbID'] as String?;
+        if (episodeImdbId == null || episodeImdbId.isEmpty) {
+          episodeImdbId = await fetchEpisodeImdbId(context, serieId, seasonNumber, episodeNumber);
+        }
+        if (episodeImdbId != null && episodeImdbId.isNotEmpty) {
+          final score = await getImdbScore(episodeImdbId);
+          if (score != null) {
+            return score.toStringAsFixed(1);
+          }
+        }
+        return omdbRating;
       }
     } catch (e) {
-      throw Exception('Error fetching IMDb rating: $e');
+      try {
+        final episodeImdbId = await fetchEpisodeImdbId(context, serieId, seasonNumber, episodeNumber);
+        if (episodeImdbId != null && episodeImdbId.isNotEmpty) {
+          final score = await getImdbScore(episodeImdbId);
+          if (score != null) {
+            return score.toStringAsFixed(1);
+          }
+        }
+      } catch (_) {}
     }
     return null;
   });
 }
 
 Future<Map<int, String>> fetchSeasonImdbRatings(
-    String imdbId, int seasonNumber) async {
-  return _cachedApiCall('season_ratings_$imdbId$seasonNumber', () async {
+    BuildContext context, int serieId, String imdbId, int seasonNumber, List<int> tmdbEpisodeNumbers) async {
+  return _cachedApiCall('season_ratings_${serieId}_$seasonNumber', () async {
+    final Map<int, String> ratingsMap = {};
+    final List<Map<String, dynamic>> pending = [];
+    final Set<int> episodesFetchedFromOmdb = {};
+
     try {
       final response = await http.get(
         Uri.parse(
@@ -63,20 +110,83 @@ Future<Map<int, String>> fetchSeasonImdbRatings(
       );
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final episodes = data['Episodes'] as List<dynamic>;
-        return {
-          for (var episode in episodes)
-            episode['Episode'] is int
+        if (data['Episodes'] != null) {
+          final episodes = data['Episodes'] as List<dynamic>;
+
+          for (var episode in episodes) {
+            final epNum = episode['Episode'] is int
                 ? episode['Episode'] as int
-                : int.parse(episode['Episode']): episode['imdbRating'] as String
-        };
+                : int.parse(episode['Episode'].toString());
+            final rating = episode['imdbRating'] as String?;
+            final epImdbId = episode['imdbID'] as String?;
+
+            episodesFetchedFromOmdb.add(epNum);
+
+            if (rating != null && rating != 'N/A' && rating.trim().isNotEmpty) {
+              ratingsMap[epNum] = rating;
+            } else if (epImdbId != null && epImdbId.isNotEmpty) {
+              pending.add({
+                'episodeNumber': epNum,
+                'imdbID': epImdbId,
+              });
+              ratingsMap[epNum] = 'N/A';
+            } else {
+              ratingsMap[epNum] = 'N/A';
+            }
+          }
+        }
       }
-    } catch (e) {
-      throw Exception('Error fetching IMDb rating: $e');
+    } catch (_) {
+      // Ignore OMDB error, we will fall back to TMDB for missing/all episodes
     }
-    return {};
+
+    // Identify all episodes that TMDB has but OMDB didn't return
+    final List<int> missingEpisodeNumbers = tmdbEpisodeNumbers
+        .where((epNum) => !episodesFetchedFromOmdb.contains(epNum))
+        .toList();
+
+    if (missingEpisodeNumbers.isNotEmpty) {
+      // Fetch TMDB external IDs for these missing episodes in parallel
+      final List<Future<String?>> futures = missingEpisodeNumbers
+          .map((epNum) => fetchEpisodeImdbId(context, serieId, seasonNumber, epNum))
+          .toList();
+
+      final List<String?> imdbIds = await Future.wait(futures);
+
+      for (int i = 0; i < missingEpisodeNumbers.length; i++) {
+        final epNum = missingEpisodeNumbers[i];
+        final epImdbId = imdbIds[i];
+        if (epImdbId != null && epImdbId.isNotEmpty) {
+          pending.add({
+            'episodeNumber': epNum,
+            'imdbID': epImdbId,
+          });
+        }
+        ratingsMap[epNum] = 'N/A';
+      }
+    }
+
+    // Now batch-fetch all pending episode ratings using our custom API
+    if (pending.isNotEmpty) {
+      try {
+        final pendingImdbIds = pending.map((e) => e['imdbID'] as String).toList();
+        final scoresMap = await getImdbScoresBatch(pendingImdbIds);
+        for (var item in pending) {
+          final epNum = item['episodeNumber'] as int;
+          final epImdbId = item['imdbID'] as String;
+          if (scoresMap.containsKey(epImdbId)) {
+            ratingsMap[epNum] = scoresMap[epImdbId]!.toStringAsFixed(1);
+          }
+        }
+      } catch (_) {
+        // Ignore error
+      }
+    }
+
+    return ratingsMap;
   });
 }
+
 
 Future<List<dynamic>> fetchSeasons(int serieId, BuildContext context) async {
   return _cachedApiCall('seasons_$serieId', () async {
@@ -282,11 +392,17 @@ Future<List<dynamic>> fetchEpisodesGuide(BuildContext context, int seasonNumber,
       Uri.parse('${baseUrl}tv/$serieId/season/$seasonNumber?api_key=$apiKey'),
     );
 
-    final ratingsMap = await fetchSeasonImdbRatings(imdbId, seasonNumber);
-
     if (episodesResponse.statusCode == 200) {
       final data = json.decode(episodesResponse.body);
-      final episodes = data['episodes'];
+      final episodes = data['episodes'] as List<dynamic>;
+      final List<int> tmdbEpisodeNumbers = episodes
+          .map((e) => e['episode_number'] is int
+              ? e['episode_number'] as int
+              : int.parse(e['episode_number'].toString()))
+          .toList();
+
+      final ratingsMap = await fetchSeasonImdbRatings(
+          context, serieId, imdbId, seasonNumber, tmdbEpisodeNumbers);
 
       for (var episode in episodes) {
         final episodeNumber = episode['episode_number'];
@@ -504,7 +620,7 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
           return FutureBuilder<Map<String, dynamic>>(
             future: Future.wait([
               fetchEpisodesDetails(context, seasonNumber, episodeNumber, serieId),
-              fetchImdbRating(imdbId, seasonNumber, episodeNumber),
+              fetchImdbRating(context, serieId, imdbId, seasonNumber, episodeNumber),
             ]).then((results) =>
                 {'episodeDetails': results[0], 'imdbRating': results[1]}),
             builder: (context, snapshot) {

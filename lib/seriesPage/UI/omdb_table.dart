@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:Mirarr/functions/get_imdb_score.dart';
 
 class OmdbTable extends StatefulWidget {
   final String imdbId;
@@ -71,15 +72,55 @@ class _OmdbTableState extends State<OmdbTable> {
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
           if (data['Episodes'] != null) {
-            final episodes = (data['Episodes'] as List)
-                .map((e) => Episode(
-                      number: int.parse(e['Episode']),
-                      title: e['Title'],
-                      rating: e['imdbRating'] != 'N/A'
-                          ? double.parse(e['imdbRating'])
-                          : null,
-                    ))
-                .toList();
+            final episodesList = data['Episodes'] as List;
+            final List<Episode> episodes = [];
+            final List<Map<String, dynamic>> pending = [];
+
+            for (var e in episodesList) {
+              final epNum = int.parse(e['Episode'].toString());
+              final title = e['Title'] ?? '';
+              final ratingVal = e['imdbRating'] != 'N/A' && e['imdbRating'] != null
+                  ? double.tryParse(e['imdbRating'].toString())
+                  : null;
+              final imdbId = e['imdbID'] as String?;
+
+              if (ratingVal != null) {
+                episodes.add(Episode(number: epNum, title: title, rating: ratingVal));
+              } else if (imdbId != null && imdbId.isNotEmpty) {
+                pending.add({
+                  'number': epNum,
+                  'title': title,
+                  'imdbID': imdbId,
+                });
+              } else {
+                episodes.add(Episode(number: epNum, title: title, rating: null));
+              }
+            }
+
+            if (pending.isNotEmpty) {
+              try {
+                final pendingImdbIds = pending.map((e) => e['imdbID'] as String).toList();
+                final scoresMap = await getImdbScoresBatch(pendingImdbIds);
+                for (var p in pending) {
+                  final epNum = p['number'] as int;
+                  final title = p['title'] as String;
+                  final imdbId = p['imdbID'] as String;
+                  final rating = scoresMap[imdbId];
+                  episodes.add(Episode(number: epNum, title: title, rating: rating));
+                }
+              } catch (_) {
+                // If fallback fails, add them with null rating
+                for (var p in pending) {
+                  episodes.add(Episode(
+                    number: p['number'] as int,
+                    title: p['title'] as String,
+                    rating: null,
+                  ));
+                }
+              }
+            }
+
+            episodes.sort((a, b) => a.number.compareTo(b.number));
 
             print('Season $season: ${episodes.length} episodes');
 
