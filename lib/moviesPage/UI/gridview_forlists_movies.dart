@@ -1,5 +1,4 @@
 import 'dart:ui';
-import 'package:Mirarr/functions/platform_helper.dart';
 
 import 'package:Mirarr/moviesPage/UI/customMovieWidget.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie.dart';
@@ -17,7 +16,9 @@ class ListGridViewMovies extends StatefulWidget {
 class _ListGridViewMoviesState extends State<ListGridViewMovies> {
   @override
   Widget build(BuildContext context) {
-    int crossAxisCount = AppPlatform.isMobile ? 2 : 4;
+    final double width = MediaQuery.of(context).size.width;
+    int crossAxisCount = (width / 200).round();
+    if (crossAxisCount < 2) crossAxisCount = 2;
     return Scaffold(
       extendBody: true,
       appBar: AppBar(

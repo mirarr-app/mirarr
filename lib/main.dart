@@ -25,7 +25,7 @@ void main() async {
   await Hive.openBox('sessionBox');
   if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
     await windowManager.ensureInitialized();
-    WindowManager.instance.setMinimumSize(const Size(1600, 900));
+    WindowManager.instance.setMinimumSize(const Size(360, 500));
   }
 
   final themeProvider = ThemeProvider(AppThemes.orangeTheme);

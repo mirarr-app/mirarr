@@ -1,5 +1,4 @@
 import 'dart:ui';
-import 'package:Mirarr/functions/platform_helper.dart';
 
 import 'package:Mirarr/seriesPage/UI/customSeriesWidget.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_serie.dart';
@@ -17,7 +16,9 @@ class ListGridViewSeries extends StatefulWidget {
 class _ListGridViewSeriesState extends State<ListGridViewSeries> {
   @override
   Widget build(BuildContext context) {
-    int crossAxisCount = AppPlatform.isMobile ? 2 : 4;
+    final double width = MediaQuery.of(context).size.width;
+    int crossAxisCount = (width / 200).round();
+    if (crossAxisCount < 2) crossAxisCount = 2;
     return Scaffold(
       extendBody: true,
       appBar: AppBar(

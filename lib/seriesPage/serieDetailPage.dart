@@ -1,6 +1,5 @@
 import 'package:Mirarr/widgets/profile.dart';
 import 'package:Mirarr/widgets/tv_focus_wrapper.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:Mirarr/functions/platform_helper.dart';
 
 import 'package:Mirarr/database/watch_history_database.dart';
@@ -231,7 +230,7 @@ class _SerieDetailPageState extends State<SerieDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isMobileLayout = AppPlatform.isMobile || (kIsWeb && MediaQuery.of(context).size.width < 800);
+    final isMobileLayout = MediaQuery.of(context).size.width < 800;
     if (isMobileLayout) {
       return _SerieDetailPageMobile(this);
     } else {

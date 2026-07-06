@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:async';
 import 'dart:ui';
-import 'package:Mirarr/functions/platform_helper.dart';
 import 'package:Mirarr/functions/get_base_url.dart';
 import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie.dart';
@@ -156,8 +155,7 @@ class _CrewDetailPageState extends State<CrewDetailPage> {
   Widget _buildContent(Map<String, dynamic> castData) {
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
-    final isMobileLayout = AppPlatform.isMobile ||
-        (AppPlatform.isWeb && MediaQuery.of(context).size.width < 800);
+    final isMobileLayout = MediaQuery.of(context).size.width < 800;
     return isMobileLayout
         ? Scaffold(
 extendBody: true,

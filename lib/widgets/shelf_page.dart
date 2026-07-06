@@ -370,7 +370,7 @@ class _ShelfPageState extends State<ShelfPage> {
 
     final region = Provider.of<RegionProvider>(context, listen: false).currentRegion;
     final width = MediaQuery.of(context).size.width;
-    final bool isLargeScreen = width >= 800 || AppPlatform.isDesktop;
+    final bool isLargeScreen = width >= 800;
 
     return Scaffold(
       extendBody: true,
@@ -1059,7 +1059,7 @@ class _ShelfPageState extends State<ShelfPage> {
 
   Widget _buildMovieGrid(List<WatchHistoryItem> items, String region, {required bool isCompact}) {
     final width = MediaQuery.of(context).size.width;
-    final isLarge = width >= 800 || AppPlatform.isDesktop;
+    final isLarge = width >= 800;
     
     int crossAxisCount;
     if (isCompact) {
