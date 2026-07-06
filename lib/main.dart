@@ -133,7 +133,9 @@ class _AppInitWidgetState extends State<AppInitWidget> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      UpdateChecker.checkForUpdate(context);
+      if (!kIsWeb) {
+        UpdateChecker.checkForUpdate(context);
+      }
     });
   }
 
