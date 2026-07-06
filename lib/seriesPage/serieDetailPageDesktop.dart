@@ -518,6 +518,7 @@ class _SerieDetailPageDesktop extends StatelessWidget {
                                                 widget.serieId,
                                                 widget.serieName,
                                                 imdbId!,
+                                                imagePath: backdrops,
                                                 onWatchStatusChanged: state._refreshShowWatchStatus),
                                             child: Text('Details',
                                                 style: getSeriesButtonTextStyle(

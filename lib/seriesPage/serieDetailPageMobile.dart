@@ -719,6 +719,7 @@ class _SerieDetailPageMobile extends StatelessWidget {
                                 getSeriesColor(context, widget.serieId),
                             onPressed: () => seasonsAndEpisodes(context,
                                 widget.serieId, widget.serieName, imdbId!,
+                                imagePath: backdrops,
                                 onWatchStatusChanged: state._refreshShowWatchStatus),
                             child: Text(
                               'Details',

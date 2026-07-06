@@ -5,11 +5,16 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:Mirarr/functions/platform_helper.dart';
 import 'package:Mirarr/functions/get_imdb_score.dart';
+import 'package:Mirarr/functions/get_base_url.dart';
+import 'package:Mirarr/functions/regionprovider_class.dart';
+import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class TvChartTable extends StatefulWidget {
   final String imdbId;
+  final String? imagePath;
 
-  const TvChartTable({Key? key, required this.imdbId}) : super(key: key);
+  const TvChartTable({Key? key, required this.imdbId, this.imagePath}) : super(key: key);
 
   @override
   State<TvChartTable> createState() => _TvChartTableState();
@@ -264,27 +269,59 @@ class _TvChartTableState extends State<TvChartTable> {
 
   @override
   Widget build(BuildContext context) {
+    final region = Provider.of<RegionProvider>(context, listen: false).currentRegion;
+    final imageUrl = widget.imagePath != null && widget.imagePath!.isNotEmpty
+        ? '${getImageBaseUrl(region)}/t/p/original${widget.imagePath}'
+        : null;
+
     return Scaffold(
       extendBody: true,
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: Text(
-          _showTitle,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
+      body: Stack(
+        children: [
+          // Blurred background image
+          if (imageUrl != null)
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: CachedNetworkImageProvider(imageUrl),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                  child: Container(
+                    color: Colors.black.withOpacity(0.7),
+                  ),
+                ),
+              ),
+            ),
+          
+          // Main content on top
+          Scaffold(
+            backgroundColor: Colors.transparent,
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              title: Text(
+                _showTitle,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                ),
+              ),
+              centerTitle: true,
+            ),
+            body: _buildBody(),
           ),
-        ),
-        centerTitle: true,
+        ],
       ),
-      body: _buildBody(),
     );
   }
 

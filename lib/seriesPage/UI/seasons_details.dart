@@ -207,7 +207,7 @@ Future<List<dynamic>> fetchSeasons(int serieId, BuildContext context) async {
 }
 
 void seasonsAndEpisodes(
-    BuildContext context, int serieId, String serieName, String imdbId, {VoidCallback? onWatchStatusChanged}) {
+    BuildContext context, int serieId, String serieName, String imdbId, {String? imagePath, VoidCallback? onWatchStatusChanged}) {
   showModalBottomSheet(
     context: context,
     builder: (BuildContext context) {
@@ -259,6 +259,7 @@ void seasonsAndEpisodes(
                                       MaterialPageRoute(
                                         builder: (context) => TvChartTable(
                                           imdbId: imdbId,
+                                          imagePath: imagePath,
                                         ),
                                       ),
                                     );
