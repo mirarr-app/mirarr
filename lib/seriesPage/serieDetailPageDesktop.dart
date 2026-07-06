@@ -703,50 +703,55 @@ class _SerieDetailPageDesktop extends StatelessWidget {
                           final List<Map<String, dynamic>> crewList =
                               data['crew'] ?? [];
 
-                          return Column(
+                           return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(
-                                children: [
-                                  Padding(
-                                    padding:
-                                        const EdgeInsets.fromLTRB(25, 10, 0, 0),
-                                    child: Text(
-                                      'Cast',
-                                      textAlign: TextAlign.justify,
-                                      style: TextStyle(
-                                          color: Theme.of(context).primaryColor,
-                                          fontSize: AppPlatform.isAndroid ||
-                                                  AppPlatform.isIOS
-                                              ? 18
-                                              : 30,
-                                          fontWeight: FontWeight.w700),
+                              if (castList.isNotEmpty) ...[
+                                Row(
+                                  children: [
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.fromLTRB(25, 10, 0, 0),
+                                      child: Text(
+                                        'Cast',
+                                        textAlign: TextAlign.justify,
+                                        style: TextStyle(
+                                            color: Theme.of(context).primaryColor,
+                                            fontSize: AppPlatform.isAndroid ||
+                                                    AppPlatform.isIOS
+                                                ? 18
+                                                : 30,
+                                            fontWeight: FontWeight.w700),
+                                      ),
+                                    )
+                                  ],
+                                ),
+                                const CustomDivider(),
+                                buildCastRowDesktop(castList, context),
+                              ],
+                              if (crewList.isNotEmpty) ...[
+                                Row(
+                                  children: [
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.fromLTRB(25, 10, 0, 0),
+                                      child: Text(
+                                        'Crew',
+                                        textAlign: TextAlign.justify,
+                                        style: TextStyle(
+                                            color: Theme.of(context).primaryColor,
+                                            fontSize: AppPlatform.isAndroid ||
+                                                    AppPlatform.isIOS
+                                                ? 18
+                                                : 30,
+                                            fontWeight: FontWeight.w700),
+                                      ),
                                     ),
-                                  )
-                                ],
-                              ),
-                              const CustomDivider(),
-                              buildCastRowDesktop(castList, context),
-                              Row(
-                                children: [
-                                  Padding(
-                                    padding:
-                                        const EdgeInsets.fromLTRB(25, 10, 0, 0),
-                                    child: Text(
-                                      'Crew',
-                                      textAlign: TextAlign.justify,
-                                      style: TextStyle(
-                                          color: Theme.of(context).primaryColor,
-                                          fontSize: AppPlatform.isAndroid ||
-                                                  AppPlatform.isIOS
-                                              ? 18
-                                              : 30,
-                                          fontWeight: FontWeight.w700),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const CustomDivider(),
-                              buildCrewRowDesktop(crewList, context)
+                                  ],
+                                ),
+                                const CustomDivider(),
+                                buildCrewRowDesktop(crewList, context),
+                              ],
                             ],
                           );
                         }

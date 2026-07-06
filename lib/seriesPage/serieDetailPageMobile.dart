@@ -748,38 +748,43 @@ class _SerieDetailPageMobile extends StatelessWidget {
                             data['crew'] ?? [];
 
                         return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              children: [
-                                Padding(
+                            if (castList.isNotEmpty) ...[
+                              Row(
+                                children: [
+                                  Padding(
+                                      padding:
+                                          const EdgeInsets.fromLTRB(25, 10, 0, 0),
+                                      child: Text(
+                                        'Cast',
+                                        textAlign: TextAlign.justify,
+                                        style: getSeriesTitleTextStyle(
+                                            widget.serieId),
+                                      )),
+                                ],
+                              ),
+                              const CustomDivider(),
+                              buildCastRow(castList, context),
+                            ],
+                            if (crewList.isNotEmpty) ...[
+                              Row(
+                                children: [
+                                  Padding(
                                     padding:
                                         const EdgeInsets.fromLTRB(25, 10, 0, 0),
                                     child: Text(
-                                      'Cast',
+                                      'Crew',
                                       textAlign: TextAlign.justify,
-                                      style: getSeriesTitleTextStyle(
-                                          widget.serieId),
-                                    )),
-                              ],
-                            ),
-                            const CustomDivider(),
-                            buildCastRow(castList, context),
-                            Row(
-                              children: [
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(25, 10, 0, 0),
-                                  child: Text(
-                                    'Crew',
-                                    textAlign: TextAlign.justify,
-                                    style:
-                                        getSeriesTitleTextStyle(widget.serieId),
+                                      style:
+                                          getSeriesTitleTextStyle(widget.serieId),
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            const CustomDivider(),
-                            buildCrewRow(crewList, context)
+                                ],
+                              ),
+                              const CustomDivider(),
+                              buildCrewRow(crewList, context),
+                            ],
                           ],
                         );
                       }

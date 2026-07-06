@@ -812,39 +812,44 @@ class _MovieDetailPageDesktop extends StatelessWidget {
                               data['crew'] ?? [];
 
                           return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(
-                                children: [
-                                  Padding(
-                                    padding:
-                                        const EdgeInsets.fromLTRB(25, 10, 0, 0),
-                                    child: Text(
-                                      'Cast',
-                                      textAlign: TextAlign.justify,
-                                      style: getMovieTitleTextStyle(
-                                          widget.movieId),
+                              if (castList.isNotEmpty) ...[
+                                Row(
+                                  children: [
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.fromLTRB(25, 10, 0, 0),
+                                      child: Text(
+                                        'Cast',
+                                        textAlign: TextAlign.justify,
+                                        style: getMovieTitleTextStyle(
+                                            widget.movieId),
+                                      ),
+                                    )
+                                  ],
+                                ),
+                                const CustomDivider(),
+                                buildCastRowDesktop(castList, context),
+                              ],
+                              if (crewList.isNotEmpty) ...[
+                                Row(
+                                  children: [
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.fromLTRB(25, 10, 0, 0),
+                                      child: Text(
+                                        'Crew',
+                                        textAlign: TextAlign.justify,
+                                        style: getMovieTitleTextStyle(
+                                            widget.movieId),
+                                      ),
                                     ),
-                                  )
-                                ],
-                              ),
-                              const CustomDivider(),
-                              buildCastRowDesktop(castList, context),
-                              Row(
-                                children: [
-                                  Padding(
-                                    padding:
-                                        const EdgeInsets.fromLTRB(25, 10, 0, 0),
-                                    child: Text(
-                                      'Crew',
-                                      textAlign: TextAlign.justify,
-                                      style: getMovieTitleTextStyle(
-                                          widget.movieId),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const CustomDivider(),
-                              buildCrewRowDesktop(crewList, context)
+                                  ],
+                                ),
+                                const CustomDivider(),
+                                buildCrewRowDesktop(crewList, context),
+                              ],
                             ],
                           );
                         }

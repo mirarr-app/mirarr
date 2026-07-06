@@ -841,39 +841,44 @@ class _MovieDetailPageMobile extends StatelessWidget {
                             data['crew'] ?? [];
 
                         return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              children: [
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(25, 15, 0, 0),
-                                  child: Text(
-                                    'Cast',
-                                    textAlign: TextAlign.justify,
-                                    style:
-                                        getMovieTitleTextStyle(widget.movieId),
+                            if (castList.isNotEmpty) ...[
+                              Row(
+                                children: [
+                                  Padding(
+                                    padding:
+                                        const EdgeInsets.fromLTRB(25, 15, 0, 0),
+                                    child: Text(
+                                      'Cast',
+                                      textAlign: TextAlign.justify,
+                                      style:
+                                          getMovieTitleTextStyle(widget.movieId),
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            const CustomDivider(),
-                            buildCastRow(castList, context),
-                            Row(
-                              children: [
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(25, 15, 0, 0),
-                                  child: Text(
-                                    'Crew',
-                                    textAlign: TextAlign.justify,
-                                    style:
-                                        getMovieTitleTextStyle(widget.movieId),
+                                ],
+                              ),
+                              const CustomDivider(),
+                              buildCastRow(castList, context),
+                            ],
+                            if (crewList.isNotEmpty) ...[
+                              Row(
+                                children: [
+                                  Padding(
+                                    padding:
+                                        const EdgeInsets.fromLTRB(25, 15, 0, 0),
+                                    child: Text(
+                                      'Crew',
+                                      textAlign: TextAlign.justify,
+                                      style:
+                                          getMovieTitleTextStyle(widget.movieId),
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            const CustomDivider(),
-                            buildCrewRow(crewList, context)
+                                ],
+                              ),
+                              const CustomDivider(),
+                              buildCrewRow(crewList, context),
+                            ],
                           ],
                         );
                       }
