@@ -25,8 +25,8 @@ class _SerieDetailPageMobile extends StatelessWidget {
     final episodes = state.episodes;
     final language = state.language;
     final imdbId = state.imdbId;
-    final _creditsFuture = state._creditsFuture;
-    final _showWatchToggleKey = state._showWatchToggleKey;
+    final creditsFuture = state._creditsFuture;
+    final showWatchToggleKey = state._showWatchToggleKey;
     final screenShotController = state.screenShotController;
 
     final region =
@@ -541,7 +541,7 @@ class _SerieDetailPageMobile extends StatelessWidget {
                           top: 40,
                           left: 20,
                           child: ShowWatchToggle(
-                            key: _showWatchToggleKey,
+                            key: showWatchToggleKey,
                             serieId: widget.serieId,
                             serieName: widget.serieName,
                             posterPath: posterPath,
@@ -719,6 +719,7 @@ class _SerieDetailPageMobile extends StatelessWidget {
                                 getSeriesColor(context, widget.serieId),
                             onPressed: () => seasonsAndEpisodes(context,
                                 widget.serieId, widget.serieName, imdbId!,
+                                imagePath: backdrops,
                                 onWatchStatusChanged: state._refreshShowWatchStatus),
                             child: Text(
                               'Details',
@@ -730,7 +731,7 @@ class _SerieDetailPageMobile extends StatelessWidget {
                     ),
                   ),
                   FutureBuilder(
-                    future: _creditsFuture,
+                    future: creditsFuture,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());
@@ -747,38 +748,43 @@ class _SerieDetailPageMobile extends StatelessWidget {
                             data['crew'] ?? [];
 
                         return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              children: [
-                                Padding(
+                            if (castList.isNotEmpty) ...[
+                              Row(
+                                children: [
+                                  Padding(
+                                      padding:
+                                          const EdgeInsets.fromLTRB(25, 10, 0, 0),
+                                      child: Text(
+                                        'Cast',
+                                        textAlign: TextAlign.justify,
+                                        style: getSeriesTitleTextStyle(
+                                            widget.serieId),
+                                      )),
+                                ],
+                              ),
+                              const CustomDivider(),
+                              buildCastRow(castList, context),
+                            ],
+                            if (crewList.isNotEmpty) ...[
+                              Row(
+                                children: [
+                                  Padding(
                                     padding:
                                         const EdgeInsets.fromLTRB(25, 10, 0, 0),
                                     child: Text(
-                                      'Cast',
+                                      'Crew',
                                       textAlign: TextAlign.justify,
-                                      style: getSeriesTitleTextStyle(
-                                          widget.serieId),
-                                    )),
-                              ],
-                            ),
-                            const CustomDivider(),
-                            buildCastRow(castList, context),
-                            Row(
-                              children: [
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(25, 10, 0, 0),
-                                  child: Text(
-                                    'Crew',
-                                    textAlign: TextAlign.justify,
-                                    style:
-                                        getSeriesTitleTextStyle(widget.serieId),
+                                      style:
+                                          getSeriesTitleTextStyle(widget.serieId),
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            const CustomDivider(),
-                            buildCrewRow(crewList, context)
+                                ],
+                              ),
+                              const CustomDivider(),
+                              buildCrewRow(crewList, context),
+                            ],
                           ],
                         );
                       }

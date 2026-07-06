@@ -3,6 +3,7 @@ import 'package:Mirarr/functions/show_error_dialog.dart';
 import 'package:Mirarr/seriesPage/checkers/custom_tmdb_ids_effects_series.dart';
 import 'package:Mirarr/widgets/custom_divider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -256,7 +257,7 @@ class _WatchOptionsContentState extends State<_WatchOptionsContent> {
   @override
   void initState() {
     super.initState();
-    if (widget.region == 'iran') {
+    if (widget.region == 'iran' && !kIsWeb) {
       _loadIranDownloads();
     }
   }
@@ -289,6 +290,76 @@ class _WatchOptionsContentState extends State<_WatchOptionsContent> {
         });
       }
     }
+  }
+
+  Widget _buildWebDirectLinkButtons() {
+    final links = {
+      'Quality Server 1': 'https://subtitle.saymyname.website/DL/filmgir/?i=${widget.imdbId}&f=${widget.seasonNumber}&q=1',
+      'Quality Server 2': 'https://subtitle.saymyname.website/DL/filmgir/?i=${widget.imdbId}&f=${widget.seasonNumber}&q=2',
+      'Quality Server 3': 'https://subtitle.saymyname.website/DL/filmgir/?i=${widget.imdbId}&f=${widget.seasonNumber}&q=3',
+    };
+
+    return Column(
+      children: links.entries.map((entry) {
+        return ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: widget.mainColor.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              Icons.open_in_new,
+              color: widget.mainColor,
+              size: 20,
+            ),
+          ),
+          title: Text(
+            entry.key,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+            ),
+          ),
+          subtitle: Text(
+            entry.value,
+            style: const TextStyle(
+              color: Colors.grey,
+              fontSize: 10,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: Icon(
+                  Icons.copy,
+                  color: widget.mainColor,
+                  size: 20,
+                ),
+                onPressed: () => _copyToClipboard(context, entry.value),
+                tooltip: 'Copy URL',
+              ),
+              IconButton(
+                icon: Icon(
+                  Icons.download,
+                  color: widget.mainColor,
+                  size: 20,
+                ),
+                onPressed: () {
+                  _launchUrl(Uri.parse(entry.value));
+                  Navigator.of(context).pop();
+                },
+                tooltip: 'Open Link',
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
   }
 
   @override
@@ -393,7 +464,7 @@ class _WatchOptionsContentState extends State<_WatchOptionsContent> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          if (isLoadingIranDownloads)
+                          if (!kIsWeb && isLoadingIranDownloads)
                             Padding(
                               padding: const EdgeInsets.only(left: 10),
                               child: SizedBox(
@@ -408,24 +479,28 @@ class _WatchOptionsContentState extends State<_WatchOptionsContent> {
                         ],
                       ),
                     ),
-                    if (iranDownloadsError != null)
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Text(
-                          iranDownloadsError!,
-                          style: TextStyle(color: Colors.red[300]),
+                    if (kIsWeb)
+                      _buildWebDirectLinkButtons()
+                    else ...[
+                      if (iranDownloadsError != null)
+                        Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Text(
+                            iranDownloadsError!,
+                            style: TextStyle(color: Colors.red[300]),
+                          ),
                         ),
-                      ),
-                    if (iranDownloadsLoaded && iranDownloads.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Text(
-                          'No direct downloads available for this episode',
-                          style: TextStyle(color: Colors.grey),
+                      if (iranDownloadsLoaded && iranDownloads.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Text(
+                            'No direct downloads available for this episode',
+                            style: TextStyle(color: Colors.grey),
+                          ),
                         ),
-                      ),
-                    ...iranDownloads
-                        .map((item) => _buildDownloadItemTile(item)),
+                      ...iranDownloads
+                          .map((item) => _buildDownloadItemTile(item)),
+                    ],
                   ],
                 ],
               ),
@@ -468,7 +543,7 @@ class _WatchOptionsContentState extends State<_WatchOptionsContent> {
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: widget.mainColor.withOpacity(0.2),
+          color: widget.mainColor.withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(
@@ -510,7 +585,7 @@ class _WatchOptionsContentState extends State<_WatchOptionsContent> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: widget.mainColor.withOpacity(0.3),
+                  color: widget.mainColor.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
@@ -526,7 +601,7 @@ class _WatchOptionsContentState extends State<_WatchOptionsContent> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.3),
+                  color: Colors.blue.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
@@ -542,7 +617,7 @@ class _WatchOptionsContentState extends State<_WatchOptionsContent> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: Colors.purple.withOpacity(0.3),
+                  color: Colors.purple.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
@@ -558,7 +633,7 @@ class _WatchOptionsContentState extends State<_WatchOptionsContent> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.3),
+                  color: Colors.green.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: const Text(

@@ -1,7 +1,5 @@
 import 'package:Mirarr/widgets/profile.dart';
 import 'package:Mirarr/widgets/tv_focus_wrapper.dart';
-import 'dart:io';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:Mirarr/functions/platform_helper.dart';
 
 import 'package:Mirarr/database/watch_history_database.dart';
@@ -14,7 +12,6 @@ import 'package:Mirarr/functions/share_content.dart';
 import 'package:Mirarr/moviesPage/checkers/custom_tmdb_ids_effects.dart';
 import 'package:Mirarr/moviesPage/functions/get_imdb_rating.dart';
 import 'package:Mirarr/moviesPage/functions/movie_tmdb_actions.dart';
-import 'package:Mirarr/moviesPage/functions/on_tap_movie.dart';
 import 'package:Mirarr/moviesPage/functions/torrent_links.dart';
 import 'package:Mirarr/moviesPage/functions/watch_links.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -332,7 +329,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isMobileLayout = AppPlatform.isMobile || (kIsWeb && MediaQuery.of(context).size.width < 800);
+    final isMobileLayout = MediaQuery.of(context).size.width < 800;
     if (isMobileLayout) {
       return _MovieDetailPageMobile(this);
     } else {

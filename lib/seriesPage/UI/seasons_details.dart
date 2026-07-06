@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:Mirarr/functions/get_base_url.dart';
 import 'package:Mirarr/functions/regionprovider_class.dart';
+import 'package:Mirarr/functions/get_imdb_score.dart';
 import 'package:Mirarr/moviesPage/UI/cast_crew_row.dart';
 import 'package:Mirarr/seriesPage/UI/tvchart_table.dart';
 import 'package:Mirarr/seriesPage/checkers/custom_tmdb_ids_effects_series.dart';
@@ -33,9 +34,29 @@ Future<T> _cachedApiCall<T>(String url, Future<T> Function() apiCall) async {
   return result;
 }
 
+Future<String?> fetchEpisodeImdbId(
+    BuildContext context, int serieId, int seasonNumber, int episodeNumber) async {
+  return _cachedApiCall('episode_imdb_id_${serieId}_${seasonNumber}_$episodeNumber', () async {
+    try {
+      final region = Provider.of<RegionProvider>(context, listen: false).currentRegion;
+      final baseUrl = getBaseUrl(region);
+      final response = await http.get(
+        Uri.parse('${baseUrl}tv/$serieId/season/$seasonNumber/episode/$episodeNumber/external_ids?api_key=$apiKey'),
+      );
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data['imdb_id'] as String?;
+      }
+    } catch (_) {
+      // Ignore
+    }
+    return null;
+  });
+}
+
 Future<String?> fetchImdbRating(
-    String imdbId, int seasonNumber, int episodeNumber) async {
-  return _cachedApiCall('imdb_rating_$imdbId$seasonNumber$episodeNumber',
+    BuildContext context, int serieId, String imdbId, int seasonNumber, int episodeNumber) async {
+  return _cachedApiCall('imdb_rating_${serieId}_${seasonNumber}_$episodeNumber',
       () async {
     try {
       final response = await http.get(
@@ -44,18 +65,44 @@ Future<String?> fetchImdbRating(
       );
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        return data['imdbRating'];
+        final omdbRating = data['imdbRating'];
+        if (omdbRating != null && omdbRating != 'N/A' && omdbRating.toString().trim().isNotEmpty) {
+          return omdbRating.toString();
+        }
+        var episodeImdbId = data['imdbID'] as String?;
+        if (episodeImdbId == null || episodeImdbId.isEmpty) {
+          episodeImdbId = await fetchEpisodeImdbId(context, serieId, seasonNumber, episodeNumber);
+        }
+        if (episodeImdbId != null && episodeImdbId.isNotEmpty) {
+          final score = await getImdbScore(episodeImdbId);
+          if (score != null) {
+            return score.toStringAsFixed(1);
+          }
+        }
+        return omdbRating;
       }
     } catch (e) {
-      throw Exception('Error fetching IMDb rating: $e');
+      try {
+        final episodeImdbId = await fetchEpisodeImdbId(context, serieId, seasonNumber, episodeNumber);
+        if (episodeImdbId != null && episodeImdbId.isNotEmpty) {
+          final score = await getImdbScore(episodeImdbId);
+          if (score != null) {
+            return score.toStringAsFixed(1);
+          }
+        }
+      } catch (_) {}
     }
     return null;
   });
 }
 
 Future<Map<int, String>> fetchSeasonImdbRatings(
-    String imdbId, int seasonNumber) async {
-  return _cachedApiCall('season_ratings_$imdbId$seasonNumber', () async {
+    BuildContext context, int serieId, String imdbId, int seasonNumber, List<int> tmdbEpisodeNumbers) async {
+  return _cachedApiCall('season_ratings_${serieId}_$seasonNumber', () async {
+    final Map<int, String> ratingsMap = {};
+    final List<Map<String, dynamic>> pending = [];
+    final Set<int> episodesFetchedFromOmdb = {};
+
     try {
       final response = await http.get(
         Uri.parse(
@@ -63,20 +110,83 @@ Future<Map<int, String>> fetchSeasonImdbRatings(
       );
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final episodes = data['Episodes'] as List<dynamic>;
-        return {
-          for (var episode in episodes)
-            episode['Episode'] is int
+        if (data['Episodes'] != null) {
+          final episodes = data['Episodes'] as List<dynamic>;
+
+          for (var episode in episodes) {
+            final epNum = episode['Episode'] is int
                 ? episode['Episode'] as int
-                : int.parse(episode['Episode']): episode['imdbRating'] as String
-        };
+                : int.parse(episode['Episode'].toString());
+            final rating = episode['imdbRating'] as String?;
+            final epImdbId = episode['imdbID'] as String?;
+
+            episodesFetchedFromOmdb.add(epNum);
+
+            if (rating != null && rating != 'N/A' && rating.trim().isNotEmpty) {
+              ratingsMap[epNum] = rating;
+            } else if (epImdbId != null && epImdbId.isNotEmpty) {
+              pending.add({
+                'episodeNumber': epNum,
+                'imdbID': epImdbId,
+              });
+              ratingsMap[epNum] = 'N/A';
+            } else {
+              ratingsMap[epNum] = 'N/A';
+            }
+          }
+        }
       }
-    } catch (e) {
-      throw Exception('Error fetching IMDb rating: $e');
+    } catch (_) {
+      // Ignore OMDB error, we will fall back to TMDB for missing/all episodes
     }
-    return {};
+
+    // Identify all episodes that TMDB has but OMDB didn't return
+    final List<int> missingEpisodeNumbers = tmdbEpisodeNumbers
+        .where((epNum) => !episodesFetchedFromOmdb.contains(epNum))
+        .toList();
+
+    if (missingEpisodeNumbers.isNotEmpty) {
+      // Fetch TMDB external IDs for these missing episodes in parallel
+      final List<Future<String?>> futures = missingEpisodeNumbers
+          .map((epNum) => fetchEpisodeImdbId(context, serieId, seasonNumber, epNum))
+          .toList();
+
+      final List<String?> imdbIds = await Future.wait(futures);
+
+      for (int i = 0; i < missingEpisodeNumbers.length; i++) {
+        final epNum = missingEpisodeNumbers[i];
+        final epImdbId = imdbIds[i];
+        if (epImdbId != null && epImdbId.isNotEmpty) {
+          pending.add({
+            'episodeNumber': epNum,
+            'imdbID': epImdbId,
+          });
+        }
+        ratingsMap[epNum] = 'N/A';
+      }
+    }
+
+    // Now batch-fetch all pending episode ratings using our custom API
+    if (pending.isNotEmpty) {
+      try {
+        final pendingImdbIds = pending.map((e) => e['imdbID'] as String).toList();
+        final scoresMap = await getImdbScoresBatch(pendingImdbIds);
+        for (var item in pending) {
+          final epNum = item['episodeNumber'] as int;
+          final epImdbId = item['imdbID'] as String;
+          if (scoresMap.containsKey(epImdbId)) {
+            ratingsMap[epNum] = scoresMap[epImdbId]!.toStringAsFixed(1);
+          }
+        }
+      } catch (_) {
+        // Ignore error
+      }
+    }
+
+    return ratingsMap;
   });
 }
+
 
 Future<List<dynamic>> fetchSeasons(int serieId, BuildContext context) async {
   return _cachedApiCall('seasons_$serieId', () async {
@@ -97,21 +207,41 @@ Future<List<dynamic>> fetchSeasons(int serieId, BuildContext context) async {
 }
 
 void seasonsAndEpisodes(
-    BuildContext context, int serieId, String serieName, String imdbId, {VoidCallback? onWatchStatusChanged}) {
+    BuildContext context, int serieId, String serieName, String imdbId, {String? imagePath, VoidCallback? onWatchStatusChanged}) {
   showModalBottomSheet(
     context: context,
+    isScrollControlled: true,
+    constraints: const BoxConstraints(maxWidth: 800),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
     builder: (BuildContext context) {
       return StatefulBuilder(
         builder: (BuildContext context, StateSetter setModalState) {
           return FutureBuilder<List<dynamic>>(
             future: fetchSeasons(serieId, context),
             builder: (context, snapshot) {
+              final isLargeScreen = MediaQuery.of(context).size.width >= 800;
+              final double sheetHeight = MediaQuery.of(context).size.height * (isLargeScreen ? 0.75 : 0.60);
+
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
+                return Container(
+                  height: sheetHeight,
+                  alignment: Alignment.center,
+                  child: const CircularProgressIndicator(),
+                );
               } else if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
+                return Container(
+                  height: sheetHeight,
+                  alignment: Alignment.center,
+                  child: Text('Error: ${snapshot.error}'),
+                );
               } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const Center(child: Text('No seasons found.'));
+                return Container(
+                  height: sheetHeight,
+                  alignment: Alignment.center,
+                  child: const Text('No seasons found.'),
+                );
               } else {
                 final seasons = snapshot.data!;
                 seasons.sort((a, b) {
@@ -121,146 +251,183 @@ void seasonsAndEpisodes(
                 });
 
                 return Container(
-                  padding: const EdgeInsets.all(10),
-                  height: MediaQuery.of(context).size.height * 0.5,
-                  child: ScrollConfiguration(
-                    behavior: const ScrollBehavior().copyWith(
-                      physics: const BouncingScrollPhysics(),
-                      scrollbars: true,
-                      dragDevices: {
-                        PointerDeviceKind.touch,
-                        PointerDeviceKind.mouse,
-                        PointerDeviceKind.trackpad,
-                      },
-                    ),
-                    child: CustomScrollView(
-                      slivers: [
-                        SliverToBoxAdapter(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => TvChartTable(
-                                          imdbId: imdbId,
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                  height: sheetHeight,
+                  child: Column(
+                    children: [
+                      // Drag handle
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 5,
+                          margin: const EdgeInsets.only(bottom: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(2.5),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: ScrollConfiguration(
+                          behavior: const ScrollBehavior().copyWith(
+                            physics: const BouncingScrollPhysics(),
+                            scrollbars: true,
+                            dragDevices: {
+                              PointerDeviceKind.touch,
+                              PointerDeviceKind.mouse,
+                              PointerDeviceKind.trackpad,
+                            },
+                          ),
+                          child: CustomScrollView(
+                            slivers: [
+                              SliverToBoxAdapter(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Center(
+                                      child: Container(
+                                        constraints: const BoxConstraints(maxWidth: 400),
+                                        width: double.infinity,
+                                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                        child: ElevatedButton(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) => TvChartTable(
+                                                  imdbId: imdbId,
+                                                  imagePath: imagePath,
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor:
+                                                getSeriesColor(context, serieId),
+                                            minimumSize: const Size(double.infinity, 50),
+                                          ),
+                                          child: Text('View Episode Ratings Table',
+                                              style: getSeriesButtonTextStyle(serieId)),
                                         ),
                                       ),
-                                    );
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor:
-                                        getSeriesColor(context, serieId),
-                                    minimumSize: const Size(double.infinity, 50),
-                                  ),
-                                  child: Text('View Episode Ratings Table',
-                                      style: getSeriesButtonTextStyle(serieId)),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.fromLTRB(8, 8, 0, 16),
+                                      child: Text('Seasons',
+                                          style: getSeriesTitleTextStyle(serieId)),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              Padding(
-                                padding: const EdgeInsets.fromLTRB(8, 0, 0, 16),
-                                child: Text('Seasons',
-                                    style: getSeriesTitleTextStyle(serieId)),
+                              SliverList(
+                                delegate: SliverChildBuilderDelegate(
+                                  (context, index) {
+                                    final season = seasons[index];
+                                    final region = Provider.of<RegionProvider>(context,
+                                            listen: false)
+                                        .currentRegion;
+                                    final coverUrl = season['poster_path'] != null
+                                        ? '${getImageBaseUrl(region)}/t/p/w500${season['poster_path']}'
+                                        : null;
+                                    final isAirDateNull = season['air_date'] == null;
+                                    final isEpisodeCountZero =
+                                        season['episode_count'] == 0;
+                                    
+                                    return Column(
+                                      children: [
+                                        ListTile(
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                                          leading: ClipRRect(
+                                            borderRadius: BorderRadius.circular(6.0),
+                                            child: Container(
+                                              width: 50,
+                                              height: 75,
+                                              color: Colors.black,
+                                              child: coverUrl != null
+                                                  ? CachedNetworkImage(
+                                                      imageUrl: coverUrl,
+                                                      fit: BoxFit.cover,
+                                                      placeholder: (context, url) =>
+                                                          const Center(
+                                                            child: SizedBox(
+                                                              width: 16,
+                                                              height: 16,
+                                                              child: CircularProgressIndicator(
+                                                                color: Colors.white,
+                                                                strokeWidth: 1.5,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                      errorWidget:
+                                                          (context, url, error) =>
+                                                              const Icon(Icons.error, color: Colors.white54, size: 20),
+                                                    )
+                                                  : const Icon(Icons.movie, color: Colors.white54, size: 20),
+                                            ),
+                                          ),
+                                          title: Text(
+                                            season['season_number'] == 0
+                                                ? 'Specials'
+                                                : 'Season ${season['season_number']}',
+                                            style: TextStyle(
+                                              color: isAirDateNull
+                                                  ? Colors.grey
+                                                  : Colors.white,
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                          subtitle: Text(
+                                            '${season['episode_count']} ${season['episode_count'] == 1 ? 'Episode' : 'Episodes'}'
+                                            '${season['air_date'] != null && season['air_date'].toString().isNotEmpty ? ' • ${season['air_date'].toString().split('-')[0]}' : ''}',
+                                            style: const TextStyle(color: Colors.grey, fontSize: 13),
+                                          ),
+                                          trailing: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              SeasonWatchToggle(
+                                                serieId: serieId,
+                                                serieName: serieName,
+                                                seasonNumber: season['season_number'],
+                                                posterPath: season['poster_path'],
+                                                onToggle: () {
+                                                  onWatchStatusChanged?.call();
+                                                },
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Icon(
+                                                Icons.arrow_forward_ios,
+                                                size: 14,
+                                                color: isAirDateNull
+                                                    ? Colors.grey
+                                                    : getSeriesColor(context, serieId),
+                                              ),
+                                            ],
+                                          ),
+                                          onTap: isAirDateNull && isEpisodeCountZero
+                                              ? null
+                                              : () => episodesGuide(
+                                                  season['season_number'],
+                                                  context,
+                                                  serieId,
+                                                  serieName,
+                                                  imdbId,
+                                                  coverUrl,
+                                                  onWatchStatusChanged: onWatchStatusChanged),
+                                        ),
+                                        const CustomDivider()
+                                      ],
+                                    );
+                                  },
+                                  childCount: seasons.length,
+                                ),
                               ),
                             ],
                           ),
                         ),
-                        SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) {
-                              final season = seasons[index];
-                              final region = Provider.of<RegionProvider>(context,
-                                      listen: false)
-                                  .currentRegion;
-                              final coverUrl = season['poster_path'] != null
-                                  ? '${getImageBaseUrl(region)}/t/p/w500${season['poster_path']}'
-                                  : null;
-                              final isAirDateNull = season['air_date'] == null;
-                              final isEpisodeCountZero =
-                                  season['episode_count'] == 0;
-                              
-                              return Column(
-                                children: [
-                                  ListTile(
-                                    leading: Container(
-                                      width: 100,
-                                      height: 100,
-                                      color: coverUrl != null ? null : Colors.black,
-                                      child: coverUrl != null
-                                          ? ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(8.0),
-                                              child: CachedNetworkImage(
-                                                imageUrl: coverUrl,
-                                                fit: BoxFit.cover,
-                                                placeholder: (context, url) =>
-                                                    const CircularProgressIndicator(
-                                                  color: Colors.black,
-                                                ),
-                                                errorWidget:
-                                                    (context, url, error) =>
-                                                        const Icon(Icons.error),
-                                              ),
-                                            )
-                                          : null,
-                                    ),
-                                    title: Text(
-                                      season['season_number'] == 0
-                                          ? 'Specials'
-                                          : 'Season ${season['season_number']}',
-                                      style: TextStyle(
-                                        color: isAirDateNull
-                                            ? Colors.grey
-                                            : Colors.white,
-                                      ),
-                                    ),
-                                    trailing: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        // Watch toggle icon for season
-                                        SeasonWatchToggle(
-                                          serieId: serieId,
-                                          serieName: serieName,
-                                          seasonNumber: season['season_number'],
-                                          posterPath: season['poster_path'],
-                                          onToggle: () {
-                                            onWatchStatusChanged?.call();
-                                          },
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Icon(
-                                          Icons.arrow_forward,
-                                          color: isAirDateNull
-                                              ? Colors.grey
-                                              : getSeriesColor(context, serieId),
-                                        ),
-                                      ],
-                                    ),
-                                    onTap: isAirDateNull && isEpisodeCountZero
-                                        ? null
-                                        : () => episodesGuide(
-                                            season['season_number'],
-                                            context,
-                                            serieId,
-                                            serieName,
-                                            imdbId,
-                                            coverUrl,
-                                            onWatchStatusChanged: onWatchStatusChanged),
-                                  ),
-                                  const CustomDivider()
-                                ],
-                              );
-                            },
-                            childCount: seasons.length,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 );
               }
@@ -282,11 +449,17 @@ Future<List<dynamic>> fetchEpisodesGuide(BuildContext context, int seasonNumber,
       Uri.parse('${baseUrl}tv/$serieId/season/$seasonNumber?api_key=$apiKey'),
     );
 
-    final ratingsMap = await fetchSeasonImdbRatings(imdbId, seasonNumber);
-
     if (episodesResponse.statusCode == 200) {
       final data = json.decode(episodesResponse.body);
-      final episodes = data['episodes'];
+      final episodes = data['episodes'] as List<dynamic>;
+      final List<int> tmdbEpisodeNumbers = episodes
+          .map((e) => e['episode_number'] is int
+              ? e['episode_number'] as int
+              : int.parse(e['episode_number'].toString()))
+          .toList();
+
+      final ratingsMap = await fetchSeasonImdbRatings(
+          context, serieId, imdbId, seasonNumber, tmdbEpisodeNumbers);
 
       for (var episode in episodes) {
         final episodeNumber = episode['episode_number'];
@@ -304,6 +477,11 @@ void episodesGuide(int seasonNumber, BuildContext context, int serieId,
     String serieName, String imdbId, String? seasonPosterPath, {VoidCallback? onWatchStatusChanged}) {
   showModalBottomSheet(
     context: context,
+    isScrollControlled: true,
+    constraints: const BoxConstraints(maxWidth: 800),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
     builder: (BuildContext context) {
       return StatefulBuilder(
         builder: (BuildContext context, StateSetter setModalState) {
@@ -311,32 +489,60 @@ void episodesGuide(int seasonNumber, BuildContext context, int serieId,
             future: fetchEpisodesGuide(
                 context, seasonNumber, serieId, serieName, imdbId),
             builder: (context, snapshot) {
+              final isLargeScreen = MediaQuery.of(context).size.width >= 800;
+              final double sheetHeight = MediaQuery.of(context).size.height * (isLargeScreen ? 0.75 : 0.60);
+
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
+                return Container(
+                  height: sheetHeight,
+                  alignment: Alignment.center,
+                  child: const CircularProgressIndicator(),
+                );
               } else if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
+                return Container(
+                  height: sheetHeight,
+                  alignment: Alignment.center,
+                  child: Text('Error: ${snapshot.error}'),
+                );
               } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const Center(child: Text('No episodes found.'));
+                return Container(
+                  height: sheetHeight,
+                  alignment: Alignment.center,
+                  child: const Text('No episodes found.'),
+                );
               } else {
                 final episodes = snapshot.data!;
+                
                 return Container(
-                  padding: const EdgeInsets.all(10),
-                  height: MediaQuery.of(context).size.height * 0.5,
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                  height: sheetHeight,
                   child: Column(
                     children: [
+                      // Drag handle
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 5,
+                          margin: const EdgeInsets.only(bottom: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(2.5),
+                          ),
+                        ),
+                      ),
                       Text('Episodes', style: getSeriesTitleTextStyle(serieId)),
                       const SizedBox(height: 10),
-                      ScrollConfiguration(
-                        behavior: const ScrollBehavior().copyWith(
-                          scrollbars: true,
-                          physics: const BouncingScrollPhysics(),
-                          dragDevices: {
-                            PointerDeviceKind.touch,
-                            PointerDeviceKind.mouse,
-                            PointerDeviceKind.trackpad,
-                          },
-                        ),
-                        child: Expanded(
+                      Expanded(
+                        child: ScrollConfiguration(
+                          behavior: const ScrollBehavior().copyWith(
+                            scrollbars: true,
+                            physics: const BouncingScrollPhysics(),
+                            dragDevices: {
+                              PointerDeviceKind.touch,
+                              PointerDeviceKind.mouse,
+                              PointerDeviceKind.trackpad,
+                            },
+                          ),
                           child: ListView.builder(
                             itemCount: episodes.length,
                             itemBuilder: (context, index) {
@@ -351,98 +557,18 @@ void episodesGuide(int seasonNumber, BuildContext context, int serieId,
                               bool isReleased = true;
                               int daysUntilRelease = 0;
                               if (episode['air_date'] != null) {
-                                final airDate = DateTime.parse(episode['air_date']);
-                                isReleased = airDate.isBefore(DateTime.now());
-                                if (!isReleased) {
-                                  daysUntilRelease =
-                                      airDate.difference(DateTime.now()).inDays;
-                                }
+                                  try {
+                                    final airDate = DateTime.parse(episode['air_date']);
+                                    isReleased = airDate.isBefore(DateTime.now());
+                                    if (!isReleased) {
+                                      daysUntilRelease =
+                                          airDate.difference(DateTime.now()).inDays;
+                                    }
+                                  } catch (_) {}
                               }
                               return Column(
                                 children: [
-                                  ListTile(
-                                    leading: Container(
-                                      width: 100,
-                                      height: 100,
-                                      color: coverUrl != null ? null : Colors.black,
-                                      child: coverUrl != null
-                                          ? ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(8.0),
-                                              child: CachedNetworkImage(
-                                                imageUrl: coverUrl,
-                                                fit: BoxFit.cover,
-                                                placeholder: (context, url) =>
-                                                    const CircularProgressIndicator(
-                                                  color: Colors.black,
-                                                ),
-                                                errorWidget:
-                                                    (context, url, error) =>
-                                                        const Icon(Icons.error),
-                                              ),
-                                            )
-                                          : null,
-                                    ),
-                                    title: Text(
-                                      episode['episode_number'] == 0
-                                          ? 'Specials'
-                                          : 'Episode ${episode['episode_number']}',
-                                      style: TextStyle(
-                                          color: isReleased
-                                              ? Colors.white
-                                              : Colors.grey),
-                                    ),
-                                    subtitle: episode['name'] != null ? Text(
-                                      episode['name'],
-                                      style: const TextStyle(
-                                        color: Colors.grey,
-                                      ),
-                                    ) : null,
-                                    trailing: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        if (!isReleased && daysUntilRelease >= 0)
-                                          Padding(
-                                            padding: const EdgeInsets.fromLTRB(
-                                                0, 0, 8, 0),
-                                            child: Text(
-                                              '$daysUntilRelease days',
-                                              style: const TextStyle(
-                                                  color: Colors.grey),
-                                            ),
-                                          ),
-                                        if (episode['imdb_rating'] != null &&
-                                            episode['imdb_rating'] != 'N/A')
-                                          Padding(
-                                            padding:
-                                                const EdgeInsets.only(right: 8),
-                                            child: Text(
-                                              '⭐ ${episode['imdb_rating']}',
-                                              style: const TextStyle(
-                                                color: Colors.amber,
-                                                fontSize: 12,
-                                              ),
-                                            ),
-                                          ),
-                                        // Watch toggle icon for episode
-                                        EpisodeWatchToggle(
-                                          serieId: serieId,
-                                          serieName: serieName,
-                                          seasonNumber: seasonNumber,
-                                          episodeNumber: episode['episode_number'],
-                                          episodeTitle: episode['name'],
-                                          posterPath: seasonPosterPath,
-                                          onToggle: () {
-                                            onWatchStatusChanged?.call();
-                                          },
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Icon(Icons.arrow_forward,
-                                            color: isReleased
-                                                ? getSeriesColor(context, serieId)
-                                                : Colors.grey),
-                                      ],
-                                    ),
+                                  InkWell(
                                     onTap: () => episodeDetails(
                                         seasonNumber,
                                         episode['episode_number'],
@@ -452,6 +578,129 @@ void episodesGuide(int seasonNumber, BuildContext context, int serieId,
                                         imdbId,
                                         coverUrl,
                                         onWatchStatusChanged: onWatchStatusChanged),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                                      child: Row(
+                                        children: [
+                                          // Horizontal still image (16:9 ratio)
+                                          ClipRRect(
+                                            borderRadius: BorderRadius.circular(6.0),
+                                            child: Container(
+                                              width: 110,
+                                              height: 62,
+                                              color: Colors.black,
+                                              child: coverUrl != null
+                                                  ? CachedNetworkImage(
+                                                      imageUrl: coverUrl,
+                                                      fit: BoxFit.cover,
+                                                      placeholder: (context, url) =>
+                                                          const Center(
+                                                            child: SizedBox(
+                                                              width: 16,
+                                                              height: 16,
+                                                              child: CircularProgressIndicator(
+                                                                color: Colors.white,
+                                                                strokeWidth: 1.5,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                      errorWidget:
+                                                          (context, url, error) =>
+                                                              const Icon(Icons.error, color: Colors.white54, size: 20),
+                                                    )
+                                                  : const Icon(Icons.tv, color: Colors.white54, size: 20),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 16),
+                                          // Metadata (number, name, release date)
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  episode['episode_number'] == 0
+                                                      ? 'Specials'
+                                                      : 'Episode ${episode['episode_number']}',
+                                                  style: TextStyle(
+                                                    color: isReleased ? Colors.white : Colors.grey,
+                                                    fontWeight: FontWeight.w600,
+                                                    fontSize: 15,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 4),
+                                                if (episode['name'] != null && episode['name'].toString().isNotEmpty)
+                                                  Text(
+                                                    episode['name'],
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    style: const TextStyle(
+                                                      color: Colors.grey,
+                                                      fontSize: 13,
+                                                    ),
+                                                  ),
+                                                const SizedBox(height: 2),
+                                                if (episode['air_date'] != null && episode['air_date'].toString().isNotEmpty)
+                                                  Text(
+                                                    episode['air_date'],
+                                                    style: const TextStyle(
+                                                      color: Colors.grey,
+                                                      fontSize: 11,
+                                                    ),
+                                                  ),
+                                              ],
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          // Actions / Trailing info
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              if (!isReleased && daysUntilRelease >= 0)
+                                                Padding(
+                                                  padding: const EdgeInsets.only(right: 8.0),
+                                                  child: Text(
+                                                    '$daysUntilRelease days',
+                                                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                                                  ),
+                                                ),
+                                              if (episode['imdb_rating'] != null &&
+                                                  episode['imdb_rating'] != 'N/A' &&
+                                                  episode['imdb_rating'].toString().trim().isNotEmpty)
+                                                Padding(
+                                                  padding: const EdgeInsets.only(right: 8),
+                                                  child: Text(
+                                                    '⭐ ${episode['imdb_rating']}',
+                                                    style: const TextStyle(
+                                                      color: Colors.amber,
+                                                      fontSize: 12,
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ),
+                                              EpisodeWatchToggle(
+                                                serieId: serieId,
+                                                serieName: serieName,
+                                                seasonNumber: seasonNumber,
+                                                episodeNumber: episode['episode_number'],
+                                                episodeTitle: episode['name'],
+                                                posterPath: seasonPosterPath,
+                                                onToggle: () {
+                                                  onWatchStatusChanged?.call();
+                                                },
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Icon(
+                                                Icons.arrow_forward_ios,
+                                                size: 14,
+                                                color: isReleased
+                                                    ? getSeriesColor(context, serieId)
+                                                    : Colors.grey,
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                   ),
                                   const CustomDivider()
                                 ],
@@ -498,22 +747,39 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
       Provider.of<RegionProvider>(context, listen: false).currentRegion;
   showModalBottomSheet(
     context: context,
+    isScrollControlled: true,
+    constraints: const BoxConstraints(maxWidth: 800),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
     builder: (BuildContext context) {
       return StatefulBuilder(
         builder: (BuildContext context, StateSetter setModalState) {
           return FutureBuilder<Map<String, dynamic>>(
             future: Future.wait([
               fetchEpisodesDetails(context, seasonNumber, episodeNumber, serieId),
-              fetchImdbRating(imdbId, seasonNumber, episodeNumber),
+              fetchImdbRating(context, serieId, imdbId, seasonNumber, episodeNumber),
             ]).then((results) =>
                 {'episodeDetails': results[0], 'imdbRating': results[1]}),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
+                return Container(
+                  height: 250,
+                  alignment: Alignment.center,
+                  child: const CircularProgressIndicator(),
+                );
               } else if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
+                return Container(
+                  height: 200,
+                  alignment: Alignment.center,
+                  child: Text('Error: ${snapshot.error}'),
+                );
               } else if (!snapshot.hasData) {
-                return const Center(child: Text('No data found.'));
+                return Container(
+                  height: 200,
+                  alignment: Alignment.center,
+                  child: const Text('No data found.'),
+                );
               } else {
                 final episodeDetails =
                     snapshot.data!['episodeDetails'] as Map<String, dynamic>;
@@ -521,22 +787,63 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
                 final overview =
                     episodeDetails['overview'] ?? 'No overview available.';
                 final episodeName = episodeDetails['name'];
+                
+                final isLargeScreen = MediaQuery.of(context).size.width >= 800;
+
+                final watchButton = FloatingActionButton(
+                  heroTag: null,
+                  backgroundColor: getSeriesColor(context, serieId),
+                  onPressed: () => showWatchOptions(context,
+                      serieId, seasonNumber, episodeNumber, imdbId),
+                  child: Text(
+                    'Watch',
+                    style: getSeriesButtonTextStyle(serieId),
+                  ),
+                );
+
+                final torrentButton = FloatingActionButton(
+                  heroTag: null,
+                  backgroundColor: getSeriesColor(context, serieId),
+                  onPressed: () => showTorrentOptions(
+                      context,
+                      serieName,
+                      serieId,
+                      seasonNumber,
+                      episodeNumber,
+                      imdbId),
+                  child: Text(
+                    'Torrent Search',
+                    style: getSeriesButtonTextStyle(serieId),
+                  ),
+                );
+
                 return SingleChildScrollView(
                   child: Container(
-                    padding: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(25, 10, 0, 0),
-                          child: episodeName.isNotEmpty ? Text(episodeName,
-                              style: getSeriesTitleTextStyle(serieId)) : Text('Episode Overview',
-                              style: getSeriesTitleTextStyle(serieId)),
+                        // Drag handle
+                        Center(
+                          child: Container(
+                            width: 40,
+                            height: 5,
+                            margin: const EdgeInsets.only(bottom: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.3),
+                              borderRadius: BorderRadius.circular(2.5),
+                            ),
+                          ),
                         ),
+                        episodeName.isNotEmpty
+                            ? Text(episodeName,
+                                style: getSeriesTitleTextStyle(serieId))
+                            : Text('Episode Overview',
+                                style: getSeriesTitleTextStyle(serieId)),
                         const SizedBox(height: 10),
                         if (imdbRating != null && imdbRating.isNotEmpty && imdbRating != 'N/A')
                           Padding(
-                            padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+                            padding: const EdgeInsets.only(bottom: 8.0),
                             child: Text(
                               'IMDB⭐ $imdbRating',
                               style: const TextStyle(
@@ -548,7 +855,7 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
                           ),
                         // Episode watch toggle button
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+                          padding: const EdgeInsets.only(bottom: 12.0),
                           child: EpisodeWatchToggleButton(
                             serieId: serieId,
                             serieName: serieName,
@@ -561,72 +868,39 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
                             },
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-                          child: Text(
-                            overview,
-                            style: const TextStyle(color: Colors.white),
+                        Text(
+                          overview,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            height: 1.4,
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(25, 10, 25, 0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                        const SizedBox(height: 20),
+                        // Responsive action buttons
+                        if (isLargeScreen)
+                          Row(
                             children: [
-                              Center(
-                                  child: SizedBox(
+                              Expanded(child: watchButton),
+                              const SizedBox(width: 16),
+                              Expanded(child: torrentButton),
+                            ],
+                          )
+                        else
+                          Column(
+                            children: [
+                              SizedBox(
                                 width: double.infinity,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisSize: MainAxisSize.max,
-                                  children: [
-                                    Expanded(
-                                      child: FloatingActionButton(
-                                        heroTag: null,
-                                        backgroundColor: getSeriesColor(context, serieId),
-                                        onPressed: () => showWatchOptions(context,
-                                            serieId, seasonNumber, episodeNumber, imdbId),
-                                        child: Text(
-                                          'Watch',
-                                          style: getSeriesButtonTextStyle(serieId),
-                                        ),
-                                      ),
-                                    ),
-                              
-                                  ],
-                                ),
-                              ))
+                                child: watchButton,
+                              ),
+                              const SizedBox(height: 12),
+                              SizedBox(
+                                width: double.infinity,
+                                child: torrentButton,
+                              ),
                             ],
                           ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(25, 10, 25, 0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Center(
-                                  child: SizedBox(
-                                width: double.infinity,
-                                child: FloatingActionButton(
-                                  heroTag: null,
-                                  backgroundColor: getSeriesColor(context, serieId),
-                                  onPressed: () => showTorrentOptions(
-                                      context,
-                                      serieName,
-                                      serieId,
-                                      seasonNumber,
-                                      episodeNumber,
-                                      imdbId),
-                                  child: Text(
-                                    'Torrent Search',
-                                    style: getSeriesButtonTextStyle(serieId),
-                                  ),
-                                ),
-                              ))
-                            ],
-                          ),
-                        ),
+                        const SizedBox(height: 8),
                         FutureBuilder(
                           future: fetchEpisodeCastAndCrew(
                               serieId, seasonNumber, episodeNumber, region),
@@ -652,11 +926,9 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
                                 children: [
                                   if (castList.isNotEmpty) ...[
                                     Padding(
-                                      padding:
-                                          const EdgeInsets.fromLTRB(25, 10, 0, 0),
+                                      padding: const EdgeInsets.only(top: 16.0),
                                       child: Text(
                                         'Guest Stars',
-                                        textAlign: TextAlign.justify,
                                         style: getSeriesTitleTextStyle(serieId),
                                       ),
                                     ),
@@ -665,11 +937,9 @@ void episodeDetails(int seasonNumber, int episodeNumber, BuildContext context,
                                   ],
                                   if (crewList.isNotEmpty) ...[
                                     Padding(
-                                      padding:
-                                          const EdgeInsets.fromLTRB(25, 10, 0, 0),
+                                      padding: const EdgeInsets.only(top: 16.0),
                                       child: Text(
                                         'Crew',
-                                        textAlign: TextAlign.justify,
                                         style: getSeriesTitleTextStyle(serieId),
                                       ),
                                     ),
@@ -1102,7 +1372,7 @@ class _EpisodeWatchToggleButtonState extends State<EpisodeWatchToggleButton> {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: Colors.grey.withOpacity(0.3),
+          color: Colors.grey.withValues(alpha: 0.3),
           borderRadius: BorderRadius.circular(20),
         ),
         child: const Row(
@@ -1137,7 +1407,7 @@ class _EpisodeWatchToggleButtonState extends State<EpisodeWatchToggleButton> {
         duration: const Duration(milliseconds: 300),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: _isWatched! ? Colors.green.withOpacity(0.7) : Colors.grey.withOpacity(0.3),
+          color: _isWatched! ? Colors.green.withValues(alpha: 0.7) : Colors.grey.withValues(alpha: 0.3),
           borderRadius: BorderRadius.circular(20),
         ),
         child: AnimatedSwitcher(

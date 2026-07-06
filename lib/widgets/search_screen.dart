@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:async';
 import 'dart:ui';
-import 'package:Mirarr/functions/platform_helper.dart';
 import 'package:Mirarr/functions/get_base_url.dart';
 import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/moviesPage/UI/cast_crew_row.dart';
@@ -39,9 +38,7 @@ class _SearchScreenState extends State<SearchScreen>
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
 
-  late FocusNode _movieSearchFocusNode;
-  late FocusNode _tvSearchFocusNode;
-  late FocusNode _peopleSearchFocusNode;
+  late FocusNode _searchFocusNode;
 
   KeyEventResult _handleSearchFocusKey(FocusNode node, KeyEvent event) {
     if (event is KeyDownEvent && TvFocusModeManager.isTvFocusMode.value) {
@@ -61,10 +58,15 @@ class _SearchScreenState extends State<SearchScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    _tabController.addListener(_onTabChanged);
     _searchController.addListener(_onSearchChanged);
-    _movieSearchFocusNode = FocusNode(onKeyEvent: _handleSearchFocusKey);
-    _tvSearchFocusNode = FocusNode(onKeyEvent: _handleSearchFocusKey);
-    _peopleSearchFocusNode = FocusNode(onKeyEvent: _handleSearchFocusKey);
+    _searchFocusNode = FocusNode(onKeyEvent: _handleSearchFocusKey);
+  }
+
+  void _onTabChanged() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   void _onSearchChanged() {
@@ -103,12 +105,12 @@ class _SearchScreenState extends State<SearchScreen>
       for (var result in results) {
         final movie = Movie(
             title: result['title'],
-            releaseDate: result['release_date'],
+            releaseDate: result['release_date'] ?? '',
             posterPath: result['poster_path'] ?? '',
             overView: result['overview'] ?? '',
             id: result['id'] ?? '',
             backdropPath: result['backdrop_path'] ?? '',
-            score: result['vote_average'] ?? '');
+            score: result['vote_average'] ?? 0.0);
         movies.add(movie);
       }
 
@@ -140,7 +142,7 @@ class _SearchScreenState extends State<SearchScreen>
           overView: result['overview'] ?? '',
           id: result['id'],
           backdropPath: result['backdrop_path'] ?? '',
-          score: result['vote_average'] ?? '',
+          score: result['vote_average'] ?? 0.0,
         );
         series.add(serie);
       }
@@ -171,7 +173,7 @@ class _SearchScreenState extends State<SearchScreen>
           name: result['name'],
           profilePath: result['profile_path'] ?? '',
           id: result['id'],
-          department: result['known_for_department'],
+          department: result['known_for_department'] ?? '',
         );
         persons.add(person);
       }
@@ -184,286 +186,413 @@ class _SearchScreenState extends State<SearchScreen>
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-extendBody: true,
-      appBar: TabBar(
-        labelColor: Colors.black,
-        padding: AppPlatform.isMobile
-            ? const EdgeInsets.fromLTRB(0, 32, 0, 0)
-            : const EdgeInsets.fromLTRB(0, 0, 0, 0),
-        indicator: BoxDecoration(color: Theme.of(context).primaryColor),
-        unselectedLabelColor: Colors.white,
-        indicatorSize: TabBarIndicatorSize.tab,
-        controller: _tabController,
-        tabs: const [
-          Tab(
-            icon: Icon(Icons.movie),
+  String _getSearchLabelText() {
+    switch (_tabController.index) {
+      case 0:
+        return 'Search for movies...';
+      case 1:
+        return 'Search for TV shows...';
+      case 2:
+        return 'Search for people...';
+      default:
+        return 'Search...';
+    }
+  }
+
+  Widget _buildEmptyState(String message, IconData icon) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            icon,
+            size: 64,
+            color: Colors.white.withValues(alpha: 0.15),
           ),
-          Tab(
-            icon: Icon(Icons.local_movies),
+          const SizedBox(height: 16),
+          Text(
+            message,
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.5),
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-          Tab(
-            icon: Icon(Icons.people),
-          ),
-          Tab(
-            icon: Icon(Icons.explore),
-          )
         ],
       ),
-      body: TabBarView(
-        controller: _tabController,
+    );
+  }
+
+  Widget _buildNoResultsState(String query) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(8, 10, 8, 5),
-                child: TextField(
-                  focusNode: _movieSearchFocusNode,
-                  autocorrect: false,
-                  style: const TextStyle(
-                    color: Colors.white,
-                  ),
-                  cursorColor: Colors.white,
-                  controller: _searchController,
-                  keyboardType: TextInputType.text,
-                  decoration: InputDecoration(
-                    labelText: 'Search for a movie',
-                    labelStyle: const TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold),
-                    filled: false,
-                    fillColor: Theme.of(context).hintColor,
-                    focusedBorder: OutlineInputBorder(
-                        borderSide:
-                            BorderSide(color: Theme.of(context).primaryColor),
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(20))),
-                    enabledBorder: OutlineInputBorder(
-                        borderSide:
-                            BorderSide(color: Theme.of(context).primaryColor),
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(20))),
-                    floatingLabelBehavior: FloatingLabelBehavior.never,
-                    suffixIcon: IconButton(
-                      icon: Visibility(
-                        visible: _searchController.text.isNotEmpty,
-                        child: const Icon(
-                          Icons.clear,
-                          color: Colors.white,
-                        ),
-                      ),
-                      onPressed: () {
-                        _searchController.clear();
-                        setState(() {
-                          movieResults.clear();
-                          tvResults.clear();
-                        });
-                      },
-                    ),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: movieResults.isEmpty
-                    ? Container()
-                    : ScrollConfiguration(
-                        behavior: const ScrollBehavior().copyWith(
-                          physics: const BouncingScrollPhysics(),
-                          scrollbars: true,
-                          dragDevices: {
-                            PointerDeviceKind.touch,
-                            PointerDeviceKind.mouse,
-                            PointerDeviceKind.trackpad,
-                          },
-                        ),
-                        child: ListView.builder(
-                          itemCount: movieResults.length,
-                          itemBuilder: (context, index) {
-                            final movie = movieResults[index];
-                            return TvFocusWrapper(
-                              borderRadius: 12.0,
-                              onTap: () => onTapMovie(movie.title, movie.id, context),
-                              child: MovieSearchResult(
-                                movie: movie,
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-              ),
-            ],
+          Icon(
+            Icons.search_off_rounded,
+            size: 64,
+            color: Colors.white.withValues(alpha: 0.15),
           ),
-          Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(8, 10, 8, 5),
-                child: TextField(
-                  focusNode: _tvSearchFocusNode,
-                  autocorrect: false,
-                  style: const TextStyle(
-                    color: Colors.white,
-                  ),
-                  cursorColor: Colors.white,
-                  controller: _searchController,
-                  keyboardType: TextInputType.text,
-                  decoration: InputDecoration(
-                    labelText: 'Search for a TV show',
-                    labelStyle: const TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold),
-                    filled: false,
-                    fillColor: Theme.of(context).hintColor,
-                    focusedBorder: OutlineInputBorder(
-                        borderSide:
-                            BorderSide(color: Theme.of(context).primaryColor),
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(20))),
-                    enabledBorder: OutlineInputBorder(
-                        borderSide:
-                            BorderSide(color: Theme.of(context).primaryColor),
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(20))),
-                    floatingLabelBehavior: FloatingLabelBehavior.never,
-                    suffixIcon: IconButton(
-                      icon: Visibility(
-                        visible: _searchController.text.isNotEmpty,
-                        child: const Icon(
-                          Icons.clear,
-                          color: Colors.white,
-                        ),
-                      ),
-                      onPressed: () {
-                        _searchController.clear();
-                        setState(() {
-                          movieResults.clear();
-                          tvResults.clear();
-                        });
-                      },
-                    ),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: tvResults.isEmpty
-                    ? Container()
-                    : ScrollConfiguration(
-                        behavior: const ScrollBehavior().copyWith(
-                          physics: const BouncingScrollPhysics(),
-                          scrollbars: true,
-                          dragDevices: {
-                            PointerDeviceKind.touch,
-                            PointerDeviceKind.mouse,
-                            PointerDeviceKind.trackpad,
-                          },
-                        ),
-                        child: ListView.builder(
-                          itemCount: tvResults.length,
-                          itemBuilder: (context, index) {
-                            final serie = tvResults[index];
-                            return TvFocusWrapper(
-                              borderRadius: 12.0,
-                              onTap: () => onTapSerie(serie.name, serie.id, context),
-                              child: SerieSearchResult(
-                                serie: serie,
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-              ),
-            ],
+          const SizedBox(height: 16),
+          Text(
+            "No results found for '$query'",
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.5),
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-          Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(8, 10, 8, 5),
-                child: TextField(
-                  focusNode: _peopleSearchFocusNode,
-                  autocorrect: false,
-                  style: const TextStyle(
-                    color: Colors.white,
-                  ),
-                  cursorColor: Colors.white,
-                  controller: _searchController,
-                  keyboardType: TextInputType.text,
-                  decoration: InputDecoration(
-                    labelText: 'Search for People',
-                    labelStyle: const TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold),
-                    filled: false,
-                    fillColor: Theme.of(context).hintColor,
-                    focusedBorder: OutlineInputBorder(
-                        borderSide:
-                            BorderSide(color: Theme.of(context).primaryColor),
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(20))),
-                    enabledBorder: OutlineInputBorder(
-                        borderSide:
-                            BorderSide(color: Theme.of(context).primaryColor),
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(20))),
-                    floatingLabelBehavior: FloatingLabelBehavior.never,
-                    suffixIcon: IconButton(
-                      icon: Visibility(
-                        visible: _searchController.text.isNotEmpty,
-                        child: const Icon(
-                          Icons.clear,
-                          color: Colors.white,
-                        ),
-                      ),
-                      onPressed: () {
-                        _searchController.clear();
-                        setState(() {
-                          movieResults.clear();
-                          tvResults.clear();
-                          personResults.clear();
-                        });
-                      },
-                    ),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: personResults.isEmpty
-                    ? Container()
-                    : ScrollConfiguration(
-                        behavior: const ScrollBehavior().copyWith(
-                          physics: const BouncingScrollPhysics(),
-                          scrollbars: true,
-                          dragDevices: {
-                            PointerDeviceKind.touch,
-                            PointerDeviceKind.mouse,
-                            PointerDeviceKind.trackpad,
-                          },
-                        ),
-                        child: GridView.builder(
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount:
-                                AppPlatform.isMobile ? 2 : 6,
-                            crossAxisSpacing: 5,
-                            mainAxisSpacing: 5,
-                          ),
-                          itemCount: personResults.length,
-                          itemBuilder: (context, index) {
-                            final person = personResults[index];
-                            return TvFocusWrapper(
-                              borderRadius: 12.0,
-                              onTap: () => person.department == 'Acting'
-                                  ? onTapCast(context, person.id)
-                                  : onTapCrew(context, person.id),
-                              child: PersonSearchResult(
-                                person: person,
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-              ),
-            ],
-          ),
-          DiscoverMoviesPage(),
         ],
+      ),
+    );
+  }
+
+  Widget _buildMovieTab() {
+    final query = _searchController.text.trim();
+    if (query.isEmpty) {
+      return _buildEmptyState('Type to search for movies', Icons.movie_outlined);
+    }
+    if (movieResults.isEmpty) {
+      return _buildNoResultsState(query);
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final crossAxisCount = width > 1200
+            ? 5
+            : width > 800
+                ? 4
+                : width > 600
+                    ? 3
+                    : 2;
+
+        return ScrollConfiguration(
+          behavior: const ScrollBehavior().copyWith(
+            physics: const BouncingScrollPhysics(),
+            scrollbars: true,
+            dragDevices: {
+              PointerDeviceKind.touch,
+              PointerDeviceKind.mouse,
+              PointerDeviceKind.trackpad,
+            },
+          ),
+          child: GridView.builder(
+            padding: const EdgeInsets.all(12),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 1.77,
+            ),
+            itemCount: movieResults.length,
+            itemBuilder: (context, index) {
+              final movie = movieResults[index];
+              return TvFocusWrapper(
+                borderRadius: 16.0,
+                onTap: () => onTapMovie(movie.title, movie.id, context),
+                child: MovieSearchResult(
+                  movie: movie,
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTvTab() {
+    final query = _searchController.text.trim();
+    if (query.isEmpty) {
+      return _buildEmptyState('Type to search for TV shows', Icons.tv_outlined);
+    }
+    if (tvResults.isEmpty) {
+      return _buildNoResultsState(query);
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final crossAxisCount = width > 1200
+            ? 5
+            : width > 800
+                ? 4
+                : width > 600
+                    ? 3
+                    : 2;
+
+        return ScrollConfiguration(
+          behavior: const ScrollBehavior().copyWith(
+            physics: const BouncingScrollPhysics(),
+            scrollbars: true,
+            dragDevices: {
+              PointerDeviceKind.touch,
+              PointerDeviceKind.mouse,
+              PointerDeviceKind.trackpad,
+            },
+          ),
+          child: GridView.builder(
+            padding: const EdgeInsets.all(12),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 1.77,
+            ),
+            itemCount: tvResults.length,
+            itemBuilder: (context, index) {
+              final serie = tvResults[index];
+              return TvFocusWrapper(
+                borderRadius: 16.0,
+                onTap: () => onTapSerie(serie.name, serie.id, context),
+                child: SerieSearchResult(
+                  serie: serie,
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPeopleTab() {
+    final query = _searchController.text.trim();
+    if (query.isEmpty) {
+      return _buildEmptyState('Type to search for people', Icons.people_outline);
+    }
+    if (personResults.isEmpty) {
+      return _buildNoResultsState(query);
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final crossAxisCount = width > 1200
+            ? 6
+            : width > 800
+                ? 4
+                : width > 600
+                    ? 3
+                    : 2;
+
+        return ScrollConfiguration(
+          behavior: const ScrollBehavior().copyWith(
+            physics: const BouncingScrollPhysics(),
+            scrollbars: true,
+            dragDevices: {
+              PointerDeviceKind.touch,
+              PointerDeviceKind.mouse,
+              PointerDeviceKind.trackpad,
+            },
+          ),
+          child: GridView.builder(
+            padding: const EdgeInsets.all(12),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 0.7,
+            ),
+            itemCount: personResults.length,
+            itemBuilder: (context, index) {
+              final person = personResults[index];
+              return TvFocusWrapper(
+                borderRadius: 16.0,
+                onTap: () => person.department == 'Acting'
+                    ? onTapCast(context, person.id)
+                    : onTapCrew(context, person.id),
+                child: PersonSearchResult(
+                  person: person,
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDiscoverTab = _tabController.index == 3;
+
+    return Scaffold(
+      extendBody: true,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Unified search bar at the top, only shown if not on the Discover tab
+            if (!isDiscoverTab)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                child: Align(
+                  alignment: Alignment.center,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 600),
+                    child: TextField(
+                      focusNode: _searchFocusNode,
+                      autocorrect: false,
+                      style: const TextStyle(
+                        color: Colors.white,
+                      ),
+                      cursorColor: Theme.of(context).primaryColor,
+                      controller: _searchController,
+                      keyboardType: TextInputType.text,
+                      decoration: InputDecoration(
+                        hintText: _getSearchLabelText(),
+                        hintStyle: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.5),
+                        ),
+                        prefixIcon: Icon(
+                          Icons.search_rounded,
+                          color: Colors.white.withValues(alpha: 0.5),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey[900]!.withValues(alpha: 0.6),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Theme.of(context).primaryColor,
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.15),
+                            width: 1.5,
+                          ),
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        floatingLabelBehavior: FloatingLabelBehavior.never,
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 16,
+                          horizontal: 20,
+                        ),
+                        suffixIcon: IconButton(
+                          icon: Visibility(
+                            visible: _searchController.text.isNotEmpty,
+                            child: const Icon(
+                              Icons.clear,
+                              color: Colors.white,
+                            ),
+                          ),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() {
+                              movieResults.clear();
+                              tvResults.clear();
+                              personResults.clear();
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+            // Premium pill-shaped TabBar
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final double width = MediaQuery.of(context).size.width;
+                final bool isMobileWidth = width < 600;
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: TabBar(
+                    controller: _tabController,
+                    isScrollable: !isMobileWidth,
+                    tabAlignment: isMobileWidth ? null : TabAlignment.center,
+                    labelColor: Colors.black,
+                    unselectedLabelColor: Colors.white70,
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    indicator: BoxDecoration(
+                      borderRadius: BorderRadius.circular(25),
+                      color: Theme.of(context).primaryColor,
+                    ),
+                    tabs: [
+                      Tab(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: isMobileWidth ? 4.0 : 8.0),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (!isMobileWidth) ...const [
+                                Icon(Icons.movie_outlined, size: 18),
+                                SizedBox(width: 8),
+                              ],
+                              const Text('Movies'),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Tab(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: isMobileWidth ? 4.0 : 8.0),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (!isMobileWidth) ...const [
+                                Icon(Icons.tv_outlined, size: 18),
+                                SizedBox(width: 8),
+                              ],
+                              const Text('TV Shows'),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Tab(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: isMobileWidth ? 4.0 : 8.0),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (!isMobileWidth) ...const [
+                                Icon(Icons.people_outline, size: 18),
+                                SizedBox(width: 8),
+                              ],
+                              const Text('People'),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Tab(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: isMobileWidth ? 4.0 : 8.0),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (!isMobileWidth) ...const [
+                                Icon(Icons.explore_outlined, size: 18),
+                                SizedBox(width: 8),
+                              ],
+                              const Text('Discover'),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+
+            // Main result content area
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildMovieTab(),
+                  _buildTvTab(),
+                  _buildPeopleTab(),
+                  DiscoverMoviesPage(),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -471,12 +600,11 @@ extendBody: true,
   @override
   void dispose() {
     _debounce?.cancel();
+    _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
-    _movieSearchFocusNode.dispose();
-    _tvSearchFocusNode.dispose();
-    _peopleSearchFocusNode.dispose();
+    _searchFocusNode.dispose();
     super.dispose();
   }
 }

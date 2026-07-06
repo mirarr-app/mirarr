@@ -35,114 +35,145 @@ class MovieSearchResult extends StatelessWidget {
   Widget build(BuildContext context) {
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(3, 5, 3, 5),
-      child: Card(
-        elevation: 4,
-        child: Container(
-          height: 180,
-          width: 250,
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.all(Radius.circular(10)),
-            image: movie.backdropPath != null
-                ? DecorationImage(
-                    image: CachedNetworkImageProvider(
-                      '${getImageBaseUrl(region)}/t/p/original${movie.backdropPath}',
-                    ),
-                    fit: BoxFit.cover,
-                    opacity: 0.8)
-                : null,
-          ),
-          child: Stack(
-            children: [
-              Container(
-                margin: const EdgeInsets.only(top: 8, left: 10),
-                padding: const EdgeInsets.all(10),
-                decoration: const BoxDecoration(),
-                child: Text(
-                  '⭐ ${movie.score?.toStringAsFixed(1)}',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: Colors.white,
+    return Card(
+      elevation: 4,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      clipBehavior: Clip.antiAlias,
+      child: Container(
+        decoration: BoxDecoration(
+          image: movie.backdropPath != null && movie.backdropPath!.isNotEmpty
+              ? DecorationImage(
+                  image: CachedNetworkImageProvider(
+                    '${getImageBaseUrl(region)}/t/p/w780${movie.backdropPath}',
+                  ),
+                  fit: BoxFit.cover,
+                )
+              : null,
+          color: Colors.grey[900],
+        ),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.15),
+                      Colors.black.withValues(alpha: 0.4),
+                      Colors.black.withValues(alpha: 0.85),
+                    ],
+                    stops: const [0.0, 0.5, 1.0],
                   ),
                 ),
               ),
-              Positioned(
-                right: 10,
-                child: Container(
-                  margin: const EdgeInsets.only(top: 8),
-                  padding: const EdgeInsets.all(10),
-                  decoration: const BoxDecoration(),
-                  child: FutureBuilder(
-                    future: checkAvailability(movie.id, region),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Padding(
-                          padding: EdgeInsets.all(5.0),
-                          child: SizedBox(
-                              height: 10,
-                              width: 10,
-                              child: CircularProgressIndicator()),
-                        );
-                      } else if (snapshot.hasError) {
-                        return const Text('Error loading data');
-                      } else {
-                        return snapshot.data == true
-                            ? const Icon(
-                                Icons.download_rounded,
-                                color: Colors.yellow,
-                              )
-                            : const Icon(
-                                Icons.file_download_off_sharp,
-                                color: Colors.yellow,
-                              );
-                      }
-                    },
-                  ),
+            ),
+            Positioned(
+              top: 8,
+              left: 8,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.end,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(
-                      decoration: const BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(20)),
+                    const Icon(Icons.star, color: Colors.amber, size: 14),
+                    const SizedBox(width: 4),
+                    Text(
+                      movie.score != null ? movie.score!.toStringAsFixed(1) : '0.0',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
-                      child: Text(
-                        movie.title,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 5,
-                    ),
-                    Container(
-                      decoration: const BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(20)),
-                      ),
-                      child: Text(
-                        movie.releaseDate,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 10,
                     ),
                   ],
                 ),
               ),
-            ],
-          ),
+            ),
+            Positioned(
+              top: 8,
+              right: 8,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: FutureBuilder<bool>(
+                  future: checkAvailability(movie.id, region),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const SizedBox(
+                        height: 12,
+                        width: 12,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.yellow),
+                        ),
+                      );
+                    } else if (snapshot.hasError) {
+                      return const Icon(
+                        Icons.error_outline,
+                        color: Colors.red,
+                        size: 14,
+                      );
+                    } else {
+                      return snapshot.data == true
+                          ? const Icon(
+                              Icons.download_rounded,
+                              color: Colors.yellow,
+                              size: 16,
+                            )
+                          : const Icon(
+                              Icons.file_download_off_sharp,
+                              color: Colors.yellow,
+                              size: 16,
+                            );
+                    }
+                  },
+                ),
+              ),
+            ),
+            Positioned(
+              left: 12,
+              right: 12,
+              bottom: 12,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    movie.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      height: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  if (movie.releaseDate.isNotEmpty)
+                    Text(
+                      movie.releaseDate.contains('-')
+                          ? movie.releaseDate.split('-')[0]
+                          : movie.releaseDate,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white.withValues(alpha: 0.7),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

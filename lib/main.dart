@@ -9,7 +9,6 @@ import 'package:Mirarr/widgets/tv_focus_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:Mirarr/moviesPage/mainPage.dart';
 import 'package:provider/provider.dart';
 import 'package:app_links/app_links.dart';
 import 'dart:io';
@@ -26,7 +25,7 @@ void main() async {
   await Hive.openBox('sessionBox');
   if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
     await windowManager.ensureInitialized();
-    WindowManager.instance.setMinimumSize(const Size(1600, 900));
+    WindowManager.instance.setMinimumSize(const Size(360, 500));
   }
 
   final themeProvider = ThemeProvider(AppThemes.orangeTheme);
@@ -133,7 +132,9 @@ class _AppInitWidgetState extends State<AppInitWidget> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      UpdateChecker.checkForUpdate(context);
+      if (!kIsWeb) {
+        UpdateChecker.checkForUpdate(context);
+      }
     });
   }
 

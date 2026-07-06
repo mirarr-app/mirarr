@@ -559,7 +559,7 @@ packages:
       sha256: "57637e331af3863fa1f555907ff24c30d69c3ad3ff127d89320e70e8d5e585f5"
       url: "https://pub.dev"
     source: hosted
-    version: "2.5.0"
+    version: "3.0.0"
   provider:
     dependency: "direct main"
     description:

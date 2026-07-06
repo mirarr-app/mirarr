@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:Mirarr/functions/fetchers/fetch_movie_details.dart';
 import 'package:Mirarr/functions/fetchers/fetch_serie_details.dart';

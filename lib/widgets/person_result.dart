@@ -14,56 +14,77 @@ class PersonSearchResult extends StatelessWidget {
   Widget build(BuildContext context) {
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(3, 5, 3, 5),
-      child: Card(
-        elevation: 4,
-        child: Container(
-          height: 200,
-          width: 250,
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.all(Radius.circular(10)),
-            image: person.profilePath.isNotEmpty
-                ? DecorationImage(
-                    image: CachedNetworkImageProvider(
-                      '${getImageBaseUrl(region)}/t/p/original${person.profilePath}',
-                    ),
-                    fit: BoxFit.cover,
-                    opacity: 0.8)
-                : const DecorationImage(
-                    image: AssetImage('assets/images/person.png'),
-                    fit: BoxFit.cover,
-                    opacity: 0.8),
-          ),
-          child: Stack(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Container(
-                      decoration: const BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(20)),
-                      ),
-                      child: Text(
-                        person.name,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white, // Text color on top of the image
-                        ),
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 5,
-                    ),
-                  ],
+    return Card(
+      elevation: 4,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      clipBehavior: Clip.antiAlias,
+      child: Container(
+        decoration: BoxDecoration(
+          image: person.profilePath.isNotEmpty
+              ? DecorationImage(
+                  image: CachedNetworkImageProvider(
+                    '${getImageBaseUrl(region)}/t/p/w500${person.profilePath}',
+                  ),
+                  fit: BoxFit.cover,
+                )
+              : const DecorationImage(
+                  image: AssetImage('assets/images/person.png'),
+                  fit: BoxFit.cover,
+                ),
+          color: Colors.grey[900],
+        ),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.1),
+                      Colors.black.withValues(alpha: 0.3),
+                      Colors.black.withValues(alpha: 0.85),
+                    ],
+                    stops: const [0.0, 0.5, 1.0],
+                  ),
                 ),
               ),
-            ],
-          ),
+            ),
+            Positioned(
+              left: 12,
+              right: 12,
+              bottom: 12,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    person.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      height: 1.2,
+                    ),
+                  ),
+                  if (person.department != null && person.department!.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      person.department!,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white.withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

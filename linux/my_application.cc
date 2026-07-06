@@ -14,37 +14,69 @@ struct _MyApplication {
 
 G_DEFINE_TYPE(MyApplication, my_application, GTK_TYPE_APPLICATION)
 
+static gboolean check_omarchy_linux() {
+  gchar* stdout_buf = nullptr;
+  gchar* stderr_buf = nullptr;
+  gint exit_status = 0;
+  GError* error = nullptr;
+
+  gboolean success = g_spawn_command_line_sync(
+      "omarchy version",
+      &stdout_buf,
+      &stderr_buf,
+      &exit_status,
+      &error);
+
+  gboolean is_omarchy = FALSE;
+  if (success && exit_status == 0 && stdout_buf != nullptr) {
+    gchar* trimmed = g_strstrip(stdout_buf);
+    if (strlen(trimmed) > 0) {
+      is_omarchy = TRUE;
+    }
+  }
+
+  if (stdout_buf) g_free(stdout_buf);
+  if (stderr_buf) g_free(stderr_buf);
+  if (error) g_error_free(error);
+
+  return is_omarchy;
+}
+
 // Implements GApplication::activate.
 static void my_application_activate(GApplication* application) {
   MyApplication* self = MY_APPLICATION(application);
   GtkWindow* window =
       GTK_WINDOW(gtk_application_window_new(GTK_APPLICATION(application)));
 
-  // Use a header bar when running in GNOME as this is the common style used
-  // by applications and is the setup most users will be using (e.g. Ubuntu
-  // desktop).
-  // If running on X and not using GNOME then just use a traditional title bar
-  // in case the window manager does more exotic layout, e.g. tiling.
-  // If running on Wayland assume the header bar will work (may need changing
-  // if future cases occur).
-  gboolean use_header_bar = TRUE;
-#ifdef GDK_WINDOWING_X11
-  GdkScreen* screen = gtk_window_get_screen(window);
-  if (GDK_IS_X11_SCREEN(screen)) {
-    const gchar* wm_name = gdk_x11_screen_get_window_manager_name(screen);
-    if (g_strcmp0(wm_name, "GNOME Shell") != 0) {
-      use_header_bar = FALSE;
-    }
-  }
-#endif
-  if (use_header_bar) {
-    GtkHeaderBar* header_bar = GTK_HEADER_BAR(gtk_header_bar_new());
-    gtk_widget_show(GTK_WIDGET(header_bar));
-    gtk_header_bar_set_title(header_bar, "Mirarr");
-    gtk_header_bar_set_show_close_button(header_bar, TRUE);
-    gtk_window_set_titlebar(window, GTK_WIDGET(header_bar));
+  if (check_omarchy_linux()) {
+    gtk_window_set_decorated(window, FALSE);
   } else {
-    gtk_window_set_title(window, "Mirarr");
+    // Use a header bar when running in GNOME as this is the common style used
+    // by applications and is the setup most users will be using (e.g. Ubuntu
+    // desktop).
+    // If running on X and not using GNOME then just use a traditional title bar
+    // in case the window manager does more exotic layout, e.g. tiling.
+    // If running on Wayland assume the header bar will work (may need changing
+    // if future cases occur).
+    gboolean use_header_bar = TRUE;
+#ifdef GDK_WINDOWING_X11
+    GdkScreen* screen = gtk_window_get_screen(window);
+    if (GDK_IS_X11_SCREEN(screen)) {
+      const gchar* wm_name = gdk_x11_screen_get_window_manager_name(screen);
+      if (g_strcmp0(wm_name, "GNOME Shell") != 0) {
+        use_header_bar = FALSE;
+      }
+    }
+#endif
+    if (use_header_bar) {
+      GtkHeaderBar* header_bar = GTK_HEADER_BAR(gtk_header_bar_new());
+      gtk_widget_show(GTK_WIDGET(header_bar));
+      gtk_header_bar_set_title(header_bar, "Mirarr");
+      gtk_header_bar_set_show_close_button(header_bar, TRUE);
+      gtk_window_set_titlebar(window, GTK_WIDGET(header_bar));
+    } else {
+      gtk_window_set_title(window, "Mirarr");
+    }
   }
 
   gtk_window_set_default_size(window, 1280, 720);

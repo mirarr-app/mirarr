@@ -29,10 +29,10 @@ class _MovieDetailPageMobile extends StatelessWidget {
     final productionCompanies = state.productionCompanies;
     final spokenLanguages = state.spokenLanguages;
     final imdbId = state.imdbId;
-    final _availabilityFuture = state._availabilityFuture;
-    final _creditsFuture = state._creditsFuture;
-    final _directorMoviesFuture = state._directorMoviesFuture;
-    final _castImagesFuture = state._castImagesFuture;
+    final availabilityFuture = state._availabilityFuture;
+    final creditsFuture = state._creditsFuture;
+    final directorMoviesFuture = state._directorMoviesFuture;
+    final castImagesFuture = state._castImagesFuture;
     final screenshotController = state.screenshotController;
     final language = state.language;
 
@@ -58,7 +58,7 @@ class _MovieDetailPageMobile extends StatelessWidget {
                       children: [
                         TvFocusWrapper(
                           onTap: () {
-                            _castImagesFuture.then((imageUrls) {
+                            castImagesFuture.then((imageUrls) {
                               state._openImageGallery(imageUrls);
                             });
                           },
@@ -496,7 +496,7 @@ class _MovieDetailPageMobile extends StatelessWidget {
                             child: Container(
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: isWatched ? Colors.green.withOpacity(0.7) : Colors.black38,
+                                color: isWatched ? Colors.green.withValues(alpha: 0.7) : Colors.black38,
                                 borderRadius: const BorderRadius.all(Radius.circular(30)),
                               ),
                               child: Row(
@@ -745,7 +745,7 @@ class _MovieDetailPageMobile extends StatelessWidget {
                       children: [
                         Center(
                           child: FutureBuilder(
-                              future: _availabilityFuture,
+                              future: availabilityFuture,
                               builder: (context, snapshot) {
                                 if (snapshot.connectionState ==
                                     ConnectionState.waiting) {
@@ -824,7 +824,7 @@ class _MovieDetailPageMobile extends StatelessWidget {
                     ),
                   ),
                   FutureBuilder(
-                    future: _creditsFuture,
+                    future: creditsFuture,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());
@@ -841,39 +841,44 @@ class _MovieDetailPageMobile extends StatelessWidget {
                             data['crew'] ?? [];
 
                         return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              children: [
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(25, 15, 0, 0),
-                                  child: Text(
-                                    'Cast',
-                                    textAlign: TextAlign.justify,
-                                    style:
-                                        getMovieTitleTextStyle(widget.movieId),
+                            if (castList.isNotEmpty) ...[
+                              Row(
+                                children: [
+                                  Padding(
+                                    padding:
+                                        const EdgeInsets.fromLTRB(25, 15, 0, 0),
+                                    child: Text(
+                                      'Cast',
+                                      textAlign: TextAlign.justify,
+                                      style:
+                                          getMovieTitleTextStyle(widget.movieId),
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            const CustomDivider(),
-                            buildCastRow(castList, context),
-                            Row(
-                              children: [
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(25, 15, 0, 0),
-                                  child: Text(
-                                    'Crew',
-                                    textAlign: TextAlign.justify,
-                                    style:
-                                        getMovieTitleTextStyle(widget.movieId),
+                                ],
+                              ),
+                              const CustomDivider(),
+                              buildCastRow(castList, context),
+                            ],
+                            if (crewList.isNotEmpty) ...[
+                              Row(
+                                children: [
+                                  Padding(
+                                    padding:
+                                        const EdgeInsets.fromLTRB(25, 15, 0, 0),
+                                    child: Text(
+                                      'Crew',
+                                      textAlign: TextAlign.justify,
+                                      style:
+                                          getMovieTitleTextStyle(widget.movieId),
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            const CustomDivider(),
-                            buildCrewRow(crewList, context)
+                                ],
+                              ),
+                              const CustomDivider(),
+                              buildCrewRow(crewList, context),
+                            ],
                           ],
                         );
                       }
@@ -881,7 +886,7 @@ class _MovieDetailPageMobile extends StatelessWidget {
                   ),
                   const CustomDivider(),
                   FutureBuilder(
-                    future: _creditsFuture,
+                    future: creditsFuture,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());
@@ -920,10 +925,10 @@ class _MovieDetailPageMobile extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                              _directorMoviesFuture == null
+                              directorMoviesFuture == null
                                   ? const Center(child: CircularProgressIndicator())
                                   : FutureBuilder(
-                                      future: _directorMoviesFuture,
+                                      future: directorMoviesFuture,
                                 builder: (context, snapshot) {
                                   if (snapshot.connectionState ==
                                       ConnectionState.waiting) {

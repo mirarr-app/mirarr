@@ -786,7 +786,7 @@ extendBody: true,
                       focusColor: Theme.of(context).primaryColor,
                       hoverColor: Theme.of(context).primaryColor,
                     ),
-                    value: regionProvider.currentRegion,
+                    initialValue: regionProvider.currentRegion,
                     items: [
                       DropdownMenuItem<String>(
                         value: 'iran',
@@ -920,6 +920,25 @@ extendBody: true,
                         .setTheme(AppThemes.nothingFontTheme);
                   },
                 ),
+                if (Provider.of<ThemeProvider>(context).isOmarchyLinux)
+                  ListTile(
+                    title: const Text('Omarchy Theme',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        )),
+                    trailing: const Text(
+                      'Omarchy',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontFamily: 'RobotoMono',
+                      ),
+                    ),
+                    onTap: () {
+                      Provider.of<ThemeProvider>(context, listen: false)
+                          .setOmarchyTheme();
+                    },
+                  ),
               ],
             ),
           ],
@@ -1749,8 +1768,8 @@ class _ImportProgressDialogState extends State<ImportProgressDialog> {
     final total = widget.csvRows.length - 1;
     final progress = total > 0 ? _processedCount / total : 0.0;
 
-    return WillPopScope(
-      onWillPop: () async => _isFinished || _isCancelled,
+    return PopScope(
+      canPop: _isFinished || _isCancelled,
       child: AlertDialog(
         backgroundColor: Colors.grey[900],
         title: Text(

@@ -18,8 +18,8 @@ TextStyle getSeriesTitleTextStyle(int tmdbId) => switch (tmdbId) {
 
 Color getSeriesBackgroundColor(BuildContext context, int tmdbId) =>
     switch (tmdbId) {
-      _ when isBreakingBad(tmdbId) => const Color(0xFF583724).withOpacity(0.8),
-      _ => Colors.grey.withOpacity(0.2),
+      _ when isBreakingBad(tmdbId) => const Color(0xFF583724).withValues(alpha: 0.8),
+      _ => Colors.grey.withValues(alpha: 0.2),
     };
 
 TextStyle getSeriesAboutTextStyle(BuildContext context, int tmdbId) =>
