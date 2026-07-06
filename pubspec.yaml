@@ -34,6 +34,7 @@ dependencies:
   path: ^1.8.3
   supabase_flutter: ^2.9.0
   file_picker: ^11.0.2
+  device_info_plus: ^10.1.2
 
 dev_dependencies:
   flutter_test:

@@ -31,26 +31,13 @@ class _SerieDetailPageDesktop extends StatelessWidget {
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
 
-    return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 40,
-        backgroundColor: Theme.of(context).primaryColor,
-        iconTheme: const IconThemeData(color: Colors.black),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
-            child: Text(
-              widget.serieName,
-              style: const TextStyle(color: Colors.black),
-            ),
-          ),
-        ],
-      ),
-      body: serieDetails == null
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
-          : ScrollConfiguration(
+    final bool isTv = TvFocusModeManager.isTvDevice;
+
+    final Widget bodyContent = serieDetails == null
+        ? const Center(
+            child: CircularProgressIndicator(),
+          )
+        : ScrollConfiguration(
               behavior: const ScrollBehavior().copyWith(
                 physics: const BouncingScrollPhysics(),
                 scrollbars: true,
@@ -265,7 +252,7 @@ class _SerieDetailPageDesktop extends StatelessWidget {
                                                               widget.serieId;
                                                           final openbox =
                                                               Hive.box('sessionBox');
- 
+
                                                           final String
                                                               sessionData =
                                                               openbox.get(
@@ -291,7 +278,7 @@ class _SerieDetailPageDesktop extends StatelessWidget {
                                                       onTap: () async {
                                                         final openbox =
                                                             Hive.box('sessionBox');
- 
+
                                                         final String
                                                             sessionData =
                                                             openbox.get(
@@ -388,7 +375,7 @@ class _SerieDetailPageDesktop extends StatelessWidget {
                                                                   await Hive
                                                                       .openBox(
                                                                           'sessionBox');
- 
+
                                                               final String
                                                                   sessionData =
                                                                   openbox.get(
@@ -473,7 +460,7 @@ class _SerieDetailPageDesktop extends StatelessWidget {
                                           ),
                                         ),
                                       ),
- 
+
                                       // Mark as Watched toggle button
                                       Padding(
                                         padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
@@ -487,7 +474,7 @@ class _SerieDetailPageDesktop extends StatelessWidget {
                                           },
                                         ),
                                       ),
- 
+
                                       Center(
                                         child: SingleChildScrollView(
                                           scrollDirection: Axis.horizontal,
@@ -714,7 +701,7 @@ class _SerieDetailPageDesktop extends StatelessWidget {
                               data['cast'] ?? [];
                           final List<Map<String, dynamic>> crewList =
                               data['crew'] ?? [];
- 
+
                           return Column(
                             children: [
                               Row(
@@ -768,8 +755,33 @@ class _SerieDetailPageDesktop extends StatelessWidget {
                   ],
                 ),
               ),
+            );
+
+    return Scaffold(
+      extendBody: true,
+      appBar: AppBar(
+        toolbarHeight: 40,
+        backgroundColor: Theme.of(context).primaryColor,
+        iconTheme: const IconThemeData(color: Colors.black),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
+            child: Text(
+              widget.serieName,
+              style: const TextStyle(color: Colors.black),
             ),
-      bottomNavigationBar: BottomBar(),
+          ),
+        ],
+      ),
+      body: isTv
+          ? Column(
+              children: [
+                const BottomBar(),
+                Expanded(child: bodyContent),
+              ],
+            )
+          : bodyContent,
+      bottomNavigationBar: isTv ? null : BottomBar(),
     );
   }
 }

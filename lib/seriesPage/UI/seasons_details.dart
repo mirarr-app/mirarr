@@ -10,6 +10,7 @@ import 'package:Mirarr/seriesPage/function/fetch_episode_cast_crew.dart';
 import 'package:Mirarr/seriesPage/function/torrent_links_series.dart';
 import 'package:Mirarr/seriesPage/function/watch_links_series.dart';
 import 'package:Mirarr/widgets/custom_divider.dart';
+import 'package:Mirarr/widgets/tv_focus_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
@@ -886,18 +887,22 @@ class _SeasonWatchToggleState extends State<SeasonWatchToggle> {
       );
     }
 
-    return GestureDetector(
+    return TvFocusWrapper(
+      borderRadius: 10.0,
       onTap: _toggleWatchStatus,
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
-        transitionBuilder: (Widget child, Animation<double> animation) {
-          return ScaleTransition(scale: animation, child: child);
-        },
-        child: Icon(
-          _isWatched! ? Icons.check_circle : Icons.visibility_off,
-          key: ValueKey(_isWatched),
-          color: _isWatched! ? Colors.green : Colors.grey,
-          size: 20,
+      child: Padding(
+        padding: const EdgeInsets.all(4.0),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          transitionBuilder: (Widget child, Animation<double> animation) {
+            return ScaleTransition(scale: animation, child: child);
+          },
+          child: Icon(
+            _isWatched! ? Icons.check_circle : Icons.visibility_off,
+            key: ValueKey(_isWatched),
+            color: _isWatched! ? Colors.green : Colors.grey,
+            size: 20,
+          ),
         ),
       ),
     );
@@ -993,18 +998,22 @@ class _EpisodeWatchToggleState extends State<EpisodeWatchToggle> {
       );
     }
 
-    return GestureDetector(
+    return TvFocusWrapper(
+      borderRadius: 10.0,
       onTap: _toggleWatchStatus,
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
-        transitionBuilder: (Widget child, Animation<double> animation) {
-          return ScaleTransition(scale: animation, child: child);
-        },
-        child: Icon(
-          _isWatched! ? Icons.check_circle : Icons.visibility_off,
-          key: ValueKey(_isWatched),
-          color: _isWatched! ? Colors.green : Colors.grey,
-          size: 20,
+      child: Padding(
+        padding: const EdgeInsets.all(4.0),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          transitionBuilder: (Widget child, Animation<double> animation) {
+            return ScaleTransition(scale: animation, child: child);
+          },
+          child: Icon(
+            _isWatched! ? Icons.check_circle : Icons.visibility_off,
+            key: ValueKey(_isWatched),
+            color: _isWatched! ? Colors.green : Colors.grey,
+            size: 20,
+          ),
         ),
       ),
     );
@@ -1121,7 +1130,8 @@ class _EpisodeWatchToggleButtonState extends State<EpisodeWatchToggleButton> {
       );
     }
 
-    return GestureDetector(
+    return TvFocusWrapper(
+      borderRadius: 20.0,
       onTap: _toggleWatchStatus,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),

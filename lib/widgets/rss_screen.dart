@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:Mirarr/widgets/bottom_bar.dart';
+import 'package:Mirarr/widgets/tv_focus_wrapper.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:webfeed_plus/domain/rss_category.dart';
 import 'package:webfeed_plus/domain/rss_feed.dart';
@@ -97,7 +98,43 @@ class _RssScreenState extends State<RssScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final bool isTv = TvFocusModeManager.isTvDevice;
+
+    final Widget feedBody = ScrollConfiguration(
+      behavior: const ScrollBehavior().copyWith(
+        physics: const BouncingScrollPhysics(),
+        scrollbars: true,
+        dragDevices: {
+          PointerDeviceKind.touch,
+          PointerDeviceKind.mouse,
+          PointerDeviceKind.trackpad,
+        },
+      ),
+      child: FutureBuilder(
+        future: _feedFuture,
+        builder: (context, AsyncSnapshot<RssFeed> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else {
+            final feed = snapshot.requireData;
+            return Builder(
+              builder: (context) => TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildFeedList(feed, "Movies"),
+                  _buildFeedList(feed, "TV"),
+                ],
+              ),
+            );
+          }
+        },
+      ),
+    );
+
     return Scaffold(
+extendBody: true,
       appBar: AppBar(
         backgroundColor: Theme.of(context).primaryColor,
         title: const Text(
@@ -116,39 +153,15 @@ class _RssScreenState extends State<RssScreen> with TickerProviderStateMixin {
           ],
         ),
       ),
-      body: ScrollConfiguration(
-        behavior: const ScrollBehavior().copyWith(
-          physics: const BouncingScrollPhysics(),
-          scrollbars: true,
-          dragDevices: {
-            PointerDeviceKind.touch,
-            PointerDeviceKind.mouse,
-            PointerDeviceKind.trackpad,
-          },
-        ),
-        child: FutureBuilder(
-          future: _feedFuture,
-          builder: (context, AsyncSnapshot<RssFeed> snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            } else {
-              final feed = snapshot.requireData;
-              return Builder(
-                builder: (context) => TabBarView(
-                  controller: _tabController,
-                  children: [
-                    _buildFeedList(feed, "Movies"),
-                    _buildFeedList(feed, "TV"),
-                  ],
-                ),
-              );
-            }
-          },
-        ),
-      ),
-      bottomNavigationBar: BottomBar(),
+      body: isTv
+          ? Column(
+              children: [
+                const BottomBar(),
+                Expanded(child: feedBody),
+              ],
+            )
+          : feedBody,
+      bottomNavigationBar: isTv ? null : const BottomBar(),
     );
   }
 }

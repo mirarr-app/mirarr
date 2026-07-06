@@ -14,6 +14,7 @@ class ImageGalleryPage extends StatelessWidget {
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
     return Scaffold(
+extendBody: true,
       appBar: AppBar(
         backgroundColor: Theme.of(context).primaryColor,
         title: const Text('Image Gallery'),

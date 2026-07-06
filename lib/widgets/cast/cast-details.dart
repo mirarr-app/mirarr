@@ -12,6 +12,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:Mirarr/widgets/custom_divider.dart';
 import 'package:Mirarr/widgets/image_gallery_page.dart';
+import 'package:Mirarr/widgets/tv_focus_wrapper.dart';
 import 'package:provider/provider.dart';
 
 class CastDetailPage extends StatefulWidget {
@@ -128,6 +129,7 @@ class _CastDetailPageState extends State<CastDetailPage> {
           }
         }
         return Scaffold(
+          extendBody: true,
           appBar: AppBar(
                   toolbarHeight: 40,
                   backgroundColor: Theme.of(context).primaryColor,
@@ -481,7 +483,8 @@ class _CastDetailPageState extends State<CastDetailPage> {
   Widget _buildMovieItem(dynamic movie) {
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
-    return GestureDetector(
+    return TvFocusWrapper(
+      borderRadius: 20.0,
       onTap: () => onTapMovie(movie['title'], movie['id'], context),
       child: Padding(
         padding: const EdgeInsets.all(6),

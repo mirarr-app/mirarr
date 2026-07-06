@@ -44,39 +44,26 @@ class _MovieDetailPageDesktop extends StatelessWidget {
         ? releaseDate.substring(0, 4)
         : 'NA';
 
-    return Scaffold(
-      appBar: AppBar(
-              toolbarHeight: 40,
-              backgroundColor: getMovieColor(context, widget.movieId),
-              iconTheme: const IconThemeData(color: Colors.black),
-              actions: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
-                  child: Text(
-                    widget.movieTitle,
-                    style: const TextStyle(color: Colors.black),
-                  ),
-                ),
-              ],
+    final bool isTv = TvFocusModeManager.isTvDevice;
+
+    final Widget bodyContent = moviedetails == null
+        ? const Center(
+            child: CircularProgressIndicator(),
+          )
+        : ScrollConfiguration(
+            behavior: const ScrollBehavior().copyWith(
+              physics: const BouncingScrollPhysics(),
+              scrollbars: true,
+              dragDevices: {
+                PointerDeviceKind.touch,
+                PointerDeviceKind.mouse,
+                PointerDeviceKind.trackpad,
+              },
             ),
-      body: moviedetails == null
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
-          : ScrollConfiguration(
-              behavior: const ScrollBehavior().copyWith(
-                physics: const BouncingScrollPhysics(),
-                scrollbars: true,
-                dragDevices: {
-                  PointerDeviceKind.touch,
-                  PointerDeviceKind.mouse,
-                  PointerDeviceKind.trackpad,
-                },
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                     Container(
                       width: double.infinity,
                       decoration: BoxDecoration(
@@ -293,7 +280,7 @@ class _MovieDetailPageDesktop extends StatelessWidget {
                                                               widget.movieId;
                                                           final openbox =
                                                               Hive.box('sessionBox');
- 
+
                                                           final String
                                                               sessionData =
                                                               openbox.get(
@@ -319,7 +306,7 @@ class _MovieDetailPageDesktop extends StatelessWidget {
                                                       onTap: () async {
                                                         final openbox =
                                                             Hive.box('sessionBox');
- 
+
                                                         final String
                                                             sessionData =
                                                             openbox.get(
@@ -406,7 +393,7 @@ class _MovieDetailPageDesktop extends StatelessWidget {
                                                               widget.movieId;
                                                           final openbox =
                                                               Hive.box('sessionBox');
- 
+
                                                           final String
                                                               sessionData =
                                                               openbox.get(
@@ -490,7 +477,7 @@ class _MovieDetailPageDesktop extends StatelessWidget {
                                           ),
                                         ),
                                       ),
- 
+
                                       // Mark as Watched button
                                       GestureDetector(
                                         onTap: isWatched ? state._removeFromWatched : state._markAsWatched,
@@ -508,7 +495,7 @@ class _MovieDetailPageDesktop extends StatelessWidget {
                                                 isWatched ? Icons.check_circle : Icons.visibility,
                                                 color: Colors.white,
                                                 size: 16,
-                                                
+
                                               ),
                                               const SizedBox(width: 4),
                                               Text(
@@ -523,7 +510,7 @@ class _MovieDetailPageDesktop extends StatelessWidget {
                                           ),
                                         ),
                                       ),
- 
+
                                       Center(
                                         child: SingleChildScrollView(
                                           scrollDirection: Axis.horizontal,
@@ -609,7 +596,7 @@ class _MovieDetailPageDesktop extends StatelessWidget {
                                                                               .movieId)),
                                                                 ),
                                                               ),
-                                                             
+
                                                             ],
                                                           ))
                                                       : const SizedBox();
@@ -823,7 +810,7 @@ class _MovieDetailPageDesktop extends StatelessWidget {
                               data['cast'] ?? [];
                           final List<Map<String, dynamic>> crewList =
                               data['crew'] ?? [];
- 
+
                           return Column(
                             children: [
                               Row(
@@ -878,19 +865,19 @@ class _MovieDetailPageDesktop extends StatelessWidget {
                           final Map<String, List<Map<String, dynamic>>> data =
                               snapshot.data
                                   as Map<String, List<Map<String, dynamic>>>;
- 
+
                           final List<Map<String, dynamic>> crewList =
                               data['crew'] ?? [];
- 
+
                           Map<String, dynamic>? director;
- 
+
                           for (var crewMember in crewList) {
                             if (crewMember['job'] == 'Director') {
                               director = crewMember;
                               break;
                             }
                           }
- 
+
                           if (director != null) {
                             return Column(
                               children: [
@@ -919,7 +906,7 @@ class _MovieDetailPageDesktop extends StatelessWidget {
                                     } else {
                                       List<dynamic> movies =
                                           snapshot.data as List<dynamic>;
- 
+
                                       return SingleChildScrollView(
                                         scrollDirection: Axis.horizontal,
                                         child: Row(
@@ -1161,8 +1148,33 @@ class _MovieDetailPageDesktop extends StatelessWidget {
                   ],
                 ),
               ),
+            );
+
+    return Scaffold(
+      extendBody: true,
+      appBar: AppBar(
+        toolbarHeight: 40,
+        backgroundColor: getMovieColor(context, widget.movieId),
+        iconTheme: const IconThemeData(color: Colors.black),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
+            child: Text(
+              widget.movieTitle,
+              style: const TextStyle(color: Colors.black),
             ),
-      bottomNavigationBar: BottomBar(),
+          ),
+        ],
+      ),
+      body: isTv
+          ? Column(
+              children: [
+                const BottomBar(),
+                Expanded(child: bodyContent),
+              ],
+            )
+          : bodyContent,
+      bottomNavigationBar: isTv ? null : const BottomBar(),
     );
   }
 }

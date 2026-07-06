@@ -101,9 +101,9 @@ class _ProfilePageState extends State<ProfilePage> {
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
     final baseUrl = getBaseUrl(region);
-    
+
     final currentFetchId = ++_movieWatchListFetchId;
-    
+
     final response = await http.get(
       Uri.parse(
         '${baseUrl}account/$accountId/watchlist/movies?api_key=$apiKey&session_id=$sessionData&page=1',
@@ -143,14 +143,14 @@ class _ProfilePageState extends State<ProfilePage> {
   void _fetchRemainingMovieWatchList(int fetchId, int totalPages, String baseUrl, String accountId, String sessionData) async {
     for (int page = 2; page <= totalPages; page++) {
       if (fetchId != _movieWatchListFetchId || !mounted) return;
-      
+
       try {
         final response = await http.get(
           Uri.parse(
             '${baseUrl}account/$accountId/watchlist/movies?api_key=$apiKey&session_id=$sessionData&page=$page',
           ),
         );
-        
+
         if (response.statusCode == 200 && fetchId == _movieWatchListFetchId && mounted) {
           final List<dynamic> results = json.decode(response.body)['results'] ?? [];
           final List<Movie> pageMovies = [];
@@ -181,9 +181,9 @@ class _ProfilePageState extends State<ProfilePage> {
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
     final baseUrl = getBaseUrl(region);
-    
+
     final currentFetchId = ++_movieFavoritesFetchId;
-    
+
     final response = await http.get(
       Uri.parse(
         '${baseUrl}account/$accountId/favorite/movies?api_key=$apiKey&session_id=$sessionData&page=1',
@@ -259,9 +259,9 @@ class _ProfilePageState extends State<ProfilePage> {
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
     final baseUrl = getBaseUrl(region);
-    
+
     final currentFetchId = ++_movieRatedFetchId;
-    
+
     final response = await http.get(
       Uri.parse(
         '${baseUrl}account/$accountId/rated/movies?api_key=$apiKey&session_id=$sessionData&page=1',
@@ -395,9 +395,9 @@ class _ProfilePageState extends State<ProfilePage> {
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
     final baseUrl = getBaseUrl(region);
-    
+
     final currentFetchId = ++_tvWatchListFetchId;
-    
+
     final response = await http.get(
       Uri.parse(
         '${baseUrl}account/$accountId/watchlist/tv?api_key=$apiKey&session_id=$sessionData&page=1',
@@ -410,7 +410,7 @@ class _ProfilePageState extends State<ProfilePage> {
       final List<Serie> series = [];
       final List<dynamic> results = decoded['results'] ?? [];
       recentEpisodes.clear();
-      
+
       for (var result in results) {
         final serie = Serie(
             name: result['name'],
@@ -426,9 +426,9 @@ class _ProfilePageState extends State<ProfilePage> {
       });
 
       final today = DateTime.now();
-      
+
       // Create a list of futures for all series detail requests
-      final List<Future<Map<String, dynamic>>> detailFutures = series.map((serie) => 
+      final List<Future<Map<String, dynamic>>> detailFutures = series.map((serie) =>
         fetchSerieDetails(serie.id, region)
       ).toList();
 
@@ -442,14 +442,14 @@ class _ProfilePageState extends State<ProfilePage> {
       for (var i = 0; i < series.length; i++) {
         final serie = series[i];
         final serieDetails = allSerieDetails[i];
-        
+
         final serieLatestAir = serieDetails['last_air_date'];
         if (serieLatestAir == null) continue;
-        
+
         final serieLastEpisodeSeasonNumber = serieDetails['last_episode_to_air']?['season_number'];
         final serieLastEpisodeEpisodeNumber = serieDetails['last_episode_to_air']?['episode_number'];
         final serieLatestAirDate = DateTime.parse(serieLatestAir);
-        
+
         //check if the serie is aired in the last 14 days
         final difference = today.difference(serieLatestAirDate).inDays;
         if (difference <= 14) {
@@ -466,7 +466,7 @@ class _ProfilePageState extends State<ProfilePage> {
           pageRecentEpisodes.add(updatedSerie);
         }
       }
-      
+
       // Sort recentEpisodes by lastAirDate in descending order (newest first)
       pageRecentEpisodes.sort((a, b) => DateTime.parse(b.lastAirDate!).compareTo(DateTime.parse(a.lastAirDate!)));
       setState(() {
@@ -486,14 +486,14 @@ class _ProfilePageState extends State<ProfilePage> {
     final today = DateTime.now();
     for (int page = 2; page <= totalPages; page++) {
       if (fetchId != _tvWatchListFetchId || !mounted) return;
-      
+
       try {
         final response = await http.get(
           Uri.parse(
             '${baseUrl}account/$accountId/watchlist/tv?api_key=$apiKey&session_id=$sessionData&page=$page',
           ),
         );
-        
+
         if (response.statusCode == 200 && fetchId == _tvWatchListFetchId && mounted) {
           final List<dynamic> results = json.decode(response.body)['results'] ?? [];
           final List<Serie> pageSeries = [];
@@ -506,32 +506,32 @@ class _ProfilePageState extends State<ProfilePage> {
                 score: result['vote_average'] ?? '');
             pageSeries.add(serie);
           }
-          
+
           setState(() {
             tvWatchList = [...tvWatchList, ...pageSeries];
           });
-          
+
           // Fetch details for this page's series
-          final List<Future<Map<String, dynamic>>> detailFutures = pageSeries.map((serie) => 
+          final List<Future<Map<String, dynamic>>> detailFutures = pageSeries.map((serie) =>
             fetchSerieDetails(serie.id, region)
           ).toList();
 
           final List<Map<String, dynamic>> allSerieDetails = await Future.wait(detailFutures);
-          
+
           if (fetchId != _tvWatchListFetchId || !mounted) return;
-          
+
           final List<Serie> newRecentEpisodes = [];
           for (var i = 0; i < pageSeries.length; i++) {
             final serie = pageSeries[i];
             final serieDetails = allSerieDetails[i];
-            
+
             final serieLatestAir = serieDetails['last_air_date'];
             if (serieLatestAir == null) continue;
-            
+
             final serieLastEpisodeSeasonNumber = serieDetails['last_episode_to_air']?['season_number'];
             final serieLastEpisodeEpisodeNumber = serieDetails['last_episode_to_air']?['episode_number'];
             final serieLatestAirDate = DateTime.parse(serieLatestAir);
-            
+
             final difference = today.difference(serieLatestAirDate).inDays;
             if (difference <= 14) {
               final updatedSerie = Serie(
@@ -547,7 +547,7 @@ class _ProfilePageState extends State<ProfilePage> {
               newRecentEpisodes.add(updatedSerie);
             }
           }
-          
+
           if (newRecentEpisodes.isNotEmpty) {
             final List<Serie> updatedRecentEpisodes = [...recentEpisodes, ...newRecentEpisodes];
             updatedRecentEpisodes.sort((a, b) => DateTime.parse(b.lastAirDate!).compareTo(DateTime.parse(a.lastAirDate!)));
@@ -569,9 +569,9 @@ class _ProfilePageState extends State<ProfilePage> {
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
     final baseUrl = getBaseUrl(region);
-    
+
     final currentFetchId = ++_tvFavoritesFetchId;
-    
+
     final response = await http.get(
       Uri.parse(
         '${baseUrl}account/$accountId/favorite/tv?api_key=$apiKey&session_id=$sessionData&page=1',
@@ -645,9 +645,9 @@ class _ProfilePageState extends State<ProfilePage> {
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
     final baseUrl = getBaseUrl(region);
-    
+
     final currentFetchId = ++_tvRatedFetchId;
-    
+
     final response = await http.get(
       Uri.parse(
         '${baseUrl}account/$accountId/rated/tv?api_key=$apiKey&session_id=$sessionData&page=1',
@@ -727,6 +727,7 @@ class _ProfilePageState extends State<ProfilePage> {
     }
 
     return Scaffold(
+extendBody: true,
         appBar: AppBar(
           title: const Text(
             'Profile',
@@ -927,7 +928,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               scrollDirection: Axis.horizontal,
                               itemCount: recentEpisodes.length,
                               itemBuilder: (context, index) {
-  
+
                                 final serie = recentEpisodes[index];
                                 return GestureDetector(
                                   onTap: () => _navigateToSerie(serie.name, serie.id),

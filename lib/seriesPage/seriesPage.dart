@@ -8,6 +8,7 @@ import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_gridview_serie.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_serie.dart';
 import 'package:flutter/material.dart';
+import 'package:Mirarr/widgets/tv_focus_wrapper.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart';
 import 'package:Mirarr/seriesPage/models/serie.dart';
@@ -157,6 +158,7 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+extendBody: true,
         backgroundColor: Colors.black,
         appBar: AppBar(
           automaticallyImplyLeading: false,
@@ -209,7 +211,8 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
                           itemCount: trendingSeries.length,
                           itemBuilder: (context, index) {
                             final serie = trendingSeries[index];
-                            return GestureDetector(
+                            return TvFocusWrapper(
+                              autoFocus: index == 0,
                               onTap: () => onTapSerie(serie.name, serie.id, context),
                               child: CustomSeriesWidget(
                                 serie: serie,
@@ -253,7 +256,7 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
                           itemCount: popularSeries.length,
                           itemBuilder: (context, index) {
                             final serie = popularSeries[index];
-                            return GestureDetector(
+                            return TvFocusWrapper(
                               onTap: () => onTapSerie(serie.name, serie.id, context),
                               child: CustomSeriesWidget(
                                 serie: serie,
@@ -269,26 +272,32 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
                         children: [
                           Padding(
                             padding: const EdgeInsets.fromLTRB(15, 15, 0, 0),
-                            child: GestureDetector(
+                            child: TvFocusWrapper(
+                              borderRadius: 8.0,
                               onTap: () => onTapGridSerie(
                                   seriesByGenre[genre.id]!, context),
-                              child: Row(
-                                children: [
-                                  Text(
-                                    genre.name,
-                                    style: const TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8.0, vertical: 4.0),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      genre.name,
+                                      style: const TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 5),
-                                  Icon(
-                                    Icons.arrow_forward_ios,
-                                    color: Theme.of(context).primaryColor,
-                                    size: 16,
-                                  ),
-                                ],
+                                    const SizedBox(width: 5),
+                                    Icon(
+                                      Icons.arrow_forward_ios,
+                                      color: Theme.of(context).primaryColor,
+                                      size: 16,
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
@@ -309,7 +318,7 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
                                 itemCount: seriesByGenre[genre.id]?.length ?? 0,
                                 itemBuilder: (context, index) {
                                   final serie = seriesByGenre[genre.id]![index];
-                                   return GestureDetector(
+                                   return TvFocusWrapper(
                                      onTap: () => onTapSerie(serie.name, serie.id, context),
                                      child: CustomSeriesWidget(
                                        serie: serie,

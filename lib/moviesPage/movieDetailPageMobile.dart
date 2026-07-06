@@ -44,68 +44,56 @@ class _MovieDetailPageMobile extends StatelessWidget {
         ? releaseDate.substring(0, 4)
         : 'NA';
 
-    return Scaffold(
-      //only show appbar on ios and web
-      appBar: AppPlatform.isIOS || AppPlatform.isWeb ?
-      AppBar(
-        automaticallyImplyLeading: true,
-        toolbarHeight: 40,
-              backgroundColor: getMovieColor(context, widget.movieId),
-              iconTheme: const IconThemeData(color: Colors.black),
-              actions: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
-                  child: Text(
-                    widget.movieTitle,
-                    style: const TextStyle(color: Colors.black),
-                  ),
-                ),
-              ],
-      )
-      : null,
-      body: moviedetails == null
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
-          : SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      _castImagesFuture.then((imageUrls) {
-                        state._openImageGallery(imageUrls);
-                      });
-                    },
-                    child: Stack(
+    final bool isTv = TvFocusModeManager.isTvDevice;
+
+    final Widget bodyContent = moviedetails == null
+        ? const Center(
+            child: CircularProgressIndicator(),
+          )
+        : SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                  Stack(
                       children: [
-                        CachedNetworkImage(
-                          imageUrl:
-                              '${getImageBaseUrl(region)}/t/p/original$backdrops',
-                          placeholder: (context, url) =>
-                              const Center(child: CircularProgressIndicator()),
-                          errorWidget: (context, url, error) =>
-                              const Icon(Icons.error),
-                          imageBuilder: (context, imageProvider) => Container(
-                            height: 300,
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              image: DecorationImage(
-                                fit: BoxFit.cover,
-                                image: imageProvider,
+                        TvFocusWrapper(
+                          onTap: () {
+                            _castImagesFuture.then((imageUrls) {
+                              state._openImageGallery(imageUrls);
+                            });
+                          },
+                          child: Stack(
+                            children: [
+                              CachedNetworkImage(
+                                imageUrl:
+                                    '${getImageBaseUrl(region)}/t/p/original$backdrops',
+                                placeholder: (context, url) =>
+                                    const Center(child: CircularProgressIndicator()),
+                                errorWidget: (context, url, error) =>
+                                    const Icon(Icons.error),
+                                imageBuilder: (context, imageProvider) => Container(
+                                  height: 300,
+                                  width: double.infinity,
+                                  decoration: BoxDecoration(
+                                    image: DecorationImage(
+                                      fit: BoxFit.cover,
+                                      image: imageProvider,
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                        ),
-                        Container(
-                          height: 320,
-                          width: double.infinity,
-                          decoration: const BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.bottomCenter,
-                              end: Alignment.topCenter,
-                              colors: [Colors.black, Colors.transparent],
-                            ),
+                              Container(
+                                height: 320,
+                                width: double.infinity,
+                                decoration: const BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.bottomCenter,
+                                    end: Alignment.topCenter,
+                                    colors: [Colors.black, Colors.transparent],
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         Positioned(
@@ -203,7 +191,8 @@ class _MovieDetailPageMobile extends StatelessWidget {
                           child: Positioned(
                             top: 190,
                             right: 30,
-                            child: GestureDetector(
+                            child: TvFocusWrapper(
+                              borderRadius: 30.0,
                               onTap: () {
                                 showGeneralDialog(
                                   context: context,
@@ -278,10 +267,13 @@ class _MovieDetailPageMobile extends StatelessWidget {
                                   },
                                 );
                               },
-                              child: const Icon(
-                                Icons.share,
-                                color: Colors.white,
-                                size: 25,
+                              child: const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Icon(
+                                  Icons.share,
+                                  color: Colors.white,
+                                  size: 25,
+                                ),
                               ),
                             ),
                           ),
@@ -291,7 +283,8 @@ class _MovieDetailPageMobile extends StatelessWidget {
                           child: Positioned(
                             top: 140,
                             right: 30,
-                            child: GestureDetector(
+                            child: TvFocusWrapper(
+                              borderRadius: 30.0,
                               onTap: () async {
                                 if (isMovieWatchlist == null) {
                                   return;
@@ -321,14 +314,17 @@ class _MovieDetailPageMobile extends StatelessWidget {
                                   profileRefreshNotifier.value++;
                                 }
                               },
-                              child: Icon(
-                                isMovieWatchlist == null
-                                    ? Icons.bookmark_border
-                                    : isMovieWatchlist
-                                        ? Icons.bookmark
-                                        : Icons.bookmark_border,
-                                color: Colors.white,
-                                size: 25,
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Icon(
+                                  isMovieWatchlist == null
+                                      ? Icons.bookmark_border
+                                      : isMovieWatchlist
+                                          ? Icons.bookmark
+                                          : Icons.bookmark_border,
+                                  color: Colors.white,
+                                  size: 25,
+                                ),
                               ),
                             ),
                           ),
@@ -338,7 +334,8 @@ class _MovieDetailPageMobile extends StatelessWidget {
                           child: Positioned(
                             top: 90,
                             right: 30,
-                            child: GestureDetector(
+                            child: TvFocusWrapper(
+                              borderRadius: 30.0,
                               onTap: () async {
                                 if (isMovieFavorite == null) {
                                   return;
@@ -366,14 +363,17 @@ class _MovieDetailPageMobile extends StatelessWidget {
                                   profileRefreshNotifier.value++;
                                 }
                               },
-                              child: Icon(
-                                isMovieFavorite == null
-                                    ? Icons.favorite_border
-                                    : isMovieFavorite
-                                        ? Icons.favorite
-                                        : Icons.favorite_border,
-                                color: Colors.white,
-                                size: 25,
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Icon(
+                                  isMovieFavorite == null
+                                      ? Icons.favorite_border
+                                      : isMovieFavorite
+                                          ? Icons.favorite
+                                          : Icons.favorite_border,
+                                  color: Colors.white,
+                                  size: 25,
+                                ),
                               ),
                             ),
                           ),
@@ -391,7 +391,8 @@ class _MovieDetailPageMobile extends StatelessWidget {
                                   color: Colors.black38,
                                   borderRadius:
                                       BorderRadius.all(Radius.circular(30))),
-                              child: GestureDetector(
+                              child: TvFocusWrapper(
+                                borderRadius: 30.0,
                                 onTap: () => showModalBottomSheet(
                                   context: context,
                                   builder: (BuildContext context) {
@@ -424,7 +425,7 @@ class _MovieDetailPageMobile extends StatelessWidget {
                                               final movieId = widget.movieId;
                                               final openbox =
                                                   Hive.box('sessionBox');
- 
+
                                               final String sessionData =
                                                   openbox.get('sessionData');
                                               addRating(sessionData, movieId,
@@ -444,7 +445,7 @@ class _MovieDetailPageMobile extends StatelessWidget {
                                         GestureDetector(
                                           onTap: () async {
                                             final openbox = Hive.box('sessionBox');
- 
+
                                             final String sessionData =
                                                 openbox.get('sessionData');
                                             removeRating(sessionData,
@@ -471,51 +472,55 @@ class _MovieDetailPageMobile extends StatelessWidget {
                                     );
                                   },
                                 ),
-                                child: Text(
-                                  '👤 ${userRating.toStringAsFixed(1)}',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w300,
-                                    fontSize: 13,
-                                    color: Colors.white,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                                  child: Text(
+                                    '👤 ${userRating.toStringAsFixed(1)}',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w300,
+                                      fontSize: 13,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
- 
-                             Positioned(
-                               top: 40,
-                               left: 20,
-                                child: GestureDetector(
-                                           onTap: isWatched ? state._removeFromWatched : state._markAsWatched,
-                                           child: Container(
-                                             padding: const EdgeInsets.all(10),
-                                             decoration: BoxDecoration(
-                                               color: isWatched ? Colors.green.withOpacity(0.7) : Colors.black38,
-                                               borderRadius: const BorderRadius.all(Radius.circular(30)),
-                                             ),
-                                             child: Row(
-                                               mainAxisSize: MainAxisSize.min,
-                                               children: [
-                                                 Icon(
-                                                   isWatched ? Icons.check_circle : Icons.visibility,
-                                                   color: Colors.white,
-                                                   size: 16,
-                                                 ),
-                                                 const SizedBox(width: 4),
-                                                 Text(
-                                                   isWatched ? 'Watched' : 'Mark as Watched',
-                                                   style: const TextStyle(
-                                                     fontWeight: FontWeight.w300,
-                                                     fontSize: 13,
-                                                     color: Colors.white,
-                                                   ),
-                                                 ),
-                                               ],
-                                             ),
-                                           ),
-                                         ),
-                             ),
+
+                        Positioned(
+                          top: 40,
+                          left: 20,
+                          child: TvFocusWrapper(
+                            borderRadius: 30.0,
+                            onTap: isWatched ? state._removeFromWatched : state._markAsWatched,
+                            child: Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: isWatched ? Colors.green.withOpacity(0.7) : Colors.black38,
+                                borderRadius: const BorderRadius.all(Radius.circular(30)),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    isWatched ? Icons.check_circle : Icons.visibility,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    isWatched ? 'Watched' : 'Mark as Watched',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w300,
+                                      fontSize: 13,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
                         //logged in not rated
                         if (isUserLoggedIn == true &&
                             isMovieRated == false &&
@@ -523,69 +528,72 @@ class _MovieDetailPageMobile extends StatelessWidget {
                           Positioned(
                             top: 40,
                             right: 30,
-                            child: GestureDetector(
-                                onTap: () {
-                                  showModalBottomSheet(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          const SizedBox(
-                                            height: 20,
-                                          ),
-                                          RatingBar.builder(
-                                            initialRating: 5,
-                                            minRating: 1,
-                                            maxRating: 10,
-                                            itemSize: 35,
-                                            unratedColor: Colors.grey,
-                                            direction: Axis.horizontal,
-                                            allowHalfRating: true,
-                                            itemCount: 10,
-                                            itemPadding:
-                                                const EdgeInsets.symmetric(
-                                                    horizontal: 0),
-                                            itemBuilder: (context, _) =>
-                                                const Icon(
-                                              Icons.star,
-                                              color: Colors.amber,
+                            child: TvFocusWrapper(
+                                  borderRadius: 30.0,
+                                  onTap: () {
+                                    showModalBottomSheet(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const SizedBox(
+                                              height: 20,
                                             ),
-                                            onRatingUpdate: (rating) async {
-                                              final movieId =
-                                                  widget.movieId;
-                                              final openbox =
-                                                  Hive.box('sessionBox');
-                            
-                                              final String sessionData =
-                                                  openbox
-                                                      .get('sessionData');
-                                              addRating(sessionData,
-                                                  movieId, rating, context);
-                                              state.updateState(() {
-                                                state.isMovieRated = '"value":$rating';
-                                                state.userRating = rating;
-                                                profileRefreshNotifier.value++;
-                                              });
-                                            },
-                                          ),
-                                          const SizedBox(
-                                            height: 40,
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  );
-                                },
-                                child: const Icon(
-                                  Icons.add_reaction,
-                                  color: Colors.white,
+                                            RatingBar.builder(
+                                              initialRating: 5,
+                                              minRating: 1,
+                                              maxRating: 10,
+                                              itemSize: 35,
+                                              unratedColor: Colors.grey,
+                                              direction: Axis.horizontal,
+                                              allowHalfRating: true,
+                                              itemCount: 10,
+                                              itemPadding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 0),
+                                              itemBuilder: (context, _) =>
+                                                  const Icon(
+                                                Icons.star,
+                                                color: Colors.amber,
+                                              ),
+                                              onRatingUpdate: (rating) async {
+                                                final movieId =
+                                                    widget.movieId;
+                                                final openbox =
+                                                    Hive.box('sessionBox');
+
+                                                final String sessionData =
+                                                    openbox
+                                                        .get('sessionData');
+                                                addRating(sessionData,
+                                                    movieId, rating, context);
+                                                state.updateState(() {
+                                                  state.isMovieRated = '"value":$rating';
+                                                  state.userRating = rating;
+                                                  profileRefreshNotifier.value++;
+                                                });
+                                              },
+                                            ),
+                                            const SizedBox(
+                                              height: 40,
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
+                                  },
+                                  child: const Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Icon(
+                                      Icons.add_reaction,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                                 ),
-                              ),
                           ),
                       ],
                     ),
-                  ),
                   Center(
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
@@ -757,7 +765,7 @@ class _MovieDetailPageMobile extends StatelessWidget {
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.center,
                                             mainAxisSize: MainAxisSize.max,
-                                            
+
                                             children: [
                                               Expanded(
                                                 child: FloatingActionButton(
@@ -777,7 +785,7 @@ class _MovieDetailPageMobile extends StatelessWidget {
                                                   ),
                                                 ),
                                               ),
-                                        
+
                                             ],
                                           ),
                                         )
@@ -937,36 +945,36 @@ class _MovieDetailPageMobile extends StatelessWidget {
                                                   const EdgeInsets.all(8.0),
                                               child: Column(
                                                 children: [
-                                                  Card(
-                                                    elevation: 4,
-                                                    child: GestureDetector(
-                                                      onTap: () => state.onTapMovie(
-                                                          movie['title'],
-                                                          movie['id']),
-                                                      child: Container(
-                                                        height: 200,
-                                                        width: 100,
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(20),
-                                                          image: movie[
-                                                                      'poster_path']
-                                                                  .isNotEmpty
-                                                              ? DecorationImage(
-                                                                  image:
-                                                                      CachedNetworkImageProvider(
-                                                                    '${getImageBaseUrl(region)}/t/p/w200${movie['poster_path']}',
-                                                                  ),
-                                                                  fit: BoxFit
-                                                                      .cover,
-                                                                )
-                                                              : null, // No image if there's no poster path
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
+                                                  TvFocusWrapper(
+                                                     onTap: () => state.onTapMovie(
+                                                         movie['title'],
+                                                         movie['id']),
+                                                     child: Card(
+                                                       elevation: 4,
+                                                       child: Container(
+                                                         height: 200,
+                                                         width: 100,
+                                                         decoration:
+                                                             BoxDecoration(
+                                                           borderRadius:
+                                                               BorderRadius
+                                                                   .circular(20),
+                                                           image: movie[
+                                                                       'poster_path']
+                                                                   .isNotEmpty
+                                                               ? DecorationImage(
+                                                                   image:
+                                                                       CachedNetworkImageProvider(
+                                                                     '${getImageBaseUrl(region)}/t/p/w200${movie['poster_path']}',
+                                                                   ),
+                                                                   fit: BoxFit
+                                                                       .cover,
+                                                                 )
+                                                               : null, // No image if there's no poster path
+                                                         ),
+                                                       ),
+                                                     ),
+                                                   ),
                                                   SizedBox(
                                                     width: 70,
                                                     child: Text(
@@ -1167,8 +1175,37 @@ class _MovieDetailPageMobile extends StatelessWidget {
                   ),
                 ],
               ),
-            ),
-      bottomNavigationBar: BottomBar(),
+            );
+
+    return Scaffold(
+      extendBody: true,
+      //only show appbar on ios and web
+      appBar: AppPlatform.isIOS || AppPlatform.isWeb ?
+      AppBar(
+        automaticallyImplyLeading: true,
+        toolbarHeight: 40,
+              backgroundColor: getMovieColor(context, widget.movieId),
+              iconTheme: const IconThemeData(color: Colors.black),
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
+                  child: Text(
+                    widget.movieTitle,
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                ),
+              ],
+      )
+      : null,
+      body: isTv
+          ? Column(
+              children: [
+                const BottomBar(),
+                Expanded(child: bodyContent),
+              ],
+            )
+          : bodyContent,
+      bottomNavigationBar: isTv ? null : const BottomBar(),
     );
   }
 

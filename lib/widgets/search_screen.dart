@@ -12,6 +12,8 @@ import 'package:Mirarr/seriesPage/function/on_tap_serie.dart';
 import 'package:Mirarr/widgets/discover/discover_with_filters.dart';
 import 'package:Mirarr/widgets/models/person.dart';
 import 'package:Mirarr/widgets/person_result.dart';
+import 'package:Mirarr/widgets/tv_focus_wrapper.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:Mirarr/moviesPage/models/movie.dart';
@@ -37,11 +39,32 @@ class _SearchScreenState extends State<SearchScreen>
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
 
+  late FocusNode _movieSearchFocusNode;
+  late FocusNode _tvSearchFocusNode;
+  late FocusNode _peopleSearchFocusNode;
+
+  KeyEventResult _handleSearchFocusKey(FocusNode node, KeyEvent event) {
+    if (event is KeyDownEvent && TvFocusModeManager.isTvFocusMode.value) {
+      if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+        node.focusInDirection(TraversalDirection.down);
+        return KeyEventResult.handled;
+      }
+      if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+        node.focusInDirection(TraversalDirection.up);
+        return KeyEventResult.handled;
+      }
+    }
+    return KeyEventResult.ignored;
+  }
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
     _searchController.addListener(_onSearchChanged);
+    _movieSearchFocusNode = FocusNode(onKeyEvent: _handleSearchFocusKey);
+    _tvSearchFocusNode = FocusNode(onKeyEvent: _handleSearchFocusKey);
+    _peopleSearchFocusNode = FocusNode(onKeyEvent: _handleSearchFocusKey);
   }
 
   void _onSearchChanged() {
@@ -164,6 +187,7 @@ class _SearchScreenState extends State<SearchScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+extendBody: true,
       appBar: TabBar(
         labelColor: Colors.black,
         padding: AppPlatform.isMobile
@@ -196,6 +220,7 @@ class _SearchScreenState extends State<SearchScreen>
               Padding(
                 padding: const EdgeInsets.fromLTRB(8, 10, 8, 5),
                 child: TextField(
+                  focusNode: _movieSearchFocusNode,
                   autocorrect: false,
                   style: const TextStyle(
                     color: Colors.white,
@@ -256,7 +281,8 @@ class _SearchScreenState extends State<SearchScreen>
                           itemCount: movieResults.length,
                           itemBuilder: (context, index) {
                             final movie = movieResults[index];
-                            return GestureDetector(
+                            return TvFocusWrapper(
+                              borderRadius: 12.0,
                               onTap: () => onTapMovie(movie.title, movie.id, context),
                               child: MovieSearchResult(
                                 movie: movie,
@@ -273,6 +299,7 @@ class _SearchScreenState extends State<SearchScreen>
               Padding(
                 padding: const EdgeInsets.fromLTRB(8, 10, 8, 5),
                 child: TextField(
+                  focusNode: _tvSearchFocusNode,
                   autocorrect: false,
                   style: const TextStyle(
                     color: Colors.white,
@@ -333,7 +360,8 @@ class _SearchScreenState extends State<SearchScreen>
                           itemCount: tvResults.length,
                           itemBuilder: (context, index) {
                             final serie = tvResults[index];
-                            return GestureDetector(
+                            return TvFocusWrapper(
+                              borderRadius: 12.0,
                               onTap: () => onTapSerie(serie.name, serie.id, context),
                               child: SerieSearchResult(
                                 serie: serie,
@@ -350,6 +378,7 @@ class _SearchScreenState extends State<SearchScreen>
               Padding(
                 padding: const EdgeInsets.fromLTRB(8, 10, 8, 5),
                 child: TextField(
+                  focusNode: _peopleSearchFocusNode,
                   autocorrect: false,
                   style: const TextStyle(
                     color: Colors.white,
@@ -418,7 +447,8 @@ class _SearchScreenState extends State<SearchScreen>
                           itemCount: personResults.length,
                           itemBuilder: (context, index) {
                             final person = personResults[index];
-                            return GestureDetector(
+                            return TvFocusWrapper(
+                              borderRadius: 12.0,
                               onTap: () => person.department == 'Acting'
                                   ? onTapCast(context, person.id)
                                   : onTapCrew(context, person.id),
@@ -444,6 +474,9 @@ class _SearchScreenState extends State<SearchScreen>
     _tabController.dispose();
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
+    _movieSearchFocusNode.dispose();
+    _tvSearchFocusNode.dispose();
+    _peopleSearchFocusNode.dispose();
     super.dispose();
   }
 }

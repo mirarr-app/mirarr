@@ -1,4 +1,5 @@
 import 'package:Mirarr/widgets/profile.dart';
+import 'package:Mirarr/widgets/tv_focus_wrapper.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:Mirarr/functions/platform_helper.dart';
@@ -471,7 +472,8 @@ class _ShowWatchToggleState extends State<ShowWatchToggle> {
       );
     }
 
-    return GestureDetector(
+    return TvFocusWrapper(
+      borderRadius: 30.0,
       onTap: _toggleWatchStatus,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),

@@ -5,6 +5,7 @@ import 'package:Mirarr/functions/fetchers/fetch_trending_movies.dart';
 import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_gridview_movie.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie.dart';
+import 'package:Mirarr/widgets/tv_focus_wrapper.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -159,6 +160,7 @@ class _MovieSearchScreenState extends State<MovieSearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+extendBody: true,
         backgroundColor: Colors.black,
         appBar: AppBar(
           automaticallyImplyLeading: false,
@@ -216,7 +218,8 @@ class _MovieSearchScreenState extends State<MovieSearchScreen> {
                                 itemCount: trendingMovies.length,
                                 itemBuilder: (context, index) {
                                   final movie = trendingMovies[index];
-                                  return GestureDetector(
+                                  return TvFocusWrapper(
+                                    autoFocus: index == 0,
                                     onTap: () =>
                                         onTapMovie(movie.title, movie.id, context),
                                     child: CustomMovieWidget(
@@ -262,7 +265,7 @@ class _MovieSearchScreenState extends State<MovieSearchScreen> {
                                 itemCount: popularMovies.length,
                                 itemBuilder: (context, index) {
                                   final movie = popularMovies[index];
-                                  return GestureDetector(
+                                  return TvFocusWrapper(
                                     onTap: () =>
                                         onTapMovie(movie.title, movie.id, context),
                                     child: CustomMovieWidget(
@@ -280,26 +283,32 @@ class _MovieSearchScreenState extends State<MovieSearchScreen> {
                                 Padding(
                                   padding:
                                       const EdgeInsets.fromLTRB(15, 15, 0, 0),
-                                  child: GestureDetector(
+                                  child: TvFocusWrapper(
+                                    borderRadius: 8.0,
                                     onTap: () => onTapGridMovie(
                                         moviesByGenre[genre.id]!, context),
-                                    child: Row(
-                                      children: [
-                                        Text(
-                                          genre.name,
-                                          style: const TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8.0, vertical: 4.0),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            genre.name,
+                                            style: const TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(width: 5),
-                                        Icon(
-                                          Icons.arrow_forward_ios,
-                                          color: Theme.of(context).primaryColor,
-                                          size: 16,
-                                        ),
-                                      ],
+                                          const SizedBox(width: 5),
+                                          Icon(
+                                            Icons.arrow_forward_ios,
+                                            color: Theme.of(context).primaryColor,
+                                            size: 16,
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -322,7 +331,7 @@ class _MovieSearchScreenState extends State<MovieSearchScreen> {
                                       itemBuilder: (context, index) {
                                         final movie =
                                             moviesByGenre[genre.id]![index];
-                                        return GestureDetector(
+                                        return TvFocusWrapper(
                                           onTap: () => onTapMovie(movie.title,
                                               movie.id, context),
                                           child: CustomMovieWidget(

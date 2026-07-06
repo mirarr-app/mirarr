@@ -6,6 +6,7 @@ import 'package:Mirarr/widgets/login.dart';
 import 'package:Mirarr/widgets/profile.dart';
 import 'package:Mirarr/widgets/search_screen.dart';
 import 'package:Mirarr/widgets/shelf_page.dart';
+import 'package:Mirarr/widgets/tv_focus_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
@@ -16,6 +17,7 @@ class MainShellPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final navigationProvider = Provider.of<NavigationProvider>(context);
+    final bool isTv = TvFocusModeManager.isTvDevice;
 
     final List<Widget> pages = [
       const MovieSearchScreen(),
@@ -26,11 +28,19 @@ class MainShellPage extends StatelessWidget {
     ];
 
     return Scaffold(
-      body: IndexedStack(
-        index: navigationProvider.currentIndex,
-        children: pages,
+      extendBody: true,
+      body: Column(
+        children: [
+          if (isTv) const BottomBar(),
+          Expanded(
+            child: IndexedStack(
+              index: navigationProvider.currentIndex,
+              children: pages,
+            ),
+          ),
+        ],
       ),
-      bottomNavigationBar: const BottomBar(),
+      bottomNavigationBar: isTv ? null : const BottomBar(),
     );
   }
 }
