@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:async';
 import 'dart:ui';
-import 'package:Mirarr/functions/platform_helper.dart';
 import 'package:Mirarr/functions/get_base_url.dart';
 import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/moviesPage/UI/cast_crew_row.dart';
@@ -495,74 +494,89 @@ class _SearchScreenState extends State<SearchScreen>
               ),
 
             // Premium pill-shaped TabBar
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: TabBar(
-                controller: _tabController,
-                isScrollable: true,
-                tabAlignment: TabAlignment.center,
-                labelColor: Colors.black,
-                unselectedLabelColor: Colors.white70,
-                indicatorSize: TabBarIndicatorSize.tab,
-                indicator: BoxDecoration(
-                  borderRadius: BorderRadius.circular(25),
-                  color: Theme.of(context).primaryColor,
-                ),
-                tabs: [
-                  Tab(
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.movie_outlined, size: 18),
-                          SizedBox(width: 8),
-                          Text('Movies'),
-                        ],
-                      ),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final double width = MediaQuery.of(context).size.width;
+                final bool isMobileWidth = width < 600;
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: TabBar(
+                    controller: _tabController,
+                    isScrollable: !isMobileWidth,
+                    tabAlignment: isMobileWidth ? null : TabAlignment.center,
+                    labelColor: Colors.black,
+                    unselectedLabelColor: Colors.white70,
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    indicator: BoxDecoration(
+                      borderRadius: BorderRadius.circular(25),
+                      color: Theme.of(context).primaryColor,
                     ),
-                  ),
-                  Tab(
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.tv_outlined, size: 18),
-                          SizedBox(width: 8),
-                          Text('TV Shows'),
-                        ],
+                    tabs: [
+                      Tab(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: isMobileWidth ? 4.0 : 8.0),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (!isMobileWidth) ...const [
+                                Icon(Icons.movie_outlined, size: 18),
+                                SizedBox(width: 8),
+                              ],
+                              const Text('Movies'),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  Tab(
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.people_outline, size: 18),
-                          SizedBox(width: 8),
-                          Text('People'),
-                        ],
+                      Tab(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: isMobileWidth ? 4.0 : 8.0),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (!isMobileWidth) ...const [
+                                Icon(Icons.tv_outlined, size: 18),
+                                SizedBox(width: 8),
+                              ],
+                              const Text('TV Shows'),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  Tab(
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.explore_outlined, size: 18),
-                          SizedBox(width: 8),
-                          Text('Discover'),
-                        ],
+                      Tab(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: isMobileWidth ? 4.0 : 8.0),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (!isMobileWidth) ...const [
+                                Icon(Icons.people_outline, size: 18),
+                                SizedBox(width: 8),
+                              ],
+                              const Text('People'),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
+                      Tab(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: isMobileWidth ? 4.0 : 8.0),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (!isMobileWidth) ...const [
+                                Icon(Icons.explore_outlined, size: 18),
+                                SizedBox(width: 8),
+                              ],
+                              const Text('Discover'),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                );
+              },
             ),
 
             // Main result content area
