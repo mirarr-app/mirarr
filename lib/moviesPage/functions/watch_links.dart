@@ -3,6 +3,7 @@ import 'package:Mirarr/functions/show_error_dialog.dart';
 import 'package:Mirarr/moviesPage/checkers/custom_tmdb_ids_effects.dart';
 import 'package:Mirarr/widgets/custom_divider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -302,7 +303,7 @@ class _WatchOptionsContentState extends State<_WatchOptionsContent> {
   @override
   void initState() {
     super.initState();
-    if (widget.region == 'iran') {
+    if (widget.region == 'iran' && !kIsWeb) {
       _loadIranDownloads();
     }
   }
@@ -335,6 +336,76 @@ class _WatchOptionsContentState extends State<_WatchOptionsContent> {
         });
       }
     }
+  }
+
+  Widget _buildWebDirectLinkButtons() {
+    final links = {
+      'Berlin Server': 'https://berlin.saymyname.website/Movies/${widget.year}/${widget.imdbIdWithoutTT}',
+      'Tokyo Server': 'https://tokyo.saymyname.website/Movies/${widget.year}/${widget.imdbIdWithoutTT}',
+      'Nairobi Server': 'https://nairobi.saymyname.website/Movies/${widget.year}/${widget.imdbIdWithoutTT}',
+    };
+
+    return Column(
+      children: links.entries.map((entry) {
+        return ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: widget.mainColor.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              Icons.open_in_new,
+              color: widget.mainColor,
+              size: 20,
+            ),
+          ),
+          title: Text(
+            entry.key,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+            ),
+          ),
+          subtitle: Text(
+            entry.value,
+            style: const TextStyle(
+              color: Colors.grey,
+              fontSize: 10,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: Icon(
+                  Icons.copy,
+                  color: widget.mainColor,
+                  size: 20,
+                ),
+                onPressed: () => _copyToClipboard(context, entry.value),
+                tooltip: 'Copy URL',
+              ),
+              IconButton(
+                icon: Icon(
+                  Icons.download,
+                  color: widget.mainColor,
+                  size: 20,
+                ),
+                onPressed: () {
+                  _launchUrl(Uri.parse(entry.value));
+                  Navigator.of(context).pop();
+                },
+                tooltip: 'Open Link',
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
   }
 
   @override
@@ -439,7 +510,7 @@ class _WatchOptionsContentState extends State<_WatchOptionsContent> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          if (isLoadingIranDownloads)
+                          if (!kIsWeb && isLoadingIranDownloads)
                             Padding(
                               padding: const EdgeInsets.only(left: 10),
                               child: SizedBox(
@@ -454,23 +525,27 @@ class _WatchOptionsContentState extends State<_WatchOptionsContent> {
                         ],
                       ),
                     ),
-                    if (iranDownloadsError != null)
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Text(
-                          iranDownloadsError!,
-                          style: TextStyle(color: Colors.red[300]),
+                    if (kIsWeb)
+                      _buildWebDirectLinkButtons()
+                    else ...[
+                      if (iranDownloadsError != null)
+                        Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Text(
+                            iranDownloadsError!,
+                            style: TextStyle(color: Colors.red[300]),
+                          ),
                         ),
-                      ),
-                    if (iranDownloadsLoaded && iranDownloads.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Text(
-                          'No direct downloads available',
-                          style: TextStyle(color: Colors.grey),
+                      if (iranDownloadsLoaded && iranDownloads.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Text(
+                            'No direct downloads available',
+                            style: TextStyle(color: Colors.grey),
+                          ),
                         ),
-                      ),
-                    ...iranDownloads.map((item) => _buildDownloadItemTile(item)),
+                      ...iranDownloads.map((item) => _buildDownloadItemTile(item)),
+                    ],
                   ],
                 ],
               ),
