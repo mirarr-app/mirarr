@@ -286,6 +286,7 @@ extendBody: true,
                                               movie.title, movie.id, context),
                                       child: CustomMovieWidget(
                                         movie: movie,
+                                        showAvailability: false,
                                       ),
                                     );
                                     if (trendingMovies.isEmpty) {
@@ -354,6 +355,7 @@ extendBody: true,
                                               movie.title, movie.id, context),
                                       child: CustomMovieWidget(
                                         movie: movie,
+                                        showAvailability: false,
                                       ),
                                     );
                                     if (popularMovies.isEmpty) {
@@ -442,6 +444,7 @@ extendBody: true,
                                                     movie.id, context),
                                             child: CustomMovieWidget(
                                               movie: movie,
+                                              showAvailability: false,
                                             ),
                                           );
                                           if (genres.isEmpty) {

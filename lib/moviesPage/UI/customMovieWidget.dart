@@ -13,8 +13,13 @@ class CustomMovieWidget extends StatelessWidget {
   static final Map<int, bool> _availabilityCache = {};
 
   final Movie movie;
+  final bool showAvailability;
 
-  const CustomMovieWidget({super.key, required this.movie});
+  const CustomMovieWidget({
+    super.key,
+    required this.movie,
+    this.showAvailability = true,
+  });
 
   Future<bool> checkAvailability(int movieId, BuildContext context) async {
     if (movieId < 0) {
@@ -87,40 +92,41 @@ class CustomMovieWidget extends StatelessWidget {
                 ),
               ),
             ),
-            Positioned(
-              right: 10,
-              child: Container(
-                margin: const EdgeInsets.only(top: 8),
-                padding: const EdgeInsets.all(10),
-                decoration: const BoxDecoration(),
-                child: FutureBuilder(
-                  future: checkAvailability(movie.id, context),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Padding(
-                        padding: EdgeInsets.all(5.0),
-                        child: SizedBox(
-                            height: 10,
-                            width: 10,
-                            child: CircularProgressIndicator()),
-                      );
-                    } else if (snapshot.hasError) {
-                      return const Text('Error loading data');
-                    } else {
-                      return snapshot.data == true
-                          ? const Icon(
-                              Icons.download_rounded,
-                              color: Colors.yellow,
-                            )
-                          : const Icon(
-                              Icons.file_download_off_sharp,
-                              color: Colors.yellow,
-                            );
-                    }
-                  },
+            if (showAvailability)
+              Positioned(
+                right: 10,
+                child: Container(
+                  margin: const EdgeInsets.only(top: 8),
+                  padding: const EdgeInsets.all(10),
+                  decoration: const BoxDecoration(),
+                  child: FutureBuilder(
+                    future: checkAvailability(movie.id, context),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Padding(
+                          padding: EdgeInsets.all(5.0),
+                          child: SizedBox(
+                              height: 10,
+                              width: 10,
+                              child: CircularProgressIndicator()),
+                        );
+                      } else if (snapshot.hasError) {
+                        return const Text('Error loading data');
+                      } else {
+                        return snapshot.data == true
+                            ? const Icon(
+                                Icons.download_rounded,
+                                color: Colors.yellow,
+                              )
+                            : const Icon(
+                                Icons.file_download_off_sharp,
+                                color: Colors.yellow,
+                              );
+                      }
+                    },
+                  ),
                 ),
               ),
-            ),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
