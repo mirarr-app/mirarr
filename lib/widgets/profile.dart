@@ -8,6 +8,7 @@ import 'package:Mirarr/moviesPage/functions/on_tap_gridview_movie.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_gridview_serie.dart';
 import 'package:Mirarr/widgets/rss_screen.dart';
 import 'package:Mirarr/widgets/settings_screen.dart';
+import 'package:Mirarr/widgets/watchlist_calendar_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive/hive.dart';
@@ -767,6 +768,15 @@ extendBody: true,
                 );
               },
               icon: const Icon(Icons.logout),
+            ),
+            IconButton(
+              icon: const Icon(Icons.calendar_month),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const WatchlistCalendarScreen()),
+                );
+              },
             ),
             IconButton(
               icon: const Icon(Icons.rss_feed),
