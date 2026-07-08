@@ -141,9 +141,20 @@ class _WatchlistCalendarScreenState extends State<WatchlistCalendarScreen> {
       });
     } catch (e) {
       if (!mounted) return;
+      String friendlyMessage = 'Something went wrong. Please try again.';
+      final errStr = e.toString();
+      if (errStr.contains('ClientException') ||
+          errStr.contains('SocketException') ||
+          errStr.contains('Connection failed')) {
+        friendlyMessage = 'Network connection error. Please check your internet connection and try again.';
+      } else if (errStr.contains('User session') || errStr.contains('API Key')) {
+        friendlyMessage = 'Authentication or session error. Please log in again.';
+      } else {
+        friendlyMessage = errStr.replaceAll('Exception: ', '');
+      }
       setState(() {
         _isLoading = false;
-        _errorMessage = e.toString().replaceAll('Exception: ', '');
+        _errorMessage = friendlyMessage;
       });
     }
   }
