@@ -23,6 +23,7 @@ import 'package:Mirarr/moviesPage/movieDetailPage.dart';
 import 'package:Mirarr/seriesPage/serieDetailPage.dart';
 import 'package:Mirarr/functions/navigation_provider.dart';
 
+
 class ProfilePage extends StatefulWidget {
   ProfilePage({Key? key}) : super(key: key);
 
@@ -43,6 +44,8 @@ final ValueNotifier<int> profileRefreshNotifier = ValueNotifier<int>(0);
 class _ProfilePageState extends State<ProfilePage> {
   final apiKey = dotenv.env['TMDB_API_KEY'];
   int _lastIndex = -1;
+
+  Map<String, dynamic>? _accountDetails;
 
   int _movieWatchListFetchId = 0;
   int _tvWatchListFetchId = 0;
@@ -380,7 +383,35 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  Future<void> fetchAccountInfo() async {
+    if (!mounted) return;
+
+    try {
+      final openbox = Hive.box('sessionBox');
+      final String? sessionData = openbox.get('sessionData');
+      if (sessionData == null) return;
+      final region = Provider.of<RegionProvider>(context, listen: false).currentRegion;
+      final baseUrl = getBaseUrl(region);
+
+      final response = await http.get(
+        Uri.parse(
+          '${baseUrl}account?api_key=$apiKey&session_id=$sessionData',
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        if (!mounted) return;
+        setState(() {
+          _accountDetails = json.decode(response.body);
+        });
+      }
+    } catch (e) {
+      // Handle silently
+    }
+  }
+
   Future<void> checkInternetAndFetchData() async {
+    fetchAccountInfo();
     fetchMovieWatchList(context);
     fetchTvWatchList(context);
     fetchFavoriteMovies(context);
@@ -715,6 +746,177 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Logout'),
+          content: Text(
+            'Are you sure you want to logout?',
+            style: TextStyle(color: Theme.of(context).highlightColor),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _logout(context);
+              },
+              child: const Text('Logout'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildActionTile({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    Color? iconColor,
+  }) {
+    final primaryColor = Theme.of(context).primaryColor;
+    return Expanded(
+      child: Card(
+        color: Colors.grey[950],
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+          side: BorderSide(
+            color: primaryColor.withValues(alpha: 0.3),
+            width: 1,
+          ),
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(15),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: primaryColor.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    icon,
+                    color: iconColor ?? primaryColor,
+                    size: 26,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileHeader() {
+    final String username = _accountDetails?['username'] ?? 'Mirarr User';
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Theme.of(context).primaryColor.withValues(alpha: 0.15),
+            Theme.of(context).primaryColor.withValues(alpha: 0.02),
+            Colors.transparent,
+          ],
+          stops: const [0.0, 0.7, 1.0],
+        ),
+      ),
+      child: Column(
+        children: [
+          Text(
+            'Welcome back, $username',
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              letterSpacing: 0.5,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildActionTile(
+                icon: Icons.calendar_month,
+                label: 'Calendar',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const WatchlistCalendarScreen()),
+                  );
+                },
+              ),
+              const SizedBox(width: 8),
+              _buildActionTile(
+                icon: Icons.rss_feed,
+                label: 'RSS Feed',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => RssScreen()),
+                  );
+                },
+              ),
+              const SizedBox(width: 8),
+              _buildActionTile(
+                icon: Icons.settings,
+                label: 'Settings',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SettingsPage()),
+                  );
+                },
+              ),
+              const SizedBox(width: 8),
+              _buildActionTile(
+                icon: Icons.logout,
+                label: 'Logout',
+                iconColor: Colors.redAccent,
+                onTap: () {
+                  _showLogoutDialog(context);
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final navProvider = Provider.of<NavigationProvider>(context);
@@ -736,67 +938,6 @@ extendBody: true,
           ),
           automaticallyImplyLeading: false,
           backgroundColor: Theme.of(context).primaryColor,
-          actions: [
-            IconButton(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: const Text('Logout'),
-                      content: Text(
-                        'Are you sure you want to logout?',
-                        style:
-                            TextStyle(color: Theme.of(context).highlightColor),
-                      ),
-                      actions: <Widget>[
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: const Text('Cancel'),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            _logout(context);
-                          },
-                          child: const Text('Logout'),
-                        ),
-                      ],
-                    );
-                  },
-                );
-              },
-              icon: const Icon(Icons.logout),
-            ),
-            IconButton(
-              icon: const Icon(Icons.calendar_month),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const WatchlistCalendarScreen()),
-                );
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.rss_feed),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) =>  RssScreen()),
-                );
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.settings),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SettingsPage()),
-                );
-              },
-            ),
-          ],
         ),
         body: ScrollConfiguration(
           behavior: ScrollConfiguration.of(context).copyWith(
@@ -808,8 +949,10 @@ extendBody: true,
           ),
           child: SingleChildScrollView(
             scrollDirection: Axis.vertical,
-            child: Column(children: [
-              Card(
+            child: Column(
+              children: [
+                _buildProfileHeader(),
+                Card(
                 shadowColor: Colors.black,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
