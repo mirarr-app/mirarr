@@ -17,6 +17,9 @@ class CustomMovieWidget extends StatelessWidget {
   const CustomMovieWidget({super.key, required this.movie});
 
   Future<bool> checkAvailability(int movieId, BuildContext context) async {
+    if (movieId < 0) {
+      return false;
+    }
     if (_availabilityCache.containsKey(movieId)) {
       return _availabilityCache[movieId]!;
     }
@@ -50,6 +53,7 @@ class CustomMovieWidget extends StatelessWidget {
         width: 250,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
+          color: movie.posterPath.isEmpty ? Colors.grey[900] : null,
           image: movie.posterPath.isNotEmpty
               ? DecorationImage(
                   image: CachedNetworkImageProvider(

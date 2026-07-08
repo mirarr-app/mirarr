@@ -47,9 +47,19 @@ class _SerieDetailPageMobile extends StatelessWidget {
                       CachedNetworkImage(
                         imageUrl:
                             '${getImageBaseUrl(region)}/t/p/original$backdrops',
-                        placeholder: (context, url) => const Center(
-                            child:
-                                CircularProgressIndicator()), // Placeholder widget while loading.
+                        placeholder: (context, url) => Skeletonizer(
+                          enabled: true,
+                          containersColor: Colors.white.withOpacity(0.05),
+                          effect: ShimmerEffect(
+                            baseColor: Colors.white.withOpacity(0.05),
+                            highlightColor: Colors.white.withOpacity(0.15),
+                          ),
+                          child: Container(
+                            height: 300,
+                            width: double.infinity,
+                            color: Colors.grey[900],
+                          ),
+                        ),
                         errorWidget: (context, url, error) => const Icon(Icons
                             .error), // Widget to display when there's an error loading the image.
                         imageBuilder: (context, imageProvider) => Container(
@@ -853,8 +863,19 @@ class _SerieDetailPageMobile extends StatelessWidget {
           Stack(children: [
             CachedNetworkImage(
               imageUrl: '${getImageBaseUrl(region)}/t/p/original$backdrops',
-              placeholder: (context, url) =>
-                  const Center(child: CircularProgressIndicator()),
+              placeholder: (context, url) => Skeletonizer(
+                enabled: true,
+                containersColor: Colors.white.withOpacity(0.05),
+                effect: ShimmerEffect(
+                  baseColor: Colors.white.withOpacity(0.05),
+                  highlightColor: Colors.white.withOpacity(0.15),
+                ),
+                child: Container(
+                  height: 300,
+                  width: double.infinity,
+                  color: Colors.grey[900],
+                ),
+              ),
               errorWidget: (context, url, error) => const Icon(Icons.error),
               imageBuilder: (context, imageProvider) => Container(
                 height: 300,

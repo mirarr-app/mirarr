@@ -13,6 +13,9 @@ class CustomSeriesWidget extends StatelessWidget {
 
   const CustomSeriesWidget({super.key, required this.serie});
   Future<bool> checkAvailability(int movieId, BuildContext context) async {
+    if (movieId < 0) {
+      return false;
+    }
     final region =
         Provider.of<RegionProvider>(context, listen: false).currentRegion;
     final baseUrl = getBaseUrl(region);
@@ -44,6 +47,7 @@ class CustomSeriesWidget extends StatelessWidget {
         width: 250,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
+          color: serie.posterPath.isEmpty ? Colors.grey[900] : null,
           image: serie.posterPath.isNotEmpty
               ? DecorationImage(
                   image: CachedNetworkImageProvider(

@@ -84,8 +84,23 @@ class _MovieDetailPageDesktop extends StatelessWidget {
                               CachedNetworkImage(
                                 imageUrl:
                                     '${getImageBaseUrl(region)}/t/p/w500$posterPath',
-                                placeholder: (context, url) => const Center(
-                                    child: CircularProgressIndicator()),
+                                placeholder: (context, url) => Skeletonizer(
+                                  enabled: true,
+                                  containersColor: Colors.white.withOpacity(0.05),
+                                  effect: ShimmerEffect(
+                                    baseColor: Colors.white.withOpacity(0.05),
+                                    highlightColor: Colors.white.withOpacity(0.15),
+                                  ),
+                                  child: Container(
+                                    height: 800,
+                                    width: 600,
+                                    decoration: const BoxDecoration(
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(20)),
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ),
                                 errorWidget: (context, url, error) =>
                                     const Icon(Icons.error),
                                 imageBuilder: (context, imageProvider) =>
@@ -590,27 +605,34 @@ class _MovieDetailPageDesktop extends StatelessWidget {
                                                         onTap: () => state.onTapMovie(
                                                             movie['title'],
                                                             movie['id']),
-                                                        child: Container(
+                                                        child: SizedBox(
                                                           height: 300,
                                                           width: 200,
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        20),
-                                                            image: movie[
-                                                                        'poster_path']
-                                                                    .isNotEmpty
-                                                                ? DecorationImage(
-                                                                    image:
-                                                                        CachedNetworkImageProvider(
-                                                                      '${getImageBaseUrl(region)}/t/p/w200${movie['poster_path']}',
+                                                          child: ClipRRect(
+                                                            borderRadius: BorderRadius.circular(20),
+                                                            child: movie['poster_path'].isNotEmpty
+                                                                ? CachedNetworkImage(
+                                                                    imageUrl: '${getImageBaseUrl(region)}/t/p/w200${movie['poster_path']}',
+                                                                    fit: BoxFit.cover,
+                                                                    placeholder: (context, url) => Skeletonizer(
+                                                                      enabled: true,
+                                                                      containersColor: Colors.white.withOpacity(0.05),
+                                                                      effect: ShimmerEffect(
+                                                                        baseColor: Colors.white.withOpacity(0.05),
+                                                                        highlightColor: Colors.white.withOpacity(0.15),
+                                                                      ),
+                                                                      child: Container(
+                                                                        color: Colors.grey[900],
+                                                                      ),
                                                                     ),
-                                                                    fit: BoxFit
-                                                                        .cover,
+                                                                    errorWidget: (context, url, error) => Container(
+                                                                      color: Colors.grey[900],
+                                                                      child: const Icon(Icons.error),
+                                                                    ),
                                                                   )
-                                                                : null, // No image if there's no poster path
+                                                                : Container(
+                                                                    color: Colors.grey[900],
+                                                                  ),
                                                           ),
                                                         ),
                                                       ),
