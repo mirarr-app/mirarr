@@ -8,18 +8,12 @@
 
 This is a movie app that aims to simplify the process of watching movies and TV shows.
 
-
-## Desktop
-
-<p float="left"> <img src="https://github.com/user-attachments/assets/e65dd5ca-bd2f-443f-9cd7-d162c9c7245f" width="45%"> <img src="https://github.com/user-attachments/assets/6997a0fa-fa88-4cf7-9096-f87f5ccaffc7" width="45%"> </p>
-
-## Mobile
-
-<p float="left">
- <img src="https://github.com/user-attachments/assets/fbdfc3f2-8e38-4787-9a47-bc67df8af172" width="30%">
- <img src="https://github.com/user-attachments/assets/7beb0804-b33f-4976-b95e-771316eedee8" width="30%">
- <img src="https://github.com/user-attachments/assets/1e9b5380-581a-470e-a434-a6a62fc2ccbe" width="30%">
-</p>
+<p float="left"> <img width="45%" alt="screenshot-2026-07-09_16-38-14" src="https://github.com/user-attachments/assets/c55ba915-95a8-40a6-a852-20be06be2792" /> 
+<img width="45%" alt="screenshot-2026-07-09_16-36-25" src="https://github.com/user-attachments/assets/6ff550b2-0550-4cb8-a255-170fc8d73c61" /> </p>
+<p float="left"> <img width="45%" alt="screenshot-2026-07-09_16-36-14" src="https://github.com/user-attachments/assets/60d243f2-7fe9-4a46-9c44-d8827b3b33e9" />
+<img width="45%" alt="screenshot-2026-07-09_16-35-35" src="https://github.com/user-attachments/assets/9260cbe7-4945-4fe5-917c-5deeab558b06" /></p>
+<p float="left"> <img width="45%" alt="screenshot-2026-07-09_16-35-09" src="https://github.com/user-attachments/assets/ed677758-6059-47d0-baf0-2c70f5784e20" />
+<img width="45%" alt="screenshot-2026-07-09_16-34-00" src="https://github.com/user-attachments/assets/1fa4ba78-bc21-48b6-b300-a38407ab4579" /></p>
 
 ### Features
 
