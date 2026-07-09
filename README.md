@@ -3,8 +3,10 @@
 ## Watch movies and Arr.
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/mirarr-app/mirarr/total)
 
+### Website
+https://mirarr-app.github.io/mirarr/
 
-### Available on Android, Windows, Linux and IOS.
+### Available on Android, Windows, Linux , IOS and Web.
 
 This is a movie app that aims to simplify the process of watching movies and TV shows.
 
