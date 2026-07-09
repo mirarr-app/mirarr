@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:Mirarr/widgets/tv_focus_wrapper.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:Mirarr/widgets/cast/cast-details.dart';
 import 'package:Mirarr/widgets/cast/crew-details.dart';
 import 'package:provider/provider.dart';
@@ -118,14 +119,15 @@ class _CastCrewCardState extends State<CastCrewCard> {
                           ? CachedNetworkImage(
                               imageUrl: '${getImageBaseUrl(widget.region)}/t/p/$imageSize$profilePath',
                               fit: BoxFit.cover,
-                              placeholder: (context, url) => Container(
-                                color: Colors.grey[900],
-                                child: const Center(
-                                  child: SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
-                                  ),
+                              placeholder: (context, url) => Skeletonizer(
+                                enabled: true,
+                                containersColor: Colors.white.withOpacity(0.05),
+                                effect: ShimmerEffect(
+                                  baseColor: Colors.white.withOpacity(0.05),
+                                  highlightColor: Colors.white.withOpacity(0.15),
+                                ),
+                                child: Container(
+                                  color: Colors.grey[900],
                                 ),
                               ),
                               errorWidget: (context, url, error) => Container(

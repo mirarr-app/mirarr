@@ -8,6 +8,10 @@ class Serie {
   final String? lastAirDate;
   final int? lastEpisodeSeasonNumber;
   final int? lastEpisodeEpisodeNumber;
+  final String? nextAirDate;
+  final int? nextEpisodeSeasonNumber;
+  final int? nextEpisodeEpisodeNumber;
+  final String? nextEpisodeName;
 
   Serie(
       {required this.name,
@@ -18,5 +22,9 @@ class Serie {
       required this.score,
       this.lastAirDate,
       this.lastEpisodeSeasonNumber,
-      this.lastEpisodeEpisodeNumber});
+      this.lastEpisodeEpisodeNumber,
+      this.nextAirDate,
+      this.nextEpisodeSeasonNumber,
+      this.nextEpisodeEpisodeNumber,
+      this.nextEpisodeName});
 }

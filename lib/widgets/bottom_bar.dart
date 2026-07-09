@@ -7,6 +7,13 @@ import 'package:provider/provider.dart';
 class BottomBar extends StatelessWidget {
   const BottomBar({Key? key}) : super(key: key);
 
+  static double getHeight(BuildContext context) {
+    final bool isTv = TvFocusModeManager.isTvDevice;
+    if (isTv) return 0.0;
+    final double bottomPadding = MediaQuery.of(context).padding.bottom;
+    return 68.0 + (bottomPadding > 0 ? bottomPadding : 16.0);
+  }
+
   @override
   Widget build(BuildContext context) {
     final navProvider = Provider.of<NavigationProvider>(context);

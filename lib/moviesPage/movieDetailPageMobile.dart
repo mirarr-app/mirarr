@@ -51,6 +51,9 @@ class _MovieDetailPageMobile extends StatelessWidget {
             child: CircularProgressIndicator(),
           )
         : SingleChildScrollView(
+            padding: EdgeInsets.only(
+              bottom: isTv ? 0.0 : BottomBar.getHeight(context),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -67,8 +70,19 @@ class _MovieDetailPageMobile extends StatelessWidget {
                               CachedNetworkImage(
                                 imageUrl:
                                     '${getImageBaseUrl(region)}/t/p/original$backdrops',
-                                placeholder: (context, url) =>
-                                    const Center(child: CircularProgressIndicator()),
+                                placeholder: (context, url) => Skeletonizer(
+                                  enabled: true,
+                                  containersColor: Colors.white.withOpacity(0.05),
+                                  effect: ShimmerEffect(
+                                    baseColor: Colors.white.withOpacity(0.05),
+                                    highlightColor: Colors.white.withOpacity(0.15),
+                                  ),
+                                  child: Container(
+                                    height: 300,
+                                    width: double.infinity,
+                                    color: Colors.grey[900],
+                                  ),
+                                ),
                                 errorWidget: (context, url, error) =>
                                     const Icon(Icons.error),
                                 imageBuilder: (context, imageProvider) => Container(
@@ -955,29 +969,36 @@ class _MovieDetailPageMobile extends StatelessWidget {
                                                          movie['title'],
                                                          movie['id']),
                                                      child: Card(
-                                                       elevation: 4,
-                                                       child: Container(
-                                                         height: 200,
-                                                         width: 100,
-                                                         decoration:
-                                                             BoxDecoration(
-                                                           borderRadius:
-                                                               BorderRadius
-                                                                   .circular(20),
-                                                           image: movie[
-                                                                       'poster_path']
-                                                                   .isNotEmpty
-                                                               ? DecorationImage(
-                                                                   image:
-                                                                       CachedNetworkImageProvider(
-                                                                     '${getImageBaseUrl(region)}/t/p/w200${movie['poster_path']}',
-                                                                   ),
-                                                                   fit: BoxFit
-                                                                       .cover,
-                                                                 )
-                                                               : null, // No image if there's no poster path
-                                                         ),
-                                                       ),
+                                                       child: SizedBox(
+                                                          height: 200,
+                                                          width: 100,
+                                                          child: ClipRRect(
+                                                            borderRadius: BorderRadius.circular(20),
+                                                            child: movie['poster_path'].isNotEmpty
+                                                                ? CachedNetworkImage(
+                                                                    imageUrl: '${getImageBaseUrl(region)}/t/p/w200${movie['poster_path']}',
+                                                                    fit: BoxFit.cover,
+                                                                    placeholder: (context, url) => Skeletonizer(
+                                                                      enabled: true,
+                                                                      containersColor: Colors.white.withOpacity(0.05),
+                                                                      effect: ShimmerEffect(
+                                                                        baseColor: Colors.white.withOpacity(0.05),
+                                                                        highlightColor: Colors.white.withOpacity(0.15),
+                                                                      ),
+                                                                      child: Container(
+                                                                        color: Colors.grey[900],
+                                                                      ),
+                                                                    ),
+                                                                    errorWidget: (context, url, error) => Container(
+                                                                      color: Colors.grey[900],
+                                                                      child: const Icon(Icons.error),
+                                                                    ),
+                                                                  )
+                                                                : Container(
+                                                                    color: Colors.grey[900],
+                                                                  ),
+                                                          ),
+                                                        ),
                                                      ),
                                                    ),
                                                   SizedBox(
@@ -1246,8 +1267,19 @@ class _MovieDetailPageMobile extends StatelessWidget {
           Stack(children: [
             CachedNetworkImage(
               imageUrl: '${getImageBaseUrl(region)}/t/p/original$backdrops',
-              placeholder: (context, url) =>
-                  const Center(child: CircularProgressIndicator()),
+              placeholder: (context, url) => Skeletonizer(
+                enabled: true,
+                containersColor: Colors.white.withOpacity(0.05),
+                effect: ShimmerEffect(
+                  baseColor: Colors.white.withOpacity(0.05),
+                  highlightColor: Colors.white.withOpacity(0.15),
+                ),
+                child: Container(
+                  height: 300,
+                  width: double.infinity,
+                  color: Colors.grey[900],
+                ),
+              ),
               errorWidget: (context, url, error) => const Icon(Icons.error),
               imageBuilder: (context, imageProvider) => Container(
                 height: 300,

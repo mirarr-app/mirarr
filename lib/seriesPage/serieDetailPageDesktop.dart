@@ -48,6 +48,9 @@ class _SerieDetailPageDesktop extends StatelessWidget {
                 },
               ),
               child: SingleChildScrollView(
+                padding: EdgeInsets.only(
+                  bottom: isTv ? 0.0 : BottomBar.getHeight(context),
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -72,8 +75,23 @@ class _SerieDetailPageDesktop extends StatelessWidget {
                               CachedNetworkImage(
                                 imageUrl:
                                     '${getImageBaseUrl(region)}/t/p/original$posterPath',
-                                placeholder: (context, url) => const Center(
-                                    child: CircularProgressIndicator()),
+                                placeholder: (context, url) => Skeletonizer(
+                                  enabled: true,
+                                  containersColor: Colors.white.withOpacity(0.05),
+                                  effect: ShimmerEffect(
+                                    baseColor: Colors.white.withOpacity(0.05),
+                                    highlightColor: Colors.white.withOpacity(0.15),
+                                  ),
+                                  child: Container(
+                                    height: 800,
+                                    width: 600,
+                                    decoration: const BoxDecoration(
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(20)),
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ),
                                 errorWidget: (context, url, error) =>
                                     const Icon(Icons.error),
                                 imageBuilder: (context, imageProvider) =>

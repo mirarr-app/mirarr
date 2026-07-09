@@ -17,7 +17,7 @@ Future<double?> getImdbScore(String imdbId, {bool useBatch = false}) async {
         body: jsonEncode({
           'ids': [imdbId]
         }),
-      ).timeout(const Duration(seconds: 3));
+      ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -37,7 +37,7 @@ Future<double?> getImdbScore(String imdbId, {bool useBatch = false}) async {
     try {
       final response = await http.get(
         Uri.parse('https://imdb-api.mahsaaghaali.ir/$imdbId'),
-      ).timeout(const Duration(seconds: 3));
+      ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -62,7 +62,7 @@ Future<Map<String, double>> getImdbScoresBatch(List<String> imdbIds) async {
       Uri.parse('https://imdb-api.mahsaaghaali.ir/batch'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'ids': imdbIds}),
-    ).timeout(const Duration(seconds: 3));
+    ).timeout(const Duration(seconds: 10));
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);

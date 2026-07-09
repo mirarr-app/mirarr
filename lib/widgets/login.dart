@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:Mirarr/functions/show_error_dialog.dart';
 import 'package:Mirarr/widgets/settings_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:Mirarr/widgets/bottom_bar.dart';
+import 'package:Mirarr/widgets/tv_focus_wrapper.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:tmdb_api/tmdb_api.dart';
 import 'package:http/http.dart' as http;
@@ -138,6 +140,9 @@ extendBody: true,
         ],
       ),
       body: SingleChildScrollView(
+        padding: EdgeInsets.only(
+          bottom: TvFocusModeManager.isTvDevice ? 0.0 : BottomBar.getHeight(context),
+        ),
         child: Column(
           children: [
             const SizedBox(

@@ -7,6 +7,7 @@ import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_gridview_serie.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_serie.dart';
 import 'package:flutter/material.dart';
+import 'package:Mirarr/widgets/bottom_bar.dart';
 import 'package:Mirarr/widgets/tv_focus_wrapper.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart';
@@ -14,6 +15,7 @@ import 'package:Mirarr/seriesPage/models/serie.dart';
 import 'dart:async';
 import 'package:Mirarr/seriesPage/UI/customSeriesWidget.dart';
 import 'package:provider/provider.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class SerieSearchScreen extends StatefulWidget {
   static final GlobalKey<_SerieSearchScreenState> movieSearchKey =
@@ -32,6 +34,45 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
   List<Genre> genres = [];
   Map<int, List<Serie>> seriesByGenre = {};
   late RegionProvider _regionProvider;
+
+  final List<Serie> _dummySeries = List.generate(
+    5,
+    (index) => Serie(
+      name: 'TV Show Title Placeholder',
+      posterPath: '',
+      overView: 'This is a description placeholder for the tv show loading state.',
+      id: -1 - index,
+      score: 8.5,
+    ),
+  );
+
+  final List<Genre> _dummyGenres = [
+    Genre(id: -100, name: 'Genre Placeholder 1'),
+    Genre(id: -101, name: 'Genre Placeholder 2'),
+  ];
+
+  late final Map<int, List<Serie>> _dummySeriesByGenre = {
+    -100: List.generate(
+      5,
+      (index) => Serie(
+        name: 'TV Show Title Placeholder',
+        posterPath: '',
+        overView: 'This is a description placeholder for the tv show loading state.',
+        id: -200 - index,
+        score: 8.5,
+      ),
+    ),
+    -101: List.generate(
+      5,
+      (index) => Serie(
+        name: 'TV Show Title Placeholder',
+        posterPath: '',
+        overView: 'This is a description placeholder for the tv show loading state.',
+        id: -300 - index,
+        score: 8.5,
+      ),
+    ),
+  };
 
   Future<void> _fetchGenresAndSeries() async {
     final region =
@@ -72,7 +113,10 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
     try {
       final region =
           Provider.of<RegionProvider>(context, listen: false).currentRegion;
-      popularSeries = await fetchPopularSeries(region);
+      final series = await fetchPopularSeries(region);
+      setState(() {
+        popularSeries = series;
+      });
     } catch (e) {
       throw Exception('Failed to load popular series data');
     }
@@ -149,6 +193,12 @@ class _SerieSearchScreenState extends State<SerieSearchScreen> {
   }
 
   Future<void> checkInternetAndFetchData() async {
+    setState(() {
+      trendingSeries = [];
+      popularSeries = [];
+      genres = [];
+      seriesByGenre = {};
+    });
     _fetchTrendingSeries();
     _fetchPopularSeries();
     await _fetchGenresAndSeries();
@@ -176,6 +226,9 @@ extendBody: true,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: SingleChildScrollView(
+                padding: EdgeInsets.only(
+                  bottom: TvFocusModeManager.isTvDevice ? 0.0 : BottomBar.getHeight(context),
+                ),
                 child: Column(
                   children: <Widget>[
                     const Row(
@@ -205,19 +258,41 @@ extendBody: true,
                             PointerDeviceKind.trackpad,
                           },
                         ),
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: trendingSeries.length,
-                          itemBuilder: (context, index) {
-                            final serie = trendingSeries[index];
-                            return TvFocusWrapper(
-                              autoFocus: index == 0,
-                              onTap: () => onTapSerie(serie.name, serie.id, context),
-                              child: CustomSeriesWidget(
-                                serie: serie,
-                              ),
-                            );
-                          },
+                        child: Skeletonizer(
+                          enabled: trendingSeries.isEmpty,
+                          containersColor: Colors.white.withOpacity(0.05),
+                          effect: ShimmerEffect(
+                            baseColor: Colors.white.withOpacity(0.05),
+                            highlightColor: Colors.white.withOpacity(0.15),
+                          ),
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: trendingSeries.isEmpty
+                                ? _dummySeries.length
+                                : trendingSeries.length,
+                            itemBuilder: (context, index) {
+                              final serie = trendingSeries.isEmpty
+                                  ? _dummySeries[index]
+                                  : trendingSeries[index];
+                              final widget = TvFocusWrapper(
+                                autoFocus: index == 0 && trendingSeries.isNotEmpty,
+                                onTap: trendingSeries.isEmpty
+                                    ? () {}
+                                    : () => onTapSerie(serie.name, serie.id, context),
+                                child: CustomSeriesWidget(
+                                  serie: serie,
+                                ),
+                              );
+                              if (trendingSeries.isEmpty) {
+                                final double opacity = (1.0 - (index * 0.18)).clamp(0.1, 1.0);
+                                return Opacity(
+                                  opacity: opacity,
+                                  child: widget,
+                                );
+                              }
+                              return widget;
+                            },
+                          ),
                         ),
                       ),
                     ),
@@ -250,84 +325,130 @@ extendBody: true,
                             PointerDeviceKind.trackpad,
                           },
                         ),
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: popularSeries.length,
-                          itemBuilder: (context, index) {
-                            final serie = popularSeries[index];
-                            return TvFocusWrapper(
-                              onTap: () => onTapSerie(serie.name, serie.id, context),
-                              child: CustomSeriesWidget(
-                                serie: serie,
-                              ),
-                            );
-                          },
+                        child: Skeletonizer(
+                          enabled: popularSeries.isEmpty,
+                          containersColor: Colors.white.withOpacity(0.05),
+                          effect: ShimmerEffect(
+                            baseColor: Colors.white.withOpacity(0.05),
+                            highlightColor: Colors.white.withOpacity(0.15),
+                          ),
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: popularSeries.isEmpty
+                                ? _dummySeries.length
+                                : popularSeries.length,
+                            itemBuilder: (context, index) {
+                              final serie = popularSeries.isEmpty
+                                  ? _dummySeries[index]
+                                  : popularSeries[index];
+                              final widget = TvFocusWrapper(
+                                onTap: popularSeries.isEmpty
+                                    ? () {}
+                                    : () => onTapSerie(serie.name, serie.id, context),
+                                child: CustomSeriesWidget(
+                                  serie: serie,
+                                ),
+                              );
+                              if (popularSeries.isEmpty) {
+                                final double opacity = (1.0 - (index * 0.18)).clamp(0.1, 1.0);
+                                return Opacity(
+                                  opacity: opacity,
+                                  child: widget,
+                                );
+                              }
+                              return widget;
+                            },
+                          ),
                         ),
                       ),
                     ),
-                    for (var genre in genres)
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(15, 15, 0, 0),
-                            child: TvFocusWrapper(
-                              borderRadius: 8.0,
-                              onTap: () => onTapGridSerie(
-                                  seriesByGenre[genre.id]!, context),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8.0, vertical: 4.0),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      genre.name,
-                                      style: const TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
+                    for (var genre in (genres.isEmpty ? _dummyGenres : genres))
+                      Skeletonizer(
+                        enabled: genres.isEmpty,
+                        containersColor: Colors.white.withOpacity(0.05),
+                        effect: ShimmerEffect(
+                          baseColor: Colors.white.withOpacity(0.05),
+                          highlightColor: Colors.white.withOpacity(0.15),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(15, 15, 0, 0),
+                              child: TvFocusWrapper(
+                                borderRadius: 8.0,
+                                onTap: genres.isEmpty
+                                    ? () {}
+                                    : () => onTapGridSerie(
+                                        seriesByGenre[genre.id]!, context),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0, vertical: 4.0),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        genre.name,
+                                        style: const TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 5),
-                                    Icon(
-                                      Icons.arrow_forward_ios,
-                                      color: Theme.of(context).primaryColor,
-                                      size: 16,
-                                    ),
-                                  ],
+                                      const SizedBox(width: 5),
+                                      Icon(
+                                        Icons.arrow_forward_ios,
+                                        color: Theme.of(context).primaryColor,
+                                        size: 16,
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 10),
-                          SizedBox(
-                            height: 320,
-                            child: ScrollConfiguration(
-                              behavior:
-                                  ScrollConfiguration.of(context).copyWith(
-                                dragDevices: {
-                                  PointerDeviceKind.touch,
-                                  PointerDeviceKind.mouse,
-                                  PointerDeviceKind.trackpad,
-                                },
-                              ),
-                              child: ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                itemCount: seriesByGenre[genre.id]?.length ?? 0,
-                                itemBuilder: (context, index) {
-                                  final serie = seriesByGenre[genre.id]![index];
-                                   return TvFocusWrapper(
-                                     onTap: () => onTapSerie(serie.name, serie.id, context),
-                                     child: CustomSeriesWidget(
-                                       serie: serie,
-                                     ),
-                                  );
-                                },
+                            const SizedBox(height: 10),
+                            SizedBox(
+                              height: 320,
+                              child: ScrollConfiguration(
+                                behavior:
+                                    ScrollConfiguration.of(context).copyWith(
+                                  dragDevices: {
+                                    PointerDeviceKind.touch,
+                                    PointerDeviceKind.mouse,
+                                    PointerDeviceKind.trackpad,
+                                  },
+                                ),
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: genres.isEmpty
+                                      ? (_dummySeriesByGenre[genre.id]?.length ?? 0)
+                                      : (seriesByGenre[genre.id]?.length ?? 0),
+                                  itemBuilder: (context, index) {
+                                    final serie = genres.isEmpty
+                                        ? _dummySeriesByGenre[genre.id]![index]
+                                        : seriesByGenre[genre.id]![index];
+                                     final widget = TvFocusWrapper(
+                                       onTap: genres.isEmpty
+                                           ? () {}
+                                           : () => onTapSerie(serie.name, serie.id, context),
+                                       child: CustomSeriesWidget(
+                                         serie: serie,
+                                       ),
+                                    );
+                                     if (genres.isEmpty) {
+                                       final double opacity = (1.0 - (index * 0.18)).clamp(0.1, 1.0);
+                                       return Opacity(
+                                         opacity: opacity,
+                                         child: widget,
+                                       );
+                                     }
+                                     return widget;
+                                  },
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                   ],
                 ),

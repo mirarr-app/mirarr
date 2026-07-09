@@ -16,6 +16,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:provider/provider.dart';
 import 'package:Mirarr/database/watch_history_database.dart';
 
@@ -348,17 +349,17 @@ void seasonsAndEpisodes(
                                                   ? CachedNetworkImage(
                                                       imageUrl: coverUrl,
                                                       fit: BoxFit.cover,
-                                                      placeholder: (context, url) =>
-                                                          const Center(
-                                                            child: SizedBox(
-                                                              width: 16,
-                                                              height: 16,
-                                                              child: CircularProgressIndicator(
-                                                                color: Colors.white,
-                                                                strokeWidth: 1.5,
-                                                              ),
-                                                            ),
-                                                          ),
+                                                      placeholder: (context, url) => Skeletonizer(
+                                                         enabled: true,
+                                                         containersColor: Colors.white.withOpacity(0.05),
+                                                         effect: ShimmerEffect(
+                                                           baseColor: Colors.white.withOpacity(0.05),
+                                                           highlightColor: Colors.white.withOpacity(0.15),
+                                                         ),
+                                                         child: Container(
+                                                           color: Colors.grey[900],
+                                                         ),
+                                                       ),
                                                       errorWidget:
                                                           (context, url, error) =>
                                                               const Icon(Icons.error, color: Colors.white54, size: 20),
@@ -593,17 +594,17 @@ void episodesGuide(int seasonNumber, BuildContext context, int serieId,
                                                   ? CachedNetworkImage(
                                                       imageUrl: coverUrl,
                                                       fit: BoxFit.cover,
-                                                      placeholder: (context, url) =>
-                                                          const Center(
-                                                            child: SizedBox(
-                                                              width: 16,
-                                                              height: 16,
-                                                              child: CircularProgressIndicator(
-                                                                color: Colors.white,
-                                                                strokeWidth: 1.5,
-                                                              ),
-                                                            ),
-                                                          ),
+                                                      placeholder: (context, url) => Skeletonizer(
+                                                         enabled: true,
+                                                         containersColor: Colors.white.withOpacity(0.05),
+                                                         effect: ShimmerEffect(
+                                                           baseColor: Colors.white.withOpacity(0.05),
+                                                           highlightColor: Colors.white.withOpacity(0.15),
+                                                         ),
+                                                         child: Container(
+                                                           color: Colors.grey[900],
+                                                         ),
+                                                       ),
                                                       errorWidget:
                                                           (context, url, error) =>
                                                               const Icon(Icons.error, color: Colors.white54, size: 20),

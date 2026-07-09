@@ -15,6 +15,7 @@ import 'package:Mirarr/moviesPage/functions/movie_tmdb_actions.dart';
 import 'package:Mirarr/moviesPage/functions/torrent_links.dart';
 import 'package:Mirarr/moviesPage/functions/watch_links.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;

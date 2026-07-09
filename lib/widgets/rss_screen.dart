@@ -75,6 +75,12 @@ class _RssScreenState extends State<RssScreen> with TickerProviderStateMixin {
     }).toList();
 
     return ListView.builder(
+      padding: EdgeInsets.only(
+        left: 8.0,
+        right: 8.0,
+        top: 8.0,
+        bottom: TvFocusModeManager.isTvDevice ? 8.0 : BottomBar.getHeight(context),
+      ),
       itemCount: filteredItems.length,
       itemBuilder: (context, index) {
         final item = filteredItems[index];
