@@ -22,6 +22,8 @@ import 'package:provider/provider.dart';
 import 'package:Mirarr/moviesPage/movieDetailPage.dart';
 import 'package:Mirarr/seriesPage/serieDetailPage.dart';
 import 'package:Mirarr/functions/navigation_provider.dart';
+import 'package:Mirarr/widgets/bottom_bar.dart';
+import 'package:Mirarr/widgets/tv_focus_wrapper.dart';
 
 
 class ProfilePage extends StatefulWidget {
@@ -949,6 +951,9 @@ extendBody: true,
           ),
           child: SingleChildScrollView(
             scrollDirection: Axis.vertical,
+            padding: EdgeInsets.only(
+              bottom: TvFocusModeManager.isTvDevice ? 0.0 : BottomBar.getHeight(context),
+            ),
             child: Column(
               children: [
                 _buildProfileHeader(),

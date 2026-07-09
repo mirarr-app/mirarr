@@ -7,6 +7,7 @@ import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_gridview_serie.dart';
 import 'package:Mirarr/seriesPage/function/on_tap_serie.dart';
 import 'package:flutter/material.dart';
+import 'package:Mirarr/widgets/bottom_bar.dart';
 import 'package:Mirarr/widgets/tv_focus_wrapper.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart';
@@ -225,6 +226,9 @@ extendBody: true,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: SingleChildScrollView(
+                padding: EdgeInsets.only(
+                  bottom: TvFocusModeManager.isTvDevice ? 0.0 : BottomBar.getHeight(context),
+                ),
                 child: Column(
                   children: <Widget>[
                     const Row(

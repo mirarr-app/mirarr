@@ -12,6 +12,7 @@ import 'package:Mirarr/widgets/discover/discover_with_filters.dart';
 import 'package:Mirarr/widgets/models/person.dart';
 import 'package:Mirarr/widgets/person_result.dart';
 import 'package:Mirarr/widgets/tv_focus_wrapper.dart';
+import 'package:Mirarr/widgets/bottom_bar.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -278,7 +279,12 @@ class _SearchScreenState extends State<SearchScreen>
             },
           ),
           child: GridView.builder(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.only(
+              left: 12,
+              right: 12,
+              top: 12,
+              bottom: BottomBar.getHeight(context),
+            ),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: crossAxisCount,
               crossAxisSpacing: 12,
@@ -333,7 +339,12 @@ class _SearchScreenState extends State<SearchScreen>
             },
           ),
           child: GridView.builder(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.only(
+              left: 12,
+              right: 12,
+              top: 12,
+              bottom: BottomBar.getHeight(context),
+            ),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: crossAxisCount,
               crossAxisSpacing: 12,
@@ -388,7 +399,12 @@ class _SearchScreenState extends State<SearchScreen>
             },
           ),
           child: GridView.builder(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.only(
+              left: 12,
+              right: 12,
+              top: 12,
+              bottom: BottomBar.getHeight(context),
+            ),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: crossAxisCount,
               crossAxisSpacing: 12,

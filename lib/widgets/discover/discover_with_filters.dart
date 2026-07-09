@@ -9,6 +9,7 @@ import 'package:Mirarr/moviesPage/models/movie.dart';
 import 'package:Mirarr/widgets/discover/genre_chips.dart';
 import 'package:Mirarr/widgets/tv_focus_wrapper.dart';
 import 'package:flutter/material.dart';
+import 'package:Mirarr/widgets/bottom_bar.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -685,7 +686,12 @@ class _DiscoverMoviesPageState extends State<DiscoverMoviesPage> {
     }
 
     return GridView.builder(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.only(
+        left: 12,
+        right: 12,
+        top: 12,
+        bottom: TvFocusModeManager.isTvDevice ? 12 : BottomBar.getHeight(context),
+      ),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: columns,
         childAspectRatio: 0.7,

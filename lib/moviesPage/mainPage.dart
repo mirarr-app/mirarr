@@ -6,6 +6,7 @@ import 'package:Mirarr/functions/regionprovider_class.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_gridview_movie.dart';
 import 'package:Mirarr/moviesPage/functions/on_tap_movie.dart';
 import 'package:Mirarr/widgets/tv_focus_wrapper.dart';
+import 'package:Mirarr/widgets/bottom_bar.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -253,6 +254,9 @@ extendBody: true,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: SingleChildScrollView(
+                    padding: EdgeInsets.only(
+                      bottom: TvFocusModeManager.isTvDevice ? 0.0 : BottomBar.getHeight(context),
+                    ),
                     child: Container(
                       color: Colors.black,
                       child: Column(

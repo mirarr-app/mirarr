@@ -223,7 +223,12 @@ class _WatchlistCalendarScreenState extends State<WatchlistCalendarScreen> {
     final sortedDates = grouped.keys.toList()..sort();
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16.0),
+      padding: EdgeInsets.only(
+        left: 16.0,
+        right: 16.0,
+        top: 16.0,
+        bottom: TvFocusModeManager.isTvDevice ? 16.0 : BottomBar.getHeight(context),
+      ),
       itemCount: sortedDates.length,
       itemBuilder: (context, dateIndex) {
         final dateStr = sortedDates[dateIndex];

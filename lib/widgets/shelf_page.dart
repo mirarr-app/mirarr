@@ -13,6 +13,7 @@ import 'package:Mirarr/seriesPage/checkers/custom_tmdb_ids_effects_series.dart';
 import 'package:Mirarr/seriesPage/serieDetailPage.dart';
 import 'package:flutter/material.dart';
 import 'package:Mirarr/widgets/tv_focus_wrapper.dart';
+import 'package:Mirarr/widgets/bottom_bar.dart';
 import 'package:Mirarr/database/watch_history_database.dart';
 import 'package:Mirarr/models/watch_history_model.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -1069,7 +1070,12 @@ class _ShelfPageState extends State<ShelfPage> {
     }
 
     return GridView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.only(
+        left: 16.0,
+        right: 16.0,
+        top: 16.0,
+        bottom: TvFocusModeManager.isTvDevice ? 16.0 : BottomBar.getHeight(context),
+      ),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossAxisCount,
         childAspectRatio: 0.7,
@@ -1090,7 +1096,12 @@ class _ShelfPageState extends State<ShelfPage> {
 
   Widget _buildMovieListView(List<WatchHistoryItem> items, String region) {
     return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
+      padding: EdgeInsets.only(
+        left: 16.0,
+        right: 16.0,
+        top: 16.0,
+        bottom: TvFocusModeManager.isTvDevice ? 16.0 : BottomBar.getHeight(context),
+      ),
       itemCount: items.length,
       itemBuilder: (context, index) {
         final movie = items[index];
@@ -1125,7 +1136,12 @@ class _ShelfPageState extends State<ShelfPage> {
 
     if (_showViewMode == 'list') {
       return ListView.builder(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
+        padding: EdgeInsets.only(
+          left: 16.0,
+          right: 16.0,
+          top: 16.0,
+          bottom: TvFocusModeManager.isTvDevice ? 16.0 : BottomBar.getHeight(context),
+        ),
         itemCount: filtered.length,
         itemBuilder: (context, index) {
           final show = filtered[index];
@@ -1135,7 +1151,12 @@ class _ShelfPageState extends State<ShelfPage> {
     } else if (_showViewMode == 'compact') {
       final grouped = _getGroupedShowsList(filtered);
       return GridView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.only(
+          left: 16.0,
+          right: 16.0,
+          top: 16.0,
+          bottom: TvFocusModeManager.isTvDevice ? 16.0 : BottomBar.getHeight(context),
+        ),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: MediaQuery.of(context).size.width >= 800 ? 7 : 4,
           childAspectRatio: 0.7,
@@ -1152,7 +1173,12 @@ class _ShelfPageState extends State<ShelfPage> {
       // Grid Grouped Shows
       final grouped = _getGroupedShowsList(filtered);
       return GridView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.only(
+          left: 16.0,
+          right: 16.0,
+          top: 16.0,
+          bottom: TvFocusModeManager.isTvDevice ? 16.0 : BottomBar.getHeight(context),
+        ),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: MediaQuery.of(context).size.width >= 800 ? 5 : 3,
           childAspectRatio: 0.7,
@@ -1216,7 +1242,12 @@ class _ShelfPageState extends State<ShelfPage> {
       return _buildMovieGrid(filtered, region, isCompact: false);
     } else if (_diaryViewMode == 'list') {
       return ListView.builder(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
+        padding: EdgeInsets.only(
+          left: 16.0,
+          right: 16.0,
+          top: 16.0,
+          bottom: TvFocusModeManager.isTvDevice ? 16.0 : BottomBar.getHeight(context),
+        ),
         itemCount: filtered.length,
         itemBuilder: (context, index) {
           final item = filtered[index];
@@ -1248,7 +1279,12 @@ class _ShelfPageState extends State<ShelfPage> {
         },
       ),
       child: ListView.builder(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
+        padding: EdgeInsets.only(
+          left: 16.0,
+          right: 16.0,
+          top: 16.0,
+          bottom: TvFocusModeManager.isTvDevice ? 16.0 : BottomBar.getHeight(context),
+        ),
         itemCount: keys.length,
         itemBuilder: (context, index) {
           final monthKey = keys[index];

@@ -39,6 +39,9 @@ class _SerieDetailPageMobile extends StatelessWidget {
             child: CircularProgressIndicator(),
           )
         : SingleChildScrollView(
+              padding: EdgeInsets.only(
+                bottom: isTv ? 0.0 : BottomBar.getHeight(context),
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
