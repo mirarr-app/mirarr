@@ -13,6 +13,7 @@ import 'package:http/http.dart';
 import 'package:Mirarr/moviesPage/UI/customMovieWidget.dart';
 import 'package:Mirarr/moviesPage/models/movie.dart';
 import 'dart:async';
+import 'package:Mirarr/database/watch_history_database.dart';
 import 'package:provider/provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -33,6 +34,28 @@ class _MovieSearchScreenState extends State<MovieSearchScreen> {
   List<Genre> genres = [];
   Map<int, List<Movie>> moviesByGenre = {};
   late RegionProvider _regionProvider;
+  final WatchHistoryDatabase _watchHistoryDb = WatchHistoryDatabase();
+  Set<int> _watchedMovieIds = {};
+
+  Future<void> _loadWatchedMovies() async {
+    try {
+      final watched = await _watchHistoryDb.getWatchedMovies();
+      if (mounted) {
+        setState(() {
+          _watchedMovieIds = watched.map((e) => e.tmdbId).toSet();
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading watched movies: $e');
+    }
+  }
+
+  Future<void> _onMovieTapped(Movie movie) async {
+    await onTapMovie(movie.title, movie.id, context);
+    if (mounted) {
+      _loadWatchedMovies();
+    }
+  }
 
   final List<Movie> _dummyMovies = List.generate(
     5,
@@ -181,6 +204,7 @@ class _MovieSearchScreenState extends State<MovieSearchScreen> {
   void initState() {
     super.initState();
     checkInternetAndFetchData();
+    _loadWatchedMovies();
 
     // Add listener for region changes
     _regionProvider = Provider.of<RegionProvider>(context, listen: false);
@@ -201,6 +225,7 @@ class _MovieSearchScreenState extends State<MovieSearchScreen> {
       genres = [];
       moviesByGenre = {};
     });
+    _loadWatchedMovies();
     _fetchTrendingMovies();
     _fetchPopularMovies();
     await _fetchGenresAndMovies();
@@ -278,17 +303,17 @@ extendBody: true,
                                     final movie = trendingMovies.isEmpty
                                         ? _dummyMovies[index]
                                         : trendingMovies[index];
-                                    final widget = TvFocusWrapper(
-                                      autoFocus: index == 0 && trendingMovies.isNotEmpty,
-                                      onTap: trendingMovies.isEmpty
-                                          ? () {}
-                                          : () => onTapMovie(
-                                              movie.title, movie.id, context),
-                                      child: CustomMovieWidget(
-                                        movie: movie,
-                                        showAvailability: false,
-                                      ),
-                                    );
+                                     final widget = TvFocusWrapper(
+                                       autoFocus: index == 0 && trendingMovies.isNotEmpty,
+                                       onTap: trendingMovies.isEmpty
+                                           ? () {}
+                                           : () => _onMovieTapped(movie),
+                                       child: CustomMovieWidget(
+                                         movie: movie,
+                                         showAvailability: false,
+                                         isWatched: _watchedMovieIds.contains(movie.id),
+                                       ),
+                                     );
                                     if (trendingMovies.isEmpty) {
                                       final double opacity = (1.0 - (index * 0.18)).clamp(0.1, 1.0);
                                       return Opacity(
@@ -348,16 +373,16 @@ extendBody: true,
                                     final movie = popularMovies.isEmpty
                                         ? _dummyMovies[index]
                                         : popularMovies[index];
-                                    final widget = TvFocusWrapper(
-                                      onTap: popularMovies.isEmpty
-                                          ? () {}
-                                          : () => onTapMovie(
-                                              movie.title, movie.id, context),
-                                      child: CustomMovieWidget(
-                                        movie: movie,
-                                        showAvailability: false,
-                                      ),
-                                    );
+                                     final widget = TvFocusWrapper(
+                                       onTap: popularMovies.isEmpty
+                                           ? () {}
+                                           : () => _onMovieTapped(movie),
+                                       child: CustomMovieWidget(
+                                         movie: movie,
+                                         showAvailability: false,
+                                         isWatched: _watchedMovieIds.contains(movie.id),
+                                       ),
+                                     );
                                     if (popularMovies.isEmpty) {
                                       final double opacity = (1.0 - (index * 0.18)).clamp(0.1, 1.0);
                                       return Opacity(
@@ -437,16 +462,16 @@ extendBody: true,
                                           final movie = genres.isEmpty
                                               ? _dummyMoviesByGenre[genre.id]![index]
                                               : moviesByGenre[genre.id]![index];
-                                          final widget = TvFocusWrapper(
-                                            onTap: genres.isEmpty
-                                                ? () {}
-                                                : () => onTapMovie(movie.title,
-                                                    movie.id, context),
-                                            child: CustomMovieWidget(
-                                              movie: movie,
-                                              showAvailability: false,
-                                            ),
-                                          );
+                                           final widget = TvFocusWrapper(
+                                             onTap: genres.isEmpty
+                                                 ? () {}
+                                                 : () => _onMovieTapped(movie),
+                                             child: CustomMovieWidget(
+                                               movie: movie,
+                                               showAvailability: false,
+                                               isWatched: _watchedMovieIds.contains(movie.id),
+                                             ),
+                                           );
                                           if (genres.isEmpty) {
                                             final double opacity = (1.0 - (index * 0.18)).clamp(0.1, 1.0);
                                             return Opacity(

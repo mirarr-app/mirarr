@@ -14,11 +14,13 @@ class CustomMovieWidget extends StatelessWidget {
 
   final Movie movie;
   final bool showAvailability;
+  final bool isWatched;
 
   const CustomMovieWidget({
     super.key,
     required this.movie,
     this.showAvailability = true,
+    this.isWatched = false,
   });
 
   Future<bool> checkAvailability(int movieId, BuildContext context) async {
@@ -65,6 +67,9 @@ class CustomMovieWidget extends StatelessWidget {
                     '${getImageBaseUrl(Provider.of<RegionProvider>(context).currentRegion)}/t/p/w500${movie.posterPath}',
                   ),
                   fit: BoxFit.cover,
+                  colorFilter: isWatched
+                      ? const ColorFilter.mode(Colors.grey, BlendMode.saturation)
+                      : null,
                 )
               : null,
         ),
@@ -92,6 +97,42 @@ class CustomMovieWidget extends StatelessWidget {
                 ),
               ),
             ),
+            if (isWatched)
+              Positioned(
+                right: showAvailability ? 50 : 10,
+                child: Container(
+                  margin: const EdgeInsets.only(top: 14),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.7),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: Colors.white24,
+                      width: 1,
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.check_circle,
+                        color: Colors.green,
+                        size: 14,
+                      ),
+                      SizedBox(width: 4),
+                      Text(
+                        'WATCHED',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             if (showAvailability)
               Positioned(
                 right: 10,
