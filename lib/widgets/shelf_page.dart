@@ -357,6 +357,24 @@ class _ShelfPageState extends State<ShelfPage> {
     return '${hours}h ${mins}m';
   }
 
+  String _formatWatchTimeYMD(int totalMinutes) {
+    if (totalMinutes == 0) return '0d';
+    int remainingMins = totalMinutes;
+    final years = remainingMins ~/ 525600;
+    remainingMins %= 525600;
+    final months = remainingMins ~/ 43200;
+    remainingMins %= 43200;
+    final days = remainingMins ~/ 1440;
+    List<String> parts = [];
+    if (years > 0) parts.add('${years}y');
+    if (months > 0) parts.add('${months}mo');
+    if (days > 0) parts.add('${days}d');
+    if (parts.isEmpty) {
+      return totalMinutes > 0 ? '<1d' : '0d';
+    }
+    return parts.join(' ');
+  }
+
   @override
   Widget build(BuildContext context) {
     final navProvider = Provider.of<NavigationProvider>(context);
@@ -598,11 +616,23 @@ class _ShelfPageState extends State<ShelfPage> {
                   const SizedBox(height: 10),
                   _buildStatItem('Unique Shows', watchedShows.map((s) => s.tmdbId).toSet().length.toString()),
                   const SizedBox(height: 10),
-                  _buildStatItem('Movies Time', _formatWatchTime(totalMovieMinutes)),
+                  _buildStatItem(
+                    'Movies Time',
+                    _formatWatchTime(totalMovieMinutes),
+                    secondaryValue: _formatWatchTimeYMD(totalMovieMinutes),
+                  ),
                   const SizedBox(height: 10),
-                  _buildStatItem('TV Shows Time', _formatWatchTime(totalTvMinutes)),
+                  _buildStatItem(
+                    'TV Shows Time',
+                    _formatWatchTime(totalTvMinutes),
+                    secondaryValue: _formatWatchTimeYMD(totalTvMinutes),
+                  ),
                   const Divider(color: Colors.white10, height: 16),
-                  _buildStatItem('Total Watch Time', _formatWatchTime(totalMovieMinutes + totalTvMinutes)),
+                  _buildStatItem(
+                    'Total Watch Time',
+                    _formatWatchTime(totalMovieMinutes + totalTvMinutes),
+                    secondaryValue: _formatWatchTimeYMD(totalMovieMinutes + totalTvMinutes),
+                  ),
                   if (isCalculating) ...[
                     const SizedBox(height: 12),
                     LinearProgressIndicator(
@@ -649,18 +679,35 @@ class _ShelfPageState extends State<ShelfPage> {
     );
   }
 
-  Widget _buildStatItem(String label, String value) {
+  Widget _buildStatItem(String label, String value, {String? secondaryValue}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(label, style: const TextStyle(fontSize: 11, color: Colors.white30)),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
-            color: Colors.white70,
-          ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: Colors.white70,
+              ),
+            ),
+            if (secondaryValue != null) ...[
+              const SizedBox(height: 2),
+              Text(
+                secondaryValue,
+                style: const TextStyle(
+                  fontSize: 10,
+                  color: Colors.white38,
+                ),
+              ),
+            ],
+          ],
         ),
       ],
     );
@@ -899,17 +946,27 @@ class _ShelfPageState extends State<ShelfPage> {
                   const Text('Movies Time', style: TextStyle(fontSize: 10, color: Colors.white30)),
                   const SizedBox(height: 2),
                   Text(_formatWatchTime(totalMovieMinutes), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
+                  const SizedBox(height: 2),
+                  Text(
+                    _formatWatchTimeYMD(totalMovieMinutes),
+                    style: const TextStyle(fontSize: 9, color: Colors.white38),
+                  ),
                 ],
               ),
-              Container(width: 1, height: 20, color: Colors.white10),
+              Container(width: 1, height: 32, color: Colors.white10),
               Column(
                 children: [
                   const Text('TV Shows Time', style: TextStyle(fontSize: 10, color: Colors.white30)),
                   const SizedBox(height: 2),
                   Text(_formatWatchTime(totalTvMinutes), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
+                  const SizedBox(height: 2),
+                  Text(
+                    _formatWatchTimeYMD(totalTvMinutes),
+                    style: const TextStyle(fontSize: 9, color: Colors.white38),
+                  ),
                 ],
               ),
-              Container(width: 1, height: 20, color: Colors.white10),
+              Container(width: 1, height: 32, color: Colors.white10),
               Column(
                 children: [
                   const Text('Total Time', style: TextStyle(fontSize: 10, color: Colors.white30)),
@@ -917,6 +974,11 @@ class _ShelfPageState extends State<ShelfPage> {
                   Text(
                     _formatWatchTime(totalMovieMinutes + totalTvMinutes),
                     style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    _formatWatchTimeYMD(totalMovieMinutes + totalTvMinutes),
+                    style: const TextStyle(fontSize: 9, color: Colors.white38),
                   ),
                 ],
               ),
