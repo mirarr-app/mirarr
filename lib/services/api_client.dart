@@ -12,9 +12,12 @@ import 'api_client_stub.dart' if (dart.library.io) 'api_client_io.dart';
 /// [defaultTimeout] to every request, so a stalled socket always produces a
 /// [TimeoutException] instead of hanging a screen forever.
 class ApiClient {
-  ApiClient._() : _client = createSharedClient();
+  ApiClient._([http.Client? client]) : _client = client ?? createSharedClient();
 
   static final ApiClient instance = ApiClient._();
+
+  /// Creates an [ApiClient] wrapping a custom [http.Client], useful for testing.
+  factory ApiClient.custom(http.Client client) => ApiClient._(client);
 
   /// Applied to any request that does not pass its own `timeout`.
   static const Duration defaultTimeout = Duration(seconds: 8);
