@@ -2,7 +2,7 @@ name: Mirarr
 description: An open source movie app.
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
-version: 3.3.3
+version: 3.3.4
 
 environment:
   sdk: ">=3.10.0 <4.0.0"
